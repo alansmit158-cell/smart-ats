@@ -1,0 +1,242 @@
+================================================================================
+                        SMART-ATS — NOTES & SUIVI DU PROJET
+                        Dernière mise à jour : 07 Mars 2026
+================================================================================
+
+  Système de Tracking des Candidatures assisté par Intelligence Artificielle.
+  Ce fichier regroupe tout ce qui a été construit, configuré et planifié
+  sur le projet Smart-ATS depuis le début.
+
+  ⚠️ RÈGLE DE PROJET : Chaque nouvelle fonctionnalité, amélioration technique
+  ou étape d'implémentation DOIT être documentée dans ce fichier de manière
+  exhaustive, étape par étape, afin de faciliter la rédaction du PFE.
+
+================================================================================
+                             STRUCTURE DU PROJET
+================================================================================
+
+smart-ATS/
+│
+├── BACKEND/                      ← Serveur Node.js / Express / MongoDB
+│   ├── server.js                 ← Point d'entrée du serveur
+│   ├── .env                      ← Variables d'environnement (PORT, MONGO_URI)
+│   ├── package.json              ← Dépendances backend
+│   ├── config/
+│   │   └── db.js                 ← Connexion MongoDB (Mongoose)
+│   ├── controllers/              ← (Vide — à remplir)
+│   ├── middlewares/              ← (Vide — à remplir)
+│   ├── models/                   ← (Vide — à remplir)
+│   ├── routes/                   ← (Vide — à remplir)
+│   └── utils/                    ← (Vide — à remplir)
+│
+└── frontend/                     ← Application React (Vite + Tailwind)
+    ├── index.html                ← Page HTML principale
+    ├── package.json              ← Dépendances frontend
+    ├── vite.config.js            ← Configuration Vite
+    ├── postcss.config.js         ← Configuration PostCSS/Tailwind
+    └── src/
+        ├── main.jsx              ← Point d'entrée React
+        ├── App.jsx               ← Composant racine (affiche Dashboard)
+        ├── App.css               ← Styles globaux App
+        ├── index.css             ← Styles globaux + tokens CSS
+        ├── components/
+        │   ├── Header.jsx        ← Barre de navigation supérieure (fixed)
+        │   ├── Sidebar.jsx       ← Barre latérale de navigation (fixed)
+        │   ├── StatsCard.jsx     ← Carte statistique réutilisable
+        │   └── AIAnalysisCard.jsx ← Carte bannière analyse IA
+        └── pages/
+            └── Dashboard.jsx     ← Page principale du tableau de bord
+
+
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (FRONTEND)
+================================================================================
+
+[✅] MISE EN PLACE DU PROJET FRONTEND
+    - Création du projet avec Vite + React
+    - Installation de Tailwind CSS v4 (via @tailwindcss/postcss)
+    - Installation de lucide-react (icônes)
+    - Installation de react-router-dom (routing)
+    - Installation de axios (appels API)
+
+[✅] COMPOSANT : Header.jsx
+    - Barre fixe en haut (top-0, z-10), liée à la sidebar (left-64)
+    - Barre de recherche (icône Search + input stylisé)
+    - Bouton notifications (Bell) avec badge rouge animé
+    - Section utilisateur connecté : nom "Alex Morgan" + rôle "Senior Recruiter"
+    - Avatar rond avec icône User
+
+[✅] COMPOSANT : Sidebar.jsx
+    - Menu latéral fixe (fixed, w-64, h-full), fond sombre (bg-sidebar)
+    - Logo Smart-ATS en haut (fond blanc, arrondi)
+    - 4 items de navigation : Dashboard, Jobs, Candidates, Reports
+    - Item actif mis en évidence (bg-blue-600)
+    - Icônes lucide-react : LayoutDashboard, Briefcase, Users, FileText
+    - Badge "System Online" en bas (indicateur IA vert animé)
+    - Texte "AI Model v2.4 Active"
+
+[✅] COMPOSANT : StatsCard.jsx
+    - Carte blanche avec bordure et ombre subtile
+    - Affiche : titre, valeur, icône, tendance (trend)
+    - Tendance positive → badge vert + TrendingUp
+    - Tendance négative → badge rouge + TrendingDown
+    - Hover : icône passe en bleu plein, ombre agrandie
+    - Props : title, value, icon, trend, trendUp
+
+[✅] COMPOSANT : AIAnalysisCard.jsx
+    - Bannière gradient bleu (from-blue-600 to-blue-500)
+    - Icône BrainCircuit en arrière-plan (opacité 10%)
+    - Badge "AI Engine Ready" (fond semi-transparent + icône Sparkles verte)
+    - Titre : "AI-Powered CV Analysis"
+    - Texte : 156 candidatures traitées, 12 top candidats identifiés, 98% précision
+    - Deux boutons : "View Analysis" (blanc/bleu) + "Configure Rules" (outline)
+
+[✅] PAGE : Dashboard.jsx
+    - Layout flex avec Sidebar (fixed w-64) + zone principale (ml-64)
+    - Header fixed en haut
+    - Section titre + filtre de période (Last 7 Days / 30 Days / Quarter)
+    - Grille 3 colonnes de StatsCards :
+        → New Applicants    : 1,284  (+12%)
+        → Interviews Scheduled : 42 (+5%)
+        → Active Jobs       : 18    (-2%)
+    - AIAnalysisCard (bannière pleine largeur)
+    - 2 colonnes en bas :
+        → Recent Activity (liste de 3 items avec avatar JD)
+        → Upcoming Interviews (2 items avec date FEB)
+
+
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (BACKEND)
+================================================================================
+
+[✅] MISE EN PLACE DU PROJET BACKEND
+    - Initialisation Node.js (package.json, type: "commonjs")
+    - Installation des dépendances :
+        → express         : Framework serveur
+        → dotenv          : Variables d'environnement
+        → cors            : Gestion CORS (accès frontend)
+        → mongoose        : ODM pour MongoDB
+        → bcryptjs        : Hachage des mots de passe
+        → jsonwebtoken    : Authentification JWT
+        → multer          : Upload de fichiers (CV PDF)
+        → openai          : SDK OpenAI (analyse IA des CV)
+        → pdf-parse       : Extraction texte depuis PDF
+    - DevDependency : nodemon (rechargement auto en dev)
+
+[✅] FICHIER : server.js
+    - Chargement dotenv.config() EN PREMIER (avant les imports)
+    - Connexion MongoDB via connectDB()
+    - Middleware CORS activé (app.use(cors()))
+    - Middleware JSON activé (app.use(express.json()))
+    - Route de test : GET "/" → "Smart-ATS API is Running!"
+    - Serveur démarré sur PORT (défaut 5000)
+
+[✅] FICHIER : config/db.js
+    - Connexion asynchrone à MongoDB avec mongoose.connect()
+    - Utilise process.env.MONGO_URI
+    - Log succès : "✅ MongoDB Connected: <host>"
+    - Log erreur + arrêt processus (process.exit(1)) si échec
+
+[✅] FICHIER : .env
+    - PORT=5000
+    - MONGO_URI=<chaîne de connexion MongoDB Atlas>
+
+
+================================================================================
+                    TECHNOLOGIES & STACK UTILISÉES
+================================================================================
+
+  FRONTEND :
+  ----------
+  - React 19              → Framework UI
+  - Vite 7                → Build tool (dev server ultra-rapide)
+  - Tailwind CSS 4        → Styling utilitaire
+  - lucide-react          → Bibliothèque d'icônes SVG
+  - react-router-dom 7    → Navigation entre pages (à utiliser)
+  - axios                 → Requêtes HTTP vers le backend (à utiliser)
+
+  BACKEND :
+  ---------
+  - Node.js               → Runtime JavaScript côté serveur
+  - Express 5             → Framework HTTP
+  - MongoDB Atlas         → Base de données NoSQL cloud
+  - Mongoose 9            → ODM (modélisation des données)
+  - JWT (jsonwebtoken)    → Authentification par tokens
+  - bcryptjs              → Sécurisation des mots de passe
+  - Multer                → Upload de fichiers PDF
+  - pdf-parse             → Lecture et extraction du texte des PDF
+  - OpenAI SDK            → Intelligence Artificielle (analyse de CV)
+  - dotenv                → Gestion des variables d'environnement
+  - nodemon               → Rechargement auto en mode développement
+
+
+================================================================================
+                    JUSTIFICATION ARCHITECTURALE (PFE)
+================================================================================
+  L'API OpenAI (GPT-4o-mini) n'est qu'une pièce du puzzle. Le véritable moteur 
+  d'intelligence artificielle est un Pipeline NLP complet :
+  
+  1. L'Ingestion : Infrastructure Node.js asynchrone pour la réception et le 
+     parsing des fichiers binaires (PDF) sans bloquer le serveur principal.
+  2. Prompt Engineering (Moteur NLP) : Création d'instructions système complexes
+     agissant comme extracteur d'entités nommées (NER). L'IA est bridée pour 
+     créer de la donnée JSON structurée exploitable à partir de contenu brut.
+  3. L'Automatisation (Logique Métier) : Du dépôt du fichier à l'enregistrement
+     MongoDB, le flux est 100% automatisé, sans intervention humaine.
+  4. Préparation au Matching : En isolant (normalisation) les compétences des 
+     expériences de manière atomique, on pose le socle technique indispensable
+     afin que nos algorithmes puissent réaliser le Matching Sémantique (Module 2).
+
+================================================================================
+                         À FAIRE PROCHAINEMENT
+================================================================================
+
+  BACKEND — Fonctionnalités à implémenter :
+  ------------------------------------------
+  [ ] Modèle User (models/User.js) — inscription/connexion
+  [ ] Modèle Job (models/Job.js)  — offres d'emploi
+  [ ] Route POST /api/auth/register — inscription
+  [ ] Route POST /api/auth/login   — connexion + token JWT
+  [ ] Middleware d'authentification (middlewares/authMiddleware.js)
+  [ ] Route GET  /api/jobs     — liste des offres
+  [ ] Route POST /api/jobs     — créer une offre
+
+  FRONTEND — Fonctionnalités à implémenter :
+  -------------------------------------------
+  [ ] Page Login / Register (authentification)
+  [ ] Page Jobs (liste des offres d'emploi)
+  [ ] Page Reports (rapports et statistiques)
+  [ ] Gérer le token JWT (localStorage / Context)
+  [ ] Rendre le Dashboard dynamique (vraies données API)
+
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (MODULE 1 : PARSING)
+================================================================================
+
+[✅] Modèle `Candidate` (Mongoose) avec compétences, expériences, formations
+[✅] Route POST `/api/candidates/upload` pour uploader un CV PDF
+[✅] Extraction du texte avec `pdf-parse`
+[✅] Analyse sémantique NLP avec API OpenAI (GPT-4o-mini) → JSON
+[✅] Sauvegarde automatique dans MongoDB
+[✅] Configuration `react-router-dom` dans App.jsx
+[✅] Page `Candidates.jsx` avec Drag & Drop et affichage des résultats structurés
+
+
+================================================================================
+                         COMMANDES DE DÉMARRAGE
+================================================================================
+
+  BACKEND :
+    cd smart-ATS/BACKEND
+    npm run dev      ← Démarre avec nodemon (port 5000)
+    npm start        ← Démarre avec node (production)
+
+  FRONTEND :
+    cd smart-ATS/frontend
+    npm run dev      ← Démarre Vite (port 5173 par défaut)
+    npm run build    ← Build production (dossier dist/)
+
+
+================================================================================
+                              FIN DES NOTES
+================================================================================
