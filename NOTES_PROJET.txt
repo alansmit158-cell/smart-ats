@@ -193,21 +193,23 @@ smart-ATS/
 
   BACKEND — Fonctionnalités à implémenter :
   ------------------------------------------
-  [ ] Modèle User (models/User.js) — inscription/connexion
-  [ ] Modèle Job (models/Job.js)  — offres d'emploi
-  [ ] Route POST /api/auth/register — inscription
-  [ ] Route POST /api/auth/login   — connexion + token JWT
-  [ ] Middleware d'authentification (middlewares/authMiddleware.js)
-  [ ] Route GET  /api/jobs     — liste des offres
-  [ ] Route POST /api/jobs     — créer une offre
+  [✅] Modèle User (models/User.js) — inscription/connexion
+  [✅] Modèle Job (models/Job.js)  — offres d'emploi
+  [✅] Route POST /api/auth/register — inscription
+  [✅] Route POST /api/auth/login   — connexion + token JWT
+  [✅] Middleware d'authentification (middlewares/authMiddleware.js)
+  [✅] Route GET  /api/jobs     — liste des offres
+  [✅] Route POST /api/jobs     — créer une offre
+  [✅] Route GET  /api/dashboard/stats — Statistiques du tableau de bord (Candidats, Offres)
 
   FRONTEND — Fonctionnalités à implémenter :
   -------------------------------------------
-  [ ] Page Login / Register (authentification)
-  [ ] Page Jobs (liste des offres d'emploi)
-  [ ] Page Reports (rapports et statistiques)
-  [ ] Gérer le token JWT (localStorage / Context)
-  [ ] Rendre le Dashboard dynamique (vraies données API)
+  [✅] Page Login / Register (authentification)
+  [✅] Page Jobs (liste des offres d'emploi)
+  [✅] Page Reports (rapports et statistiques)
+  [✅] Gérer le token JWT (localStorage / Context)
+  [✅] Rendre le Dashboard dynamique (vraies données API)
+  [✅] Configurer la navigation dans la Sidebar (`NavLink`)
 
 ================================================================================
                          CE QUI A ÉTÉ RÉALISÉ (MODULE 1 : PARSING)

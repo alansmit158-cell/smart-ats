@@ -17,6 +17,7 @@ app.use(express.json());
 // Global Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 // Routes du module 1 : Parsing des CVs
 app.use('/api/candidates', require('./routes/candidateRoutes'));
 

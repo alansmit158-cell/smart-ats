@@ -1,12 +1,13 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, Users, FileText } from 'lucide-react';
 
 const Sidebar = () => {
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', active: true },
-        { icon: Briefcase, label: 'Jobs', active: false },
-        { icon: Users, label: 'Candidates', active: false },
-        { icon: FileText, label: 'Reports', active: false },
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+        { icon: Briefcase, label: 'Jobs', path: '/jobs' },
+        { icon: Users, label: 'Candidates', path: '/candidates' },
+        { icon: FileText, label: 'Reports', path: '/reports' },
     ];
 
     return (
@@ -23,17 +24,22 @@ const Sidebar = () => {
 
             <nav className="flex-1 p-4 space-y-2">
                 {menuItems.map((item, index) => (
-                    <button
+                    <NavLink
                         key={index}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group
-              ${item.active
+                        to={item.path}
+                        className={({ isActive }) => `w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group
+              ${isActive
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
                                 : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
                             }`}
                     >
-                        <item.icon className={`w-5 h-5 ${item.active ? 'text-white' : 'text-gray-400 group-hover:text-emerald-400'}`} />
-                        <span className="font-medium">{item.label}</span>
-                    </button>
+                        {({ isActive }) => (
+                            <>
+                                <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-emerald-400'}`} />
+                                <span className="font-medium">{item.label}</span>
+                            </>
+                        )}
+                    </NavLink>
                 ))}
             </nav>
 

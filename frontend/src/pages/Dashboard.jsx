@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Users, Calendar, Briefcase } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -6,6 +7,29 @@ import StatsCard from '../components/StatsCard';
 import AIAnalysisCard from '../components/AIAnalysisCard';
 
 const Dashboard = () => {
+    const [stats, setStats] = useState({
+        totalJobs: 0,
+        totalCandidates: 0,
+        interviewsScheduled: 0,
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const { data } = await axios.get('http://localhost:5000/api/dashboard/stats');
+                if (data.success) {
+                    setStats(data.data);
+                }
+            } catch (error) {
+                console.error("Error fetching dashboard stats:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
     return (
         <div className="flex min-h-screen bg-background font-sans">
             <Sidebar />
@@ -31,21 +55,21 @@ const Dashboard = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <StatsCard
                             title="New Applicants"
-                            value="1,284"
+                            value={loading ? "..." : stats.totalCandidates.toLocaleString()}
                             icon={Users}
                             trend="+12%"
                             trendUp={true}
                         />
                         <StatsCard
                             title="Interviews Scheduled"
-                            value="42"
+                            value={loading ? "..." : stats.interviewsScheduled.toString()}
                             icon={Calendar}
                             trend="+5%"
                             trendUp={true}
                         />
                         <StatsCard
                             title="Active Jobs"
-                            value="18"
+                            value={loading ? "..." : stats.totalJobs.toLocaleString()}
                             icon={Briefcase}
                             trend="-2%"
                             trendUp={false}
