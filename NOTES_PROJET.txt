@@ -223,6 +223,17 @@ smart-ATS/
 [✅] Configuration `react-router-dom` dans App.jsx
 [✅] Page `Candidates.jsx` avec Drag & Drop et affichage des résultats structurés
 
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (MODULE 2 : MATCHING)
+================================================================================
+
+[✅] Moteur de Matching Sémantique (Prompt Engineering OpenAI)
+[✅] Controller `matchingController.js` et routes `matchingRoutes.js`
+[✅] Comparaison candidat ↔ offre d'emploi (Score 0-100%, Forces, Lacunes)
+[✅] Page `Jobs.jsx` enrichie avec bouton "Trouver les meilleurs candidats"
+[✅] Panneau de résultats de matching interactif et color-codé (ScoreBadge)
+[✅] Annuaire complet des candidats sur `Candidates.jsx` avec recherche dynamique
+
 
 ================================================================================
                          COMMANDES DE DÉMARRAGE
