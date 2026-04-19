@@ -1,5 +1,6 @@
 const Job = require('../models/Job');
 const Candidate = require('../models/Candidate');
+const Interview = require('../models/Interview');
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard/stats
@@ -8,14 +9,23 @@ const getDashboardStats = async (req, res) => {
     try {
         const totalJobs = await Job.countDocuments();
         const totalCandidates = await Candidate.countDocuments();
+        
+        // Dynamic fetch of interviews
+        const interviewsScheduled = await Interview.countDocuments({ status: 'Scheduled' });
+        
+        const upcomingInterviews = await Interview.find({ status: 'Scheduled' })
+            .populate('candidate', 'name')
+            .populate('job', 'title')
+            .sort({ date: 1 })
+            .limit(5);
 
         res.json({
             success: true,
             data: {
                 totalJobs,
                 totalCandidates,
-                // Static count for interviews scheduled for now
-                interviewsScheduled: 42 
+                interviewsScheduled,
+                upcomingInterviews
             }
         });
     } catch (error) {

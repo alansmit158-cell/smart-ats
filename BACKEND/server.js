@@ -22,6 +22,10 @@ app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/candidates', require('./routes/candidateRoutes'));
 // Routes du module 2 : Matching Sémantique IA
 app.use('/api/matching', require('./routes/matchingRoutes'));
+// Routes du nouveau module : Entretiens
+app.use('/api/interviews', require('./routes/interviewRoutes'));
+// Routes du module IA Kit d'entretien
+app.use('/api/kits', require('./routes/kitRoutes'));
 
 app.get('/', (req, res) => {
     res.send('Smart-ATS API is Running!');

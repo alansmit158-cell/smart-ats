@@ -251,5 +251,33 @@ smart-ATS/
 
 
 ================================================================================
-                              FIN DES NOTES
+                         CE QUI A ÉTÉ RÉALISÉ (MODULE 3 : ENTRETIENS & KIT IA)
+================================================================================
+
+[✅] Modèle `KitEntretien.js`
+    - Contient un résumé profil, listes de questions techniques et points de vigilance.
+    - Relié à l'Interview via une relation `1:1`.
+[✅] Génération IA avec OpenAI `kitController.js`
+    - Création d'un prompt NLP spécialisé (Service IA) pour générer automatiquement le kit d'entretien basé sur le CV du candidat et la Job Description.
+    - Format de retour forcé en JSON pour intégration Data.
+[✅] Routes `kitRoutes.js`
+    - POST `/api/kits/generate/:interviewId` 
+    - GET `/api/kits/:interviewId`
+[✅] Interface `Interviews.jsx` & Export PDF
+    - Ajout du bouton "AI Interview Kit" (icône BrainCircuit) sur chaque entretien.
+    - Modal d'affichage complet du Kit (Résumé, Vigilance, Questions suggérées).
+    - Ajout du téléchargement direct en .pdf du dossier via `html2pdf.js`.
+[✅] Intégration du flux complet "Suivi du recrutement"
+    - Changer le statut (Scheduled -> Completed / Cancelled).
+    - Visualisation continue dans le Dashboard et page Interviews.
+
+================================================================================
+                         GESTION DES ACTEURS ET RÔLES (M.C.U)
+================================================================================
+
+Conformément à la modélisation UML, les acteurs du système ont été codifiés :
+- `User.js` a été modifié pour intégrer strictement l'énumération globale : `['candidate', 'recruiter', 'admin']` (en plus du `Service IA` symbolisé par l'intégration OpenAI autonome dans les controllers parse, score, et kit).
+
+================================================================================
+                               FIN DES NOTES
 ================================================================================

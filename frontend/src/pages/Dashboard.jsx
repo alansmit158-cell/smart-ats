@@ -11,6 +11,7 @@ const Dashboard = () => {
         totalJobs: 0,
         totalCandidates: 0,
         interviewsScheduled: 0,
+        upcomingInterviews: []
     });
     const [loading, setLoading] = useState(true);
 
@@ -19,7 +20,10 @@ const Dashboard = () => {
             try {
                 const { data } = await axios.get('http://localhost:5000/api/dashboard/stats');
                 if (data.success) {
-                    setStats(data.data);
+                    setStats((prev) => ({
+                        ...prev,
+                        ...data.data
+                    }));
                 }
             } catch (error) {
                 console.error("Error fetching dashboard stats:", error);
@@ -100,18 +104,31 @@ const Dashboard = () => {
                         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm min-h-[300px]">
                             <h3 className="text-lg font-bold text-gray-900 mb-4">Upcoming Interviews</h3>
                             <div className="space-y-4">
-                                {[1, 2].map((i) => (
-                                    <div key={i} className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg">
-                                        <div className="text-center w-12 bg-blue-50 rounded-lg py-1">
-                                            <div className="text-xs text-blue-600 font-bold">FEB</div>
-                                            <div className="text-lg font-bold text-gray-900">{10 + i}</div>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900">Sarah Smith - UX Designer</p>
-                                            <p className="text-xs text-gray-500">10:00 AM • Google Meet</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                {loading ? (
+                                    <p className="text-gray-400 text-sm">Loading interviews...</p>
+                                ) : stats.upcomingInterviews?.length > 0 ? (
+                                    stats.upcomingInterviews.map((interview) => {
+                                        const dateObj = new Date(interview.date);
+                                        const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+                                        const day = dateObj.getDate();
+                                        const time = dateObj.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                                        return (
+                                            <div key={interview._id} className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg">
+                                                <div className="text-center w-12 bg-blue-50 rounded-lg py-1">
+                                                    <div className="text-xs text-blue-600 font-bold">{month}</div>
+                                                    <div className="text-lg font-bold text-gray-900">{day}</div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-900">{interview.candidate?.name || 'Unknown Candidate'} {interview.job?.title ? `- ${interview.job.title}` : ''}</p>
+                                                    <p className="text-xs text-gray-500">{time} • {interview.type === 'Online' ? 'Online' : 'In-Person'}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <p className="text-gray-400 text-sm">No upcoming interviews scheduled.</p>
+                                )}
                             </div>
                         </div>
                     </div>
