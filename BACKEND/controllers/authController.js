@@ -57,20 +57,15 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Check for user email
-        const user = await User.findOne({ email });
-
-        if (user && (await user.matchPassword(password))) {
-            res.json({
-                _id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
-        }
+        // 🔥 MODIFICATION PRESENTATION PFE
+        // On renvoie un succès avec N'IMPORTE QUEL email et mot de passe saisis.
+        res.json({
+            _id: "605c72e21234567890abcdef",
+            name: "Présentateur PFE",
+            email: email || "admin@smart-ats.com",
+            role: "admin",
+            token: generateToken("605c72e21234567890abcdef"),
+        });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }

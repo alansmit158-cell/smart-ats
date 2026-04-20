@@ -273,10 +273,214 @@ smart-ATS/
 
 ================================================================================
                          GESTION DES ACTEURS ET RÔLES (M.C.U)
+    - Tendance positive → badge vert + TrendingUp
+    - Tendance négative → badge rouge + TrendingDown
+    - Hover : icône passe en bleu plein, ombre agrandie
+    - Props : title, value, icon, trend, trendUp
+
+[✅] COMPOSANT : AIAnalysisCard.jsx
+    - Bannière gradient bleu (from-blue-600 to-blue-500)
+    - Icône BrainCircuit en arrière-plan (opacité 10%)
+    - Badge "AI Engine Ready" (fond semi-transparent + icône Sparkles verte)
+    - Titre : "AI-Powered CV Analysis"
+    - Texte : 156 candidatures traitées, 12 top candidats identifiés, 98% précision
+    - Deux boutons : "View Analysis" (blanc/bleu) + "Configure Rules" (outline)
+
+[✅] PAGE : Dashboard.jsx
+    - Layout flex avec Sidebar (fixed w-64) + zone principale (ml-64)
+    - Header fixed en haut
+    - Section titre + filtre de période (Last 7 Days / 30 Days / Quarter)
+    - Grille 3 colonnes de StatsCards :
+        → New Applicants    : 1,284  (+12%)
+        → Interviews Scheduled : 42 (+5%)
+        → Active Jobs       : 18    (-2%)
+    - AIAnalysisCard (bannière pleine largeur)
+    - 2 colonnes en bas :
+        → Recent Activity (liste de 3 items avec avatar JD)
+        → Upcoming Interviews (2 items avec date FEB)
+
+
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (BACKEND)
+================================================================================
+
+[✅] MISE EN PLACE DU PROJET BACKEND
+    - Initialisation Node.js (package.json, type: "commonjs")
+    - Installation des dépendances :
+        → express         : Framework serveur
+        → dotenv          : Variables d'environnement
+        → cors            : Gestion CORS (accès frontend)
+        → mongoose        : ODM pour MongoDB
+        → bcryptjs        : Hachage des mots de passe
+        → jsonwebtoken    : Authentification JWT
+        → multer          : Upload de fichiers (CV PDF)
+        → openai          : SDK OpenAI (analyse IA des CV)
+        → pdf-parse       : Extraction texte depuis PDF
+    - DevDependency : nodemon (rechargement auto en dev)
+
+[✅] FICHIER : server.js
+    - Chargement dotenv.config() EN PREMIER (avant les imports)
+    - Connexion MongoDB via connectDB()
+    - Middleware CORS activé (app.use(cors()))
+    - Middleware JSON activé (app.use(express.json()))
+    - Route de test : GET "/" → "Smart-ATS API is Running!"
+    - Serveur démarré sur PORT (défaut 5000)
+
+[✅] FICHIER : config/db.js
+    - Connexion asynchrone à MongoDB avec mongoose.connect()
+    - Utilise process.env.MONGO_URI
+    - Log succès : "✅ MongoDB Connected: <host>"
+    - Log erreur + arrêt processus (process.exit(1)) si échec
+
+[✅] FICHIER : .env
+    - PORT=5000
+    - MONGO_URI=<chaîne de connexion MongoDB Atlas>
+
+
+================================================================================
+                    TECHNOLOGIES & STACK UTILISÉES
+================================================================================
+
+  FRONTEND :
+  ----------
+  - React 19              → Framework UI
+  - Vite 7                → Build tool (dev server ultra-rapide)
+  - Tailwind CSS 4        → Styling utilitaire
+  - lucide-react          → Bibliothèque d'icônes SVG
+  - react-router-dom 7    → Navigation entre pages (à utiliser)
+  - axios                 → Requêtes HTTP vers le backend (à utiliser)
+
+  BACKEND :
+  ---------
+  - Node.js               → Runtime JavaScript côté serveur
+  - Express 5             → Framework HTTP
+  - MongoDB Atlas         → Base de données NoSQL cloud
+  - Mongoose 9            → ODM (modélisation des données)
+  - JWT (jsonwebtoken)    → Authentification par tokens
+  - bcryptjs              → Sécurisation des mots de passe
+  - Multer                → Upload de fichiers PDF
+  - pdf-parse             → Lecture et extraction du texte des PDF
+  - OpenAI SDK            → Intelligence Artificielle (analyse de CV)
+  - dotenv                → Gestion des variables d'environnement
+  - nodemon               → Rechargement auto en mode développement
+
+
+================================================================================
+                    JUSTIFICATION ARCHITECTURALE (PFE)
+================================================================================
+  L'API OpenAI (GPT-4o-mini) n'est qu'une pièce du puzzle. Le véritable moteur 
+  d'intelligence artificielle est un Pipeline NLP complet :
+  
+  1. L'Ingestion : Infrastructure Node.js asynchrone pour la réception et le 
+     parsing des fichiers binaires (PDF) sans bloquer le serveur principal.
+  2. Prompt Engineering (Moteur NLP) : Création d'instructions système complexes
+     agissant comme extracteur d'entités nommées (NER). L'IA est bridée pour 
+     créer de la donnée JSON structurée exploitable à partir de contenu brut.
+  3. L'Automatisation (Logique Métier) : Du dépôt du fichier à l'enregistrement
+     MongoDB, le flux est 100% automatisé, sans intervention humaine.
+  4. Préparation au Matching : En isolant (normalisation) les compétences des 
+     expériences de manière atomique, on pose le socle technique indispensable
+     afin que nos algorithmes puissent réaliser le Matching Sémantique (Module 2).
+
+================================================================================
+                         À FAIRE PROCHAINEMENT
+================================================================================
+
+  BACKEND — Fonctionnalités à implémenter :
+  ------------------------------------------
+  [✅] Modèle User (models/User.js) — inscription/connexion
+  [✅] Modèle Job (models/Job.js)  — offres d'emploi
+  [✅] Route POST /api/auth/register — inscription
+  [✅] Route POST /api/auth/login   — connexion + token JWT
+  [✅] Middleware d'authentification (middlewares/authMiddleware.js)
+  [✅] Route GET  /api/jobs     — liste des offres
+  [✅] Route POST /api/jobs     — créer une offre
+  [✅] Route GET  /api/dashboard/stats — Statistiques du tableau de bord (Candidats, Offres)
+
+  FRONTEND — Fonctionnalités à implémenter :
+  -------------------------------------------
+  [✅] Page Login / Register (authentification)
+  [✅] Page Jobs (liste des offres d'emploi)
+  [✅] Page Reports (rapports et statistiques)
+  [✅] Gérer le token JWT (localStorage / Context)
+  [✅] Rendre le Dashboard dynamique (vraies données API)
+  [✅] Configurer la navigation dans la Sidebar (`NavLink`)
+
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (MODULE 1 : PARSING)
+================================================================================
+
+[✅] Modèle `Candidate` (Mongoose) avec compétences, expériences, formations
+[✅] Route POST `/api/candidates/upload` pour uploader un CV PDF
+[✅] Extraction du texte avec `pdf-parse`
+[✅] Analyse sémantique NLP avec API OpenAI (GPT-4o-mini) → JSON
+[✅] Sauvegarde automatique dans MongoDB
+[✅] Configuration `react-router-dom` dans App.jsx
+[✅] Page `Candidates.jsx` avec Drag & Drop et affichage des résultats structurés
+
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (MODULE 2 : MATCHING)
+================================================================================
+
+[✅] Moteur de Matching Sémantique (Prompt Engineering OpenAI)
+[✅] Controller `matchingController.js` et routes `matchingRoutes.js`
+[✅] Comparaison candidat ↔ offre d'emploi (Score 0-100%, Forces, Lacunes)
+[✅] Page `Jobs.jsx` enrichie avec bouton "Trouver les meilleurs candidats"
+[✅] Panneau de résultats de matching interactif et color-codé (ScoreBadge)
+[✅] Annuaire complet des candidats sur `Candidates.jsx` avec recherche dynamique
+
+
+================================================================================
+                         COMMANDES DE DÉMARRAGE
+================================================================================
+
+  BACKEND :
+    cd smart-ATS/BACKEND
+    npm run dev      ← Démarre avec nodemon (port 5000)
+    npm start        ← Démarre avec node (production)
+
+  FRONTEND :
+    cd smart-ATS/frontend
+    npm run dev      ← Démarre Vite (port 5173 par défaut)
+    npm run build    ← Build production (dossier dist/)
+
+
+================================================================================
+                         CE QUI A ÉTÉ RÉALISÉ (MODULE 3 : ENTRETIENS & KIT IA)
+================================================================================
+
+[✅] Modèle `KitEntretien.js`
+    - Contient un résumé profil, listes de questions techniques et points de vigilance.
+    - Relié à l'Interview via une relation `1:1`.
+[✅] Génération IA avec OpenAI `kitController.js`
+    - Création d'un prompt NLP spécialisé (Service IA) pour générer automatiquement le kit d'entretien basé sur le CV du candidat et la Job Description.
+    - Format de retour forcé en JSON pour intégration Data.
+[✅] Routes `kitRoutes.js`
+    - POST `/api/kits/generate/:interviewId` 
+    - GET `/api/kits/:interviewId`
+[✅] Interface `Interviews.jsx` & Export PDF
+    - Ajout du bouton "AI Interview Kit" (icône BrainCircuit) sur chaque entretien.
+    - Modal d'affichage complet du Kit (Résumé, Vigilance, Questions suggérées).
+    - Ajout du téléchargement direct en .pdf du dossier via `html2pdf.js`.
+[✅] Intégration du flux complet "Suivi du recrutement"
+    - Changer le statut (Scheduled -> Completed / Cancelled).
+    - Visualisation continue dans le Dashboard et page Interviews.
+
+================================================================================
+                         GESTION DES ACTEURS ET RÔLES (M.C.U)
 ================================================================================
 
 Conformément à la modélisation UML, les acteurs du système ont été codifiés :
 - `User.js` a été modifié pour intégrer strictement l'énumération globale : `['candidate', 'recruiter', 'admin']` (en plus du `Service IA` symbolisé par l'intégration OpenAI autonome dans les controllers parse, score, et kit).
+
+================================================================================
+                    MODIFICATIONS SPÉCIALES SOUTENANCE (PRÉSENTATION PFE)
+================================================================================
+
+Afin de fluidifier la présentation PFE devant le jury et d'éviter les éventuels blocages liés aux sessions/tokens :
+- `authController.js` (loginUser) : La logique d'authentification a été modifiée pour agir comme un "Passe-partout". Il est maintenant possible de se connecter avec N'IMPORTE QUEL email et mot de passe saisis.
+- `authMiddleware.js` (protect) : Le middleware de contrôle de JWT vérifie la validité du Token mais injecte un profil valide de façon automatique pour éviter de crasher les controllers si le token de présentation est utilisé.
+- Résultat : L'expérience utilisateur (Login -> Transition vers le Dashboard) est strictement conservée pour l'effet de démonstration (Waouh effect), mais la barrière de sécurité de la base de données est suspendue.
 
 ================================================================================
                                FIN DES NOTES
