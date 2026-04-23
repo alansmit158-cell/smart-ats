@@ -1,6 +1,7 @@
 const pdfParse = require('pdf-parse');
 const { OpenAI } = require('openai');
 const Candidate = require('../models/Candidate');
+const User = require('../models/User');
 
 // Initialisation du client OpenAI (utilise process.env.OPENAI_API_KEY)
 const openai = new OpenAI();
@@ -125,26 +126,49 @@ const uploadAndParse = async (req, res) => {
             });
         }
 
-        // --- Étape 5 : Sauvegarde dans MongoDB ---
-        const candidate = await Candidate.create({
-            name: parsedData.name || 'Inconnu',
-            email: parsedData.email || '',
-            phone: parsedData.phone || '',
-            skills: Array.isArray(parsedData.skills) ? parsedData.skills : [],
-            experiences: Array.isArray(parsedData.experiences) ? parsedData.experiences : [],
-            formations: Array.isArray(parsedData.formations) ? parsedData.formations : [],
-            rawText: rawText,
-            fileName: originalname,
-        });
+        // --- Étape 5 : Gestion de l'Utilisateur et Sauvegarde dans MongoDB ---
+        let userId;
 
-        console.log(`💾 Candidat sauvegardé en base : ${candidate._id} — ${candidate.name}`);
+        // On cherche si un User existe déjà avec cet email
+        let user = await User.findOne({ email: parsedData.email });
 
-        // --- Étape 6 : Réponse succès ---
-        return res.status(201).json({
-            success: true,
-            message: `CV de "${candidate.name}" analysé et sauvegardé avec succès.`,
-            data: candidate,
-        });
+if (!user) {
+    // Si l'utilisateur n'existe pas, on le crée (rôle candidat)
+    user = await User.create({
+        nom: parsedData.name || 'Inconnu',
+        email: parsedData.email || `temp_${Date.now()}@smart-ats.com`,
+        password: 'password123', // Mot de passe par défaut pour le PFE
+        role: 'candidate'
+    });
+}
+userId = user._id;
+
+const candidate = await Candidate.create({
+    user: userId,
+    skills: Array.isArray(parsedData.skills) ? parsedData.skills : [],
+    experiences: Array.isArray(parsedData.experiences) ? parsedData.experiences.map(exp => ({
+        titre: exp.poste,
+        entreprise: exp.entreprise,
+        description: exp.description
+        // On pourrait parser la durée pour dateDebut/dateFin si besoin
+    })) : [],
+    formations: Array.isArray(parsedData.formations) ? parsedData.formations.map(f => ({
+        diplome: f.diplome,
+        etablissement: f.etablissement
+        // On pourrait parser l'année si besoin
+    })) : [],
+    rawText: rawText,
+    fileName: originalname,
+});
+
+console.log(`💾 Candidat sauvegardé en base : ${candidate._id} — ${parsedData.name}`);
+
+// --- Étape 6 : Réponse succès ---
+return res.status(201).json({
+    success: true,
+    message: `CV de "${parsedData.name}" analysé et lié à l'utilisateur ${user.email}.`,
+    data: candidate,
+});
 
     } catch (error) {
         // Gestion des erreurs OpenAI spécifiques

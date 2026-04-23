@@ -16,26 +16,24 @@ const getJobs = async (req, res) => {
 // @route   POST /api/jobs
 // @access  Private
 const createJob = async (req, res) => {
-    const { title, department, location, type, description, requirements, status } = req.body;
+    const { titre, description, competences, lieu, salaire } = req.body;
     
-    if (!title || !department || !location || !description) {
-        return res.status(400).json({ message: 'Please add all required fields' });
+    if (!titre || !description || !competences || !lieu || !salaire) {
+        return res.status(400).json({ message: 'Veuillez remplir tous les champs requis' });
     }
 
     try {
         const job = await Job.create({
-            title,
-            department,
-            location,
-            type,
+            titre,
             description,
-            requirements,
-            status,
-            createdBy: req.user.id // Requires auth middleware
+            competences,
+            lieu,
+            salaire,
+            recruiter: req.user.id // Utilise l'ID de l'utilisateur authentifié
         });
         res.status(201).json(job);
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.status(500).json({ message: 'Erreur serveur', error: error.message });
     }
 };
 

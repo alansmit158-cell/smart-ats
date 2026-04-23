@@ -32,13 +32,13 @@ FORMAT DE SORTIE ATTENDU :
   "verdict": "Excellent match",
   "summary": "Le candidat possède une solide expérience en développement web et maîtrise les technologies requises.",
   "strengths": [
-    "Maîtrise de React et Node.js (technologies clés du poste)",
-    "5 ans d'expérience en développement Full Stack",
-    "Formation en informatique pertinente"
+    "Maîtrise des technologies clés du poste",
+    "Expérience pertinente",
+    "Formation adéquate"
   ],
   "gaps": [
-    "Pas d'expérience mentionnée avec Docker",
-    "Niveau d'anglais non précisé"
+    "Manque certaines compétences secondaires",
+    "Niveau de séniorité à valider"
   ],
   "recommendation": "RECOMMEND"
 }
@@ -64,36 +64,36 @@ const matchCandidateToJob = async (req, res) => {
 
         // Récupération des données depuis MongoDB
         const job = await Job.findById(jobId);
-        const candidate = await Candidate.findById(candidateId);
+        const candidate = await Candidate.findById(candidateId).populate('user');
 
         if (!job) return res.status(404).json({ success: false, message: 'Offre d\'emploi non trouvée.' });
         if (!candidate) return res.status(404).json({ success: false, message: 'Candidat non trouvé.' });
 
-        console.log(`🔍 Matching : "${candidate.name}" ↔ "${job.title}"`);
+        const candidateName = candidate.user ? candidate.user.nom : 'Inconnu';
+        console.log(`🔍 Matching : "${candidateName}" ↔ "${job.titre}"`);
 
         // Construction du contexte pour l'IA
         const jobContext = `
 OFFRE D'EMPLOI :
-- Titre : ${job.title}
-- Département : ${job.department}
-- Lieu : ${job.location}
-- Type : ${job.type}
+- Titre : ${job.titre}
+- Lieu : ${job.lieu}
+- Salaire : ${job.salaire}
 - Description : ${job.description}
-- Compétences requises : ${job.requirements?.join(', ') || 'Non spécifiées'}`;
+- Compétences requises : ${job.competences?.join(', ') || 'Non spécifiées'}`;
 
         const candidateContext = `
 PROFIL DU CANDIDAT :
-- Nom : ${candidate.name}
+- Nom : ${candidateName}
 - Compétences : ${candidate.skills?.join(', ') || 'Aucune'}
-- Expériences : ${candidate.experiences?.map(e => `${e.poste} chez ${e.entreprise} (${e.duree})`).join(' | ') || 'Aucune'}
-- Formations : ${candidate.formations?.map(f => `${f.diplome} - ${f.etablissement} (${f.annee})`).join(' | ') || 'Aucune'}`;
+- Expériences : ${candidate.experiences?.map(e => `${e.titre} chez ${e.entreprise}`).join(' | ') || 'Aucune'}
+- Formations : ${candidate.formations?.map(f => `${f.diplome} - ${f.etablissement}`).join(' | ') || 'Aucune'}`;
 
         // Appel à l'IA
         const aiResponse = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
                 { role: 'system', content: MATCHING_SYSTEM_PROMPT },
-                { role: 'user', content: `Évalue la compatibilité entre ce candidat et cette offre d'emploi :\n\n${jobContext}\n\n${candidateContext}` }
+                { role: 'user', content: `Évalue la compatibilité :\n\n${jobContext}\n\n${candidateContext}` }
             ],
             temperature: 0.2,
             response_format: { type: 'json_object' },
@@ -101,30 +101,20 @@ PROFIL DU CANDIDAT :
         });
 
         const aiContent = aiResponse.choices[0].message.content;
-        let matchResult;
-
-        try {
-            matchResult = JSON.parse(aiContent);
-        } catch (parseError) {
-            return res.status(500).json({ success: false, message: 'Erreur de parsing de la réponse IA.' });
-        }
-
-        console.log(`✅ Score : ${matchResult.score}/100 — ${matchResult.verdict}`);
+        const matchResult = JSON.parse(aiContent);
 
         return res.status(200).json({
             success: true,
             data: {
                 candidateId: candidate._id,
-                candidateName: candidate.name,
+                candidateName: candidateName,
                 jobId: job._id,
-                jobTitle: job.title,
+                jobTitle: job.titre,
                 ...matchResult
             }
         });
 
     } catch (error) {
-        if (error?.status === 401) return res.status(500).json({ success: false, message: 'Clé API OpenAI invalide.' });
-        if (error?.status === 429) return res.status(429).json({ success: false, message: 'Quota OpenAI dépassé.' });
         console.error('❌ Erreur matching:', error);
         return res.status(500).json({ success: false, message: 'Erreur serveur lors du matching.' });
     }
@@ -142,32 +132,28 @@ const matchAllCandidatesToJob = async (req, res) => {
 
         if (!job) return res.status(404).json({ success: false, message: 'Offre d\'emploi non trouvée.' });
 
-        const candidates = await Candidate.find().select('-rawText');
+        const candidates = await Candidate.find().populate('user').select('-rawText');
 
         if (candidates.length === 0) {
             return res.status(200).json({ success: true, count: 0, data: [] });
         }
 
-        console.log(`🚀 Matching de ${candidates.length} candidat(s) pour "${job.title}"...`);
-
         const jobContext = `
 OFFRE D'EMPLOI :
-- Titre : ${job.title}
-- Département : ${job.department}
-- Lieu : ${job.location}
-- Type : ${job.type}
+- Titre : ${job.titre}
+- Lieu : ${job.lieu}
 - Description : ${job.description}
-- Compétences requises : ${job.requirements?.join(', ') || 'Non spécifiées'}`;
+- Compétences requises : ${job.competences?.join(', ') || 'Non spécifiées'}`;
 
         // Traitement parallèle (Promise.all) pour performance
         const matchPromises = candidates.map(async (candidate) => {
             try {
+                const candidateName = candidate.user ? candidate.user.nom : 'Inconnu';
                 const candidateContext = `
 PROFIL DU CANDIDAT :
-- Nom : ${candidate.name}
+- Nom : ${candidateName}
 - Compétences : ${candidate.skills?.join(', ') || 'Aucune'}
-- Expériences : ${candidate.experiences?.map(e => `${e.poste} chez ${e.entreprise}`).join(' | ') || 'Aucune'}
-- Formations : ${candidate.formations?.map(f => `${f.diplome} - ${f.etablissement}`).join(' | ') || 'Aucune'}`;
+- Expériences : ${candidate.experiences?.map(e => `${e.titre} chez ${e.entreprise}`).join(' | ') || 'Aucune'}`;
 
                 const aiResponse = await openai.chat.completions.create({
                     model: 'gpt-4o-mini',
@@ -183,22 +169,16 @@ PROFIL DU CANDIDAT :
                 const result = JSON.parse(aiResponse.choices[0].message.content);
                 return {
                     candidateId: candidate._id,
-                    candidateName: candidate.name,
-                    candidateEmail: candidate.email,
-                    skills: candidate.skills,
+                    candidateName: candidateName,
+                    candidateEmail: candidate.user ? candidate.user.email : '',
                     ...result
                 };
             } catch (err) {
-                console.error(`Erreur matching pour ${candidate.name}:`, err.message);
                 return {
                     candidateId: candidate._id,
-                    candidateName: candidate.name,
+                    candidateName: candidate.user ? candidate.user.nom : 'Inconnu',
                     score: 0,
-                    verdict: 'Erreur',
-                    summary: 'Impossible d\'analyser ce candidat.',
-                    strengths: [],
-                    gaps: [],
-                    recommendation: 'NOT_RECOMMENDED'
+                    verdict: 'Erreur'
                 };
             }
         });
@@ -208,11 +188,9 @@ PROFIL DU CANDIDAT :
         // Tri par score décroissant
         results.sort((a, b) => b.score - a.score);
 
-        console.log(`✅ Matching terminé. Top candidat : ${results[0]?.candidateName} (${results[0]?.score}/100)`);
-
         return res.status(200).json({
             success: true,
-            jobTitle: job.title,
+            jobTitle: job.titre,
             count: results.length,
             data: results
         });

@@ -120,11 +120,11 @@ const Jobs = () => {
     const [showModal, setShowModal] = useState(false);
 
     // Create Job form state
-    const [title, setTitle] = useState('');
-    const [department, setDepartment] = useState('');
-    const [location, setLocation] = useState('');
+    const [titre, setTitre] = useState('');
+    const [lieu, setLieu] = useState('');
     const [description, setDescription] = useState('');
-    const [type, setType] = useState('Full-time');
+    const [salaire, setSalaire] = useState(0);
+    const [competences, setCompetences] = useState('');
     const [error, setError] = useState('');
 
     // Matching state
@@ -151,12 +151,20 @@ const Jobs = () => {
         e.preventDefault();
         setError('');
         try {
-            await axios.post('http://localhost:5000/api/jobs', { title, department, location, description, type });
+            // Séparation des compétences par virgule
+            const competencesArray = competences.split(',').map(s => s.trim());
+            await axios.post('http://localhost:5000/api/jobs', { 
+                titre, 
+                description, 
+                lieu, 
+                salaire: Number(salaire), 
+                competences: competencesArray 
+            });
             setShowModal(false);
-            setTitle(''); setDepartment(''); setLocation(''); setDescription(''); setType('Full-time');
+            setTitre(''); setLieu(''); setDescription(''); setSalaire(0); setCompetences('');
             fetchJobs();
         } catch (err) {
-            setError(err.response?.data?.message || 'Error creating job');
+            setError(err.response?.data?.message || 'Erreur lors de la création de l\'offre');
         }
     };
 
@@ -229,20 +237,14 @@ const Jobs = () => {
                                             className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all p-6 ${matchingJobId === job._id ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-100'}`}
                                         >
                                             <div className="flex justify-between items-start mb-4">
-                                                <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 flex-1 mr-2">{job.title}</h3>
-                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${job.status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-gray-100 text-gray-600'}`}>
-                                                    {job.status}
-                                                </span>
+                                                <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 flex-1 mr-2">{job.titre}</h3>
                                             </div>
                                             <div className="space-y-1.5 mb-4">
                                                 <div className="flex items-center text-sm text-gray-500">
-                                                    <Building size={14} className="mr-2 text-gray-400" />{job.department}
+                                                    <MapPin size={14} className="mr-2 text-gray-400" />{job.lieu}
                                                 </div>
                                                 <div className="flex items-center text-sm text-gray-500">
-                                                    <MapPin size={14} className="mr-2 text-gray-400" />{job.location}
-                                                </div>
-                                                <div className="flex items-center text-sm text-gray-500">
-                                                    <Briefcase size={14} className="mr-2 text-gray-400" />{job.type}
+                                                    <span className="font-bold text-blue-600 mr-2">{job.salaire} €</span>
                                                 </div>
                                             </div>
                                             <p className="text-sm text-gray-500 line-clamp-2 mb-5">{job.description}</p>
@@ -275,7 +277,7 @@ const Jobs = () => {
                                         <Sparkles size={16} className="text-blue-600" />
                                         <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">AI Matching</span>
                                     </div>
-                                    <h2 className="text-base font-bold text-gray-900 line-clamp-1">{matchingJob?.title}</h2>
+                                    <h2 className="text-base font-bold text-gray-900 line-clamp-1">{matchingJob?.titre}</h2>
                                     {!isMatching && matchResults.length > 0 && (
                                         <p className="text-xs text-gray-500 mt-1">{matchResults.length} candidat(s) analysés · Triés par score</p>
                                     )}
@@ -340,30 +342,25 @@ const Jobs = () => {
                             <form onSubmit={handleCreateJob} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Titre du poste *</label>
-                                    <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm" placeholder="ex. Développeur Full Stack Senior" />
+                                    <input required type="text" value={titre} onChange={e => setTitre(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="ex. Développeur Full Stack" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Département *</label>
-                                        <input required type="text" value={department} onChange={e => setDepartment(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm" placeholder="ex. Engineering" />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Ville / Lieu *</label>
+                                        <input required type="text" value={lieu} onChange={e => setLieu(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="ex. Tunis, France" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Localisation *</label>
-                                        <input required type="text" value={location} onChange={e => setLocation(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm" placeholder="ex. Remote, Paris" />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Salaire (€) *</label>
+                                        <input required type="number" value={salaire} onChange={e => setSalaire(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Type de contrat</label>
-                                    <select value={type} onChange={e => setType(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                                        <option value="Full-time">Full-time</option>
-                                        <option value="Part-time">Part-time</option>
-                                        <option value="Contract">Contract</option>
-                                        <option value="Internship">Stage</option>
-                                    </select>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Compétences (séparées par des virgules) *</label>
+                                    <input required type="text" value={competences} onChange={e => setCompetences(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="React, Node.js, PHP..." />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                                    <textarea required rows={4} value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm resize-none" placeholder="Décrivez le poste, les responsabilités et les compétences requises..." />
+                                    <textarea required rows={4} value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none" placeholder="Détails de l'offre..." />
                                 </div>
                                 <div className="flex justify-end gap-3 pt-2">
                                     <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Annuler</button>

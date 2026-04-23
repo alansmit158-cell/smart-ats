@@ -1,22 +1,27 @@
 const mongoose = require('mongoose');
 
-const KitEntretienSchema = new mongoose.Schema({
+const kitEntretienSchema = new mongoose.Schema({
     interview: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Interview',
         required: true,
-        unique: true // Un seul kit par entretien
+        unique: true
     },
-    resume_profil: {
+    resumeIA: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
-    questions: [{
-        type: String
+    questionsTechniques: [{
+        type: String,
+        trim: true
     }],
-    points_vigilance: [{
-        type: String
+    pointsVigilance: [{
+        type: String,
+        trim: true
     }]
-}, { timestamps: true });
+}, { 
+    timestamps: true 
+});
 
-module.exports = mongoose.model('KitEntretien', KitEntretienSchema);
+module.exports = mongoose.model('KitEntretien', kitEntretienSchema);

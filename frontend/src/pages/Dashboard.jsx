@@ -120,7 +120,7 @@ const Dashboard = () => {
                                                     <div className="text-lg font-bold text-gray-900">{day}</div>
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-900">{interview.candidate?.name || 'Unknown Candidate'} {interview.job?.title ? `- ${interview.job.title}` : ''}</p>
+                                                    <p className="text-sm font-medium text-gray-900">{interview.candidate?.user?.nom || 'Candidat inconnu'} {interview.job?.titre ? `- ${interview.job.titre}` : ''}</p>
                                                     <p className="text-xs text-gray-500">{time} • {interview.type === 'Online' ? 'Online' : 'In-Person'}</p>
                                                 </div>
                                             </div>

@@ -10,9 +10,11 @@ import Header from '../components/Header';
 // ─── Candidate Profile Card ───────────────────────────────────────────────────
 const CandidateCard = ({ candidate }) => {
     const [expanded, setExpanded] = useState(false);
-    const initials = candidate.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
+    const nom = candidate.user?.nom || 'Inconnu';
+    const email = candidate.user?.email || 'Pas d\'email';
+    const initials = nom.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
     const colors = ['bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500'];
-    const colorIndex = candidate.name?.charCodeAt(0) % colors.length || 0;
+    const colorIndex = nom.charCodeAt(0) % colors.length || 0;
 
     return (
         <div className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
@@ -23,11 +25,11 @@ const CandidateCard = ({ candidate }) => {
                 </div>
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{candidate.name}</p>
+                    <p className="font-semibold text-gray-900 truncate">{nom}</p>
                     <div className="flex items-center gap-3 mt-0.5">
-                        {candidate.email && (
+                        {email && (
                             <span className="text-xs text-gray-500 flex items-center gap-1 truncate">
-                                <Mail size={10} />{candidate.email}
+                                <Mail size={10} />{email}
                             </span>
                         )}
                         {candidate.phone && (
@@ -244,8 +246,8 @@ const Candidates = () => {
     useEffect(() => { fetchCandidates(); }, []);
 
     const filtered = candidates.filter(c =>
-        c.name?.toLowerCase().includes(search.toLowerCase()) ||
-        c.email?.toLowerCase().includes(search.toLowerCase()) ||
+        c.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||
+        c.user?.email?.toLowerCase().includes(search.toLowerCase()) ||
         c.skills?.some(s => s.toLowerCase().includes(search.toLowerCase()))
     );
 

@@ -12,10 +12,10 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { nom, email, password, role } = req.body;
 
-    if (!name || !email || !password) {
-        return res.status(400).json({ message: 'Please add all required fields' });
+    if (!nom || !email || !password) {
+        return res.status(400).json({ message: 'Veuillez remplir tous les champs requis' });
     }
 
     try {
@@ -26,9 +26,8 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Create user
         const user = await User.create({
-            name,
+            nom,
             email,
             password,
             role: role || 'recruiter'
@@ -37,7 +36,7 @@ const registerUser = async (req, res) => {
         if (user) {
             res.status(201).json({
                 _id: user.id,
-                name: user.name,
+                nom: user.nom,
                 email: user.email,
                 role: user.role,
                 token: generateToken(user._id),
@@ -57,17 +56,23 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // 🔥 MODIFICATION PRESENTATION PFE
-        // On renvoie un succès avec N'IMPORTE QUEL email et mot de passe saisis.
-        res.json({
-            _id: "605c72e21234567890abcdef",
-            name: "Présentateur PFE",
-            email: email || "admin@smart-ats.com",
-            role: "admin",
-            token: generateToken("605c72e21234567890abcdef"),
-        });
+        // 1. Chercher l'utilisateur par email
+        const user = await User.findOne({ email });
+
+        // 2. Vérifier si l'utilisateur existe et si le mot de passe correspond
+        if (user && (await user.matchPassword(password))) {
+            res.json({
+                _id: user._id,
+                nom: user.nom,
+                email: user.email,
+                role: user.role,
+                token: generateToken(user._id),
+            });
+        } else {
+            res.status(401).json({ message: 'Email ou mot de passe invalide' });
+        }
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.status(500).json({ message: 'Erreur serveur', error: error.message });
     }
 };
 

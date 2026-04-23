@@ -1,47 +1,37 @@
 const mongoose = require('mongoose');
 
-// --- Sous-schémas ---
-
-const ExperienceSchema = new mongoose.Schema({
-    poste: { type: String, default: '' },
-    entreprise: { type: String, default: '' },
-    duree: { type: String, default: '' }, // ex: "Jan 2021 - Déc 2023"
-    description: { type: String, default: '' },
+const experienceSchema = new mongoose.Schema({
+    titre: { type: String, trim: true },
+    entreprise: { type: String, trim: true },
+    dateDebut: { type: Date },
+    dateFin: { type: Date },
+    description: { type: String, trim: true }
 }, { _id: false });
 
-const FormationSchema = new mongoose.Schema({
-    diplome: { type: String, default: '' },
-    etablissement: { type: String, default: '' },
-    annee: { type: String, default: '' }, // ex: "2020"
+const formationSchema = new mongoose.Schema({
+    diplome: { type: String, trim: true },
+    etablissement: { type: String, trim: true },
+    dateDebut: { type: Date },
+    dateFin: { type: Date }
 }, { _id: false });
 
-// --- Schéma principal ---
-
-const CandidateSchema = new mongoose.Schema(
-    {
-        // Informations de base extraites par l'IA
-        name: { type: String, default: 'Inconnu' },
-        email: { type: String, default: '' },
-        phone: { type: String, default: '' },
-
-        // Compétences techniques et soft skills
-        skills: [{ type: String }],
-
-        // Parcours professionnel
-        experiences: [ExperienceSchema],
-
-        // Parcours académique
-        formations: [FormationSchema],
-
-        // Texte brut extrait du PDF (utile pour re-analyse ou debug)
-        rawText: { type: String, default: '' },
-
-        // Nom du fichier CV uploadé
-        fileName: { type: String, default: '' },
+const candidateSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        unique: true
     },
-    {
-        timestamps: true, // ajoute createdAt et updatedAt
-    }
-);
+    experiences: [experienceSchema],
+    formations: [formationSchema],
+    skills: [{
+        type: String,
+        trim: true
+    }],
+    rawText: { type: String, default: '' },
+    fileName: { type: String, default: '' }
+}, { 
+    timestamps: true 
+});
 
-module.exports = mongoose.model('Candidate', CandidateSchema);
+module.exports = mongoose.model('Candidate', candidateSchema);

@@ -467,21 +467,97 @@ smart-ATS/
     - Visualisation continue dans le Dashboard et page Interviews.
 
 ================================================================================
-                         GESTION DES ACTEURS ET RÔLES (M.C.U)
+                     DÉFINITION DES ACTEURS ET RÔLES (CONCEPTION UML)
 ================================================================================
 
-Conformément à la modélisation UML, les acteurs du système ont été codifiés :
-- `User.js` a été modifié pour intégrer strictement l'énumération globale : `['candidate', 'recruiter', 'admin']` (en plus du `Service IA` symbolisé par l'intégration OpenAI autonome dans les controllers parse, score, et kit).
+1. LE RECRUTEUR (Acteur Principal)
+   - Gestion des offres : Créer, modifier et publier des descriptions de postes (Job Descriptions).
+   - Pilotage de l'IA : Lancer l'analyse automatique des CV téléchargés pour extraire les données.
+   - Évaluation & Matching : Consulter les scores de compatibilité générés par l'IA pour identifier les meilleurs candidats.
+   - Suivi des entretiens : Planifier les rendez-vous et utiliser le Kit d'entretien IA (questions suggérées et points de vigilance).
+   - Prise de décision : Changer le statut des candidatures (Admis, Refusé, En attente).
+
+2. LE CANDIDAT
+   - Dépôt de candidature : Télécharger son CV (PDF) sur la plateforme.
+   - Gestion du profil : Consulter l'état d'avancement de sa candidature (via le tableau de bord candidat).
+   - Interaction : Recevoir les notifications concernant les invitations aux entretiens ou les retours sur son dossier.
+
+3. L'ADMINISTRATEUR
+   - Gestion des utilisateurs : Contrôler les accès, créer ou suspendre des comptes.
+   - Maintenance du système : Surveiller les statistiques globales d'utilisation.
+   - Configuration : Gérer les paramètres techniques (clés API OpenAI, limites).
+
+4. LE SERVICE IA (Acteur Système)
+   - Extraction Sémantique (Parsing) : Transformation du texte brut PDF en objets JSON structurés.
+   - Calcul de Score (Matching) : Comparaison sémantique candidat ↔ offre.
+   - Génération de contenu : Production des kits d'entretien personnalisés (Prompt Engineering).
 
 ================================================================================
-                    MODIFICATIONS SPÉCIALES SOUTENANCE (PRÉSENTATION PFE)
+                     SÉCURITÉ ET AUTHENTIFICATION (PRODUCTION)
 ================================================================================
 
-Afin de fluidifier la présentation PFE devant le jury et d'éviter les éventuels blocages liés aux sessions/tokens :
-- `authController.js` (loginUser) : La logique d'authentification a été modifiée pour agir comme un "Passe-partout". Il est maintenant possible de se connecter avec N'IMPORTE QUEL email et mot de passe saisis.
-- `authMiddleware.js` (protect) : Le middleware de contrôle de JWT vérifie la validité du Token mais injecte un profil valide de façon automatique pour éviter de crasher les controllers si le token de présentation est utilisé.
-- Résultat : L'expérience utilisateur (Login -> Transition vers le Dashboard) est strictement conservée pour l'effet de démonstration (Waouh effect), mais la barrière de sécurité de la base de données est suspendue.
+[✅] SÉCURITÉ RÉELLE ACTIVÉE
+    - `User.js` : Hachage automatique des mots de passe via `bcryptjs` (salt 10).
+    - `authController.js` : Vérification stricte des identifiants (comparaison des hashs).
+    - `authMiddleware.js` : Vérification réelle du JWT et récupération de l'utilisateur en base.
+    - Conséquence : Seuls les utilisateurs enregistrés avec le bon mot de passe peuvent accéder à la plateforme.
 
 ================================================================================
-                               FIN DES NOTES
+                     GÉNÉRATION DES MODÈLES MONGOOSE (ARCHITECTURE DE DONNÉES)
+================================================================================
+
+[✅] CRÉATION DES 5 MODÈLES PRINCIPAUX (Dossier : /BACKEND/models/)
+    - Modèle User.js : Champs (nom, email, password), avec un rôle strictement limité à ['candidate', 'recruiter', 'admin'].
+    - Modèle Job.js : Offres d'emploi avec (titre, description, compétences, lieu, salaire) et référence 1:N vers le User (Recruteur).
+    - Modèle Candidate.js : Lié au User. Intègre les structures complexes (tableaux d'objets sans _id) pour 'experiences', 'formations', et 'skills' extraites par parsing IA.
+    - Modèle Application.js : Entité de liaison entre Candidate et Job, avec un 'status' (Pending, Reviewed, Interviewed, Rejected) et le 'scoreMatching' (Number).
+    - Modèle KitEntretien.js : Relié via relation 1:1 à Interview. Stocke le 'resumeIA', 'questionsTechniques', et 'pointsVigilance'.
+    => *Toutes les entités utilisent mongoose.Schema avec validations (trim, required, unique), timestamps: true et format d'export CommonJS.*
+
+================================================================================
+                         ARCHITECTURE FRONTEND & ROUTAGE PAR RÔLES
+================================================================================
+
+[✅] SYSTÈME DE PROTECTION ET REDIRECTION (RBAC)
+    - Composant `ProtectedRoute.jsx` : Gère l'accès authentifié ET par rôle (`allowedRoles`).
+    - Redirection auto post-login :
+        *   `recruiter` → `/recruiter/dashboard`
+        *   `candidate` → `/candidate/portal`
+        *   `admin`     → `/admin/stats`
+
+[✅] COMPTES DE TEST (DÉMO PFE)
+    - Admin     : admin@test.com / password123
+    - Recruiter : recruiter@test.com / password123
+    - Candidate : candidate@test.com / password123
+
+[✅] DÉPLOIEMENT DES LAYOUTS SPÉCIFIQUES
+    - `RecruiterLayout.jsx` : Sidebar premium avec accent Rose Doré brossé, Header Glassmorphism flou et indicateur d'état IA pulsé.
+    - `CandidateLayout.jsx` : Sidebar luxueuse (Nacre/Rose Gold), indicateur de visibilité profil.
+    - `AdminLayout.jsx` : Direction artistique "Dark Tech Luxe". Fond Slate-950, bordures subtiles, effets de Glassmorphism et néons "Rose Doré". Monitoring Mainframe intégré.
+
+[✅] PAGES DÉDIÉES PAR ACTEUR
+    - `AdminStats.jsx` : Console centrale de supervision incluant :
+        *   **Health Check** : Monitoring global des volumes d'utilisateurs et performance du matching.
+        *   **OpenAI Console** : Suivi critique des tokens consommés, coût estimé en temps réel et statut de l'infrastructure API.
+        *   **User Command Center** : Table de données interactive pour la gestion des comptes (Root control).
+        *   **Audit Logs** : Flux en temps réel des actions critiques système pour la traçabilité.
+    - `RecruiterDashboard.jsx` : Dashboard haute performance avec visualisation du pipeline de recrutement (Kanban-style) et log d'activité IA.
+    - `RecruiterJobs.jsx` : Gestionnaire d'offres avec formulaire modal de création assistée par IA.
+    - `RecruiterScoring.jsx` : Module central d'analyse sémantique classant les talents avec scoring prédictif et analyse des forces/lacunes.
+    - `RecruiterInterviews.jsx` : Gestion des rendez-vous et génération de "Kits d'Entretien IA" complets (Résumé, Questions techniques, Alertes).
+    - `CandidatePortal.jsx` : Dashboard central avec statistiques, explorateur d'offres et timeline d'activité.
+    - `CandidateUpload.jsx` : Module de dépôt de CV avec simulation d'analyse NLP en temps réel.
+    - `CandidateApplications.jsx` : Suivi complet des candidatures avec barres de progression dynamiques.
+    - `CandidateChat.jsx` : Messagerie interactive avec conseils de carrière générés par l'IA.
+    - `CandidateProfile.jsx` : Management du profil et visualisation du "Score IA".
+    - `AdminStats.jsx` : Monitoring de l'utilisation OpenAI, coûts API et logs de sécurité.
+
+[✅] TOUCHE "LUXE" ET DESIGN SYSTEM
+    - Palette de couleurs : Nacre (#FDFCF0), Rose Doré Brossé (#B76E79), Blanc Cassé.
+    - Micro-animations : Transition `hover:scale-[1.02]` sur les cartes d'offres pour un retour haptique visuel.
+    - Expérience Sonore : Notification cristalline discrète lors de la réception d'un conseil IA dans le chat.
+    - Aesthétique : Bordures ultra-arrondies (3rem), Glassmorphism (Backdrop-blur) et ombres portées douces.
+
+================================================================================
+                                FIN DES NOTES
 ================================================================================

@@ -14,8 +14,11 @@ const getDashboardStats = async (req, res) => {
         const interviewsScheduled = await Interview.countDocuments({ status: 'Scheduled' });
         
         const upcomingInterviews = await Interview.find({ status: 'Scheduled' })
-            .populate('candidate', 'name')
-            .populate('job', 'title')
+            .populate({
+                path: 'candidate',
+                populate: { path: 'user', select: 'nom' }
+            })
+            .populate('job', 'titre')
             .sort({ date: 1 })
             .limit(5);
 
@@ -25,7 +28,13 @@ const getDashboardStats = async (req, res) => {
                 totalJobs,
                 totalCandidates,
                 interviewsScheduled,
-                upcomingInterviews
+                upcomingInterviews: upcomingInterviews.map(i => ({
+                    _id: i._id,
+                    candidateName: i.candidate?.user?.nom || 'Inconnu',
+                    jobTitle: i.job?.titre || 'Poste non spécifié',
+                    date: i.date,
+                    type: i.type
+                }))
             }
         });
     } catch (error) {

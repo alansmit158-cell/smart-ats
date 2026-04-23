@@ -13,8 +13,16 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(email, password);
-            navigate('/');
+            const data = await login(email, password);
+            
+            // Logique de redirection selon le rôle
+            if (data.role === 'recruiter') {
+                navigate('/recruiter/dashboard');
+            } else if (data.role === 'admin') {
+                navigate('/admin/stats');
+            } else {
+                navigate('/candidate/portal');
+            }
         } catch (err) {
             setError(err);
         }
