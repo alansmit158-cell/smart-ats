@@ -15,7 +15,9 @@ import Register from './pages/Register';
 import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
 import RecruiterJobs from './pages/recruiter/RecruiterJobs';
 import RecruiterScoring from './pages/recruiter/RecruiterScoring';
+import RecruiterMessages from './pages/recruiter/RecruiterMessages';
 import RecruiterInterviews from './pages/recruiter/RecruiterInterviews';
+import RecruiterSubscription from './pages/recruiter/RecruiterSubscription';
 import Candidates from './pages/Candidates';
 import Reports from './pages/Reports';
 
@@ -31,9 +33,12 @@ import AdminStats from './pages/admin/AdminStats';
 
 import './App.css';
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" />
       <Router>
         <Routes>
           {/* Public Routes */}
@@ -51,7 +56,8 @@ function App() {
             <Route path="scoring" element={<RecruiterScoring />} />
             <Route path="candidates" element={<Candidates />} />
             <Route path="interviews" element={<RecruiterInterviews />} />
-            <Route path="messages" element={<div className="p-8"><h1 className="text-2xl font-bold">Messagerie (Bientôt disponible)</h1></div>} />
+            <Route path="messages" element={<RecruiterMessages />} />
+            <Route path="subscription" element={<RecruiterSubscription />} />
             <Route path="reports" element={<Reports />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>

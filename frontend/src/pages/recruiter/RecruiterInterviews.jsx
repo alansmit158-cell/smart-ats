@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -13,32 +13,98 @@ import {
   TrendingUp,
   X,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Star,
+  MessageSquare,
+  Search,
+  Filter,
+  Loader2,
+  RefreshCcw
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const RecruiterInterviews = () => {
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedKit, setSelectedKit] = useState(null);
+    const [showEvaluation, setShowEvaluation] = useState(false);
+    const [activeApp, setActiveApp] = useState(null);
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
 
-    // Mock Data pour les entretiens
-    const interviews = [
-        { id: 1, candidate: 'Anis Derbel', role: 'Senior React Dev', date: 'Demain, 14:00', type: 'Visio', matchScore: 98, status: 'Confirmé' },
-        { id: 2, candidate: 'Sonia K.', role: 'UX Lead', date: 'Ven. 24 Oct, 10:30', type: 'Présentiel', matchScore: 92, status: 'Confirmé' },
-        { id: 3, candidate: 'Karim T.', role: 'Backend Dev', date: 'Lun. 27 Oct, 16:00', type: 'Visio', matchScore: 65, status: 'À valider' },
-    ];
+    // Filters State
+    const [statusFilter, setStatusFilter] = useState('');
+    const [scoreRange, setScoreRange] = useState({ min: 0, max: 100 });
+    const [sortBy, setSortBy] = useState('score');
+    const [search, setSearch] = useState('');
 
-    // Mock Data pour le Kit d'entretien IA
-    const interviewKit = {
-        candidate: 'Anis Derbel',
-        summary: "Anis est un expert React avec 8 ans d'expérience. Il a mené des projets de migration vers des architectures micro-frontend et possède une solide culture de la performance Web. Son profil est classé dans le top 2% de notre base pour ce poste.",
-        questions: [
-            "Comment gérez-vous la réhydratation du state dans une application Next.js massive ?",
-            "Pouvez-vous expliquer votre stratégie de découplage des composants métiers des hooks de données ?",
-            "Décrivez une situation où vous avez dû optimiser un bundle JS ayant dépassé 2MB."
-        ],
-        alerts: [
-            "N'a pas mentionné d'expérience avec les nouveaux Server Components de React 19.",
-            "Semble très orienté technique, vérifier son appétence pour le mentorat d'équipe."
-        ]
+    const fetchApplications = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const config = { 
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    status: statusFilter,
+                    scoreMin: scoreRange.min,
+                    scoreMax: scoreRange.max,
+                    sortBy: sortBy,
+                    order: 'desc'
+                }
+            };
+            
+            // On prend le premier job du recruteur pour la démo
+            const jobsRes = await axios.get('http://localhost:5000/api/jobs', config);
+            if (jobsRes.data.length > 0) {
+                const jobId = jobsRes.data[0]._id;
+                const appsRes = await axios.get(`http://localhost:5000/api/applications/job/${jobId}`, config);
+                setApplications(appsRes.data.data);
+            }
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching applications:", error);
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchApplications();
+    }, [statusFilter, scoreRange, sortBy]);
+
+    const handleEvaluationSubmit = async () => {
+        if (rating === 0) {
+            toast.error("Veuillez attribuer une note.");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            
+            // Mise à jour de l'évaluation (simulée ou réelle selon l'endpoint existant)
+            // Ici on simule le succès pour le PFE
+            toast.success(`Évaluation de ${activeApp.candidate.user.nom} enregistrée avec succès.`, {
+                icon: '🌟',
+                style: { borderRadius: '20px', background: '#333', color: '#fff' }
+            });
+            setShowEvaluation(false);
+            setRating(0);
+        } catch (error) {
+            toast.error("Erreur lors de l'enregistrement");
+        }
+    };
+
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'Interviewed': return 'bg-blue-50 text-blue-600 border-blue-100';
+            case 'Pending': return 'bg-amber-50 text-amber-600 border-amber-100';
+            case 'Reviewed': return 'bg-purple-50 text-purple-600 border-purple-100';
+            case 'Accepted': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+            case 'Rejected': return 'bg-rose-50 text-rose-600 border-rose-100';
+            default: return 'bg-slate-50 text-slate-600 border-slate-100';
+        }
     };
 
     return (
@@ -46,162 +112,266 @@ const RecruiterInterviews = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#B76E79] mb-2 pl-1">Recruitment Pipeline</h2>
-                    <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">Entretiens & Dossiers IA</h1>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#B76E79] mb-2 pl-1">Recruitment tracking</h2>
+                    <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">Suivi des Candidatures</h1>
                 </div>
-                <button className="bg-slate-900 text-white px-8 py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:scale-105 transition-all outline-none">
-                    <Calendar size={18} /> Planifier un RDV
-                </button>
+                <div className="flex gap-4">
+                    <button 
+                        onClick={() => { setStatusFilter(''); setScoreRange({min:0, max:100}); setSortBy('score'); }}
+                        className="p-4 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-[#B76E79] transition-all shadow-sm"
+                        title="Réinitialiser"
+                    >
+                        <RefreshCcw size={20} />
+                    </button>
+                    <button className="bg-slate-900 text-white px-8 py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-slate-200">
+                        <Plus size={18} /> Nouveau Candidat
+                    </button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                 {/* Sidebar Stats */}
-                 <div className="lg:col-span-1 space-y-4">
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-50 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-10 h-10 bg-[#B76E79]/10 rounded-xl flex items-center justify-center text-[#B76E79]">
-                                <Sparkles size={20} />
-                            </div>
-                            <h3 className="font-serif font-bold text-slate-800">Assistance IA</h3>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-50">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Kits</span>
-                                <span className="font-serif font-black text-xl">24</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-[#B76E79]/5 p-4 rounded-2xl border border-[#B76E79]/10">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[#B76E79]">Prêts ce jour</span>
-                                <span className="font-serif font-black text-xl text-[#B76E79]">03</span>
-                            </div>
-                        </div>
-                        <p className="mt-6 text-[10px] text-slate-400 font-medium italic leading-relaxed">Le système génère 3 versions du kit selon le type d'entretien choisi.</p>
+            {/* Filter Bar Plugin */}
+            <div className="bg-white p-6 rounded-[2.5rem] border border-slate-50 shadow-sm flex flex-col xl:flex-row items-center gap-6">
+                <div className="flex-1 w-full relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                    <input 
+                        type="text" 
+                        placeholder="Rechercher un candidat..." 
+                        className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-[#B76E79]/10 outline-none transition-all"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut:</span>
+                        <select 
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="bg-slate-50 border-none rounded-xl py-2 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#B76E79]/10 outline-none"
+                        >
+                            <option value="">Tous les statuts</option>
+                            <option value="Pending">En attente</option>
+                            <option value="Reviewed">Examiné</option>
+                            <option value="Interviewed">Entretien</option>
+                            <option value="Accepted">Accepté</option>
+                            <option value="Rejected">Refusé</option>
+                        </select>
                     </div>
-                 </div>
 
-                 {/* Interviews Table / Main Area */}
-                 <div className="lg:col-span-3 space-y-4">
-                    <div className="bg-white rounded-[3rem] border border-slate-50 shadow-sm overflow-hidden min-h-[500px]">
-                        <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-                            <h3 className="font-serif font-bold text-lg text-slate-800">Prochains Entretiens</h3>
-                            <button className="text-slate-300 hover:text-slate-600 font-black text-[10px] uppercase tracking-widest italic hover:underline flex items-center gap-1">Voir tout l'agenda <ChevronRight size={12} /></button>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Score Min:</span>
+                        <input 
+                            type="number" 
+                            min="0" max="100"
+                            value={scoreRange.min}
+                            onChange={(e) => setScoreRange({...scoreRange, min: e.target.value})}
+                            className="w-16 bg-slate-50 border-none rounded-xl py-2 px-3 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#B76E79]/10 outline-none"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trier par:</span>
+                        <select 
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="bg-slate-50 border-none rounded-xl py-2 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#B76E79]/10 outline-none"
+                        >
+                            <option value="score">Meilleur Score</option>
+                            <option value="date">Date de dépôt</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="bg-white rounded-[3rem] border border-slate-50 shadow-sm overflow-hidden min-h-[500px]">
+                <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
+                    <h3 className="font-serif font-bold text-lg text-slate-800">
+                        {loading ? 'Analyse du vivier...' : `${applications.length} candidatures identifiées`}
+                    </h3>
+                    <div className="flex gap-2">
+                        <span className="px-4 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> Live Telemetry
+                        </span>
+                    </div>
+                </div>
+                
+                <div className="divide-y divide-slate-50">
+                    {loading ? (
+                        <div className="p-20 flex flex-col items-center justify-center gap-4">
+                            <Loader2 size={40} className="text-[#B76E79] animate-spin" />
+                            <p className="text-slate-400 font-medium italic">Filtrage des données en temps réel...</p>
                         </div>
-                        
-                        <div className="divide-y divide-slate-50">
-                            {interviews.map((interview) => (
-                                <div key={interview.id} className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-[#B76E79]/5 transition-colors group">
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex flex-col items-center justify-center border border-slate-100 group-hover:bg-white transition-colors">
-                                           <p className="text-[8px] font-black text-[#B76E79] uppercase">OCT</p>
-                                           <p className="text-2xl font-serif font-black text-slate-800 tracking-tighter">{interview.date.match(/\d+/)}</p>
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-3">
-                                                <h4 className="font-bold text-slate-800 group-hover:text-[#B76E79] transition-colors">{interview.candidate}</h4>
-                                                <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${interview.status === 'Confirmé' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>{interview.status}</span>
-                                            </div>
-                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest italic mt-0.5">{interview.role}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500">
-                                        <span className="flex items-center gap-2"><Clock size={14} className="text-[#B76E79] opacity-50" /> {interview.date}</span>
-                                        <span className="flex items-center gap-2"><MapPin size={14} className="text-[#B76E79] opacity-50" /> {interview.type}</span>
-                                        <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                                            <TrendingUp size={14} className="text-emerald-500" />
-                                            <span className="text-emerald-600 font-black tracking-tighter">{interview.matchScore}%</span>
-                                        </div>
-                                    </div>
-
+                    ) : applications.length === 0 ? (
+                        <div className="p-20 text-center space-y-4">
+                            <Filter size={48} className="mx-auto text-slate-100" />
+                            <p className="text-slate-400 font-medium italic">Aucun résultat ne correspond à vos critères.</p>
+                        </div>
+                    ) : applications.map((app, idx) => (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            key={app._id} 
+                            className="p-8 flex flex-col xl:flex-row xl:items-center justify-between gap-8 hover:bg-[#B76E79]/5 transition-all group"
+                        >
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 group-hover:bg-white transition-colors shrink-0 shadow-inner text-[#B76E79] font-serif font-black">
+                                   {app.candidate.user?.nom?.[0]}
+                                </div>
+                                <div>
                                     <div className="flex items-center gap-3">
-                                        <button 
-                                            onClick={() => setSelectedKit(interview.candidate)}
-                                            className="bg-[#B76E79] text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-[#B76E79]/20 hover:scale-110 active:scale-95 transition-all"
-                                        >
-                                            <BrainCircuit size={16} /> Kit Entretien IA
-                                        </button>
-                                        <button className="text-slate-300 hover:text-slate-600 p-2"><MoreVertical size={18}/></button>
+                                        <h4 className="font-bold text-slate-800 group-hover:text-[#B76E79] transition-colors">{app.candidate.user?.nom}</h4>
+                                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${getStatusStyle(app.status)}`}>
+                                            {app.status}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest italic mt-0.5">{app.job.titre}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-6 text-xs font-bold text-slate-500">
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Dépôt</span>
+                                    <span className="flex items-center gap-2"><Calendar size={14} className="text-[#B76E79] opacity-50" /> {new Date(app.dateDepot).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Matching IA</span>
+                                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-100 shadow-sm">
+                                        <TrendingUp size={14} className="text-emerald-500" />
+                                        <span className="text-emerald-600 font-black tracking-tighter">{app.scoreMatching}%</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                 </div>
+                                {app.candidate.anomalies?.length > 0 && (
+                                    <div className="flex items-center gap-2 text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100">
+                                        <AlertTriangle size={14} />
+                                        <span className="text-[10px] font-black uppercase">{app.candidate.anomalies.length} Alertes</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                {app.status === 'Interviewed' ? (
+                                    <button 
+                                        onClick={() => { setActiveApp(app); setShowEvaluation(true); }}
+                                        className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl hover:scale-110 active:scale-95 transition-all"
+                                    >
+                                        <CheckCircle2 size={16} className="text-[#B76E79]" /> Évaluer l'entretien
+                                    </button>
+                                ) : (
+                                    <button 
+                                        className="bg-white border border-slate-100 text-slate-800 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all"
+                                    >
+                                        <FileText size={16} className="text-[#B76E79]" /> Voir Dossier
+                                    </button>
+                                )}
+                                <button className="text-slate-300 hover:text-slate-600 p-2"><MoreVertical size={18}/></button>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
 
-            {/* AI Interview Kit Overlay */}
-            {selectedKit && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-[#FDFCF0] w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 flex flex-col max-h-[90vh]">
-                        <div className="p-8 lg:p-12 pb-6 border-b border-white relative shrink-0">
-                             <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-[#B76E79] shadow-xl">
-                                        <FileText size={24} />
-                                    </div>
+            {/* Slide-over Evaluation Panel */}
+            <AnimatePresence>
+                {showEvaluation && (
+                    <>
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowEvaluation(false)}
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110]"
+                        />
+                        <motion.div 
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="fixed inset-y-0 right-0 w-full max-w-xl bg-[#FDFCF0] shadow-2xl z-[120] flex flex-col border-l border-white"
+                        >
+                            <div className="p-8 lg:p-10 flex flex-col h-full">
+                                <div className="flex justify-between items-center mb-10">
                                     <div>
-                                        <h3 className="text-2xl font-serif font-bold text-slate-900">Kit d'Entretien Stratégique</h3>
-                                        <p className="text-[#B76E79] text-xs font-black uppercase tracking-widest italic">Généré par Smart-ATS IA pour {selectedKit}</p>
+                                        <h3 className="text-2xl font-serif font-black text-slate-900 tracking-tight">Évaluation Post-Entretien</h3>
+                                        <p className="text-[#B76E79] text-[10px] font-black uppercase tracking-widest italic mt-1">Candidat : {activeApp?.candidate.user.nom}</p>
                                     </div>
+                                    <button onClick={() => setShowEvaluation(false)} className="p-3 bg-white rounded-2xl shadow-sm text-slate-300 hover:text-slate-900 transition-colors">
+                                        <X size={24} />
+                                    </button>
                                 </div>
-                                <button onClick={() => setSelectedKit(null)} className="p-3 bg-white hover:bg-slate-50 rounded-2xl transition-colors text-slate-300 hover:text-slate-900 shadow-sm border border-slate-50"><X size={24} /></button>
-                             </div>
-                        </div>
 
-                        <div className="flex-1 overflow-y-auto p-8 lg:px-12 space-y-10 scrollbar-hide py-10">
-                            {/* Section: Résumé IA */}
-                            <section className="space-y-4">
-                                <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-[#B76E79] italic border-b border-[#B76E79]/10 pb-3">
-                                    <Sparkles size={14} /> Profil & Potentiel
-                                </h4>
-                                <div className="bg-white p-6 rounded-3xl border border-slate-50 text-sm italic text-slate-600 leading-relaxed shadow-sm">
-                                    "{interviewKit.summary}"
-                                </div>
-                            </section>
-
-                            {/* Section: Questions suggérées */}
-                            <section className="space-y-6">
-                                <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-blue-600 italic border-b border-blue-100 pb-3">
-                                    <BrainCircuit size={14} /> Questions de Validation Technique
-                                </h4>
-                                <div className="grid grid-cols-1 gap-1">
-                                    {interviewKit.questions.map((q, i) => (
-                                        <div key={i} className="bg-white p-5 rounded-3xl border border-slate-50 hover:border-blue-200 transition-colors flex gap-4 group">
-                                            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-serif font-black text-xs shrink-0">{i+1}</div>
-                                            <p className="text-sm font-bold text-slate-700 leading-snug group-hover:text-blue-900 pt-1">{q}</p>
+                                <div className="flex-1 overflow-y-auto space-y-10 pr-2 custom-scrollbar">
+                                    <section className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 block ml-1">Impression Générale</label>
+                                        <div className="flex gap-2">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button 
+                                                    key={star}
+                                                    onMouseEnter={() => setHoverRating(star)}
+                                                    onMouseLeave={() => setHoverRating(0)}
+                                                    onClick={() => setRating(star)}
+                                                    className="transition-transform active:scale-90"
+                                                >
+                                                    <Star 
+                                                        size={32} 
+                                                        className={`transition-colors ${
+                                                            (hoverRating || rating) >= star 
+                                                            ? 'fill-amber-400 text-amber-400' 
+                                                            : 'text-slate-200'
+                                                        }`} 
+                                                    />
+                                                </button>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </section>
+                                    </section>
 
-                            {/* Section: Points de vigilance */}
-                            <section className="space-y-4">
-                                <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-rose-500 italic border-b border-rose-100 pb-3">
-                                    <AlertTriangle size={14} /> Points de Vigilance (Vigilance IA)
-                                </h4>
-                                <div className="space-y-2">
-                                    {interviewKit.alerts.map((a, i) => (
-                                        <div key={i} className="flex items-start gap-3 p-4 bg-rose-50/50 rounded-2xl border border-rose-100 italic">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 flex-shrink-0"></div>
-                                            <p className="text-xs font-medium text-rose-700">{a}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        </div>
+                                    <section className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 block ml-1">Commentaires Décisifs</label>
+                                        <textarea 
+                                            rows={5}
+                                            className="w-full bg-white border-2 border-slate-50 rounded-[2rem] p-6 text-sm font-medium focus:ring-2 focus:ring-[#B76E79]/10 focus:border-[#B76E79]/20 outline-none transition-all shadow-inner resize-none"
+                                            placeholder="Quels sont les points clés qui motivent votre décision ?"
+                                        ></textarea>
+                                    </section>
 
-                        <div className="p-8 lg:p-12 pt-6 border-t border-white shrink-0 bg-white/30 backdrop-blur-sm">
-                            <div className="flex gap-4">
-                                <button className="flex-1 bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl hover:scale-105 active:scale-95 transition-all">
-                                    <Download size={18} /> Télécharger le Dossier PDF
-                                </button>
-                                <button className="px-10 bg-emerald-500 text-white rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg hover:bg-emerald-600 transition-colors">
-                                    <CheckCircle2 size={18} /> Valider l'Entretien
-                                </button>
+                                    {activeApp?.candidate.anomalies?.length > 0 && (
+                                        <section className="space-y-6">
+                                            <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-rose-500 italic border-b border-rose-100 pb-3">
+                                                <AlertTriangle size={14} /> Rappel Points de Vigilance IA
+                                            </h4>
+                                            <div className="bg-rose-50/30 border border-rose-100 rounded-3xl p-6 space-y-4">
+                                                {activeApp.candidate.anomalies.map((alert, i) => (
+                                                    <div key={i} className="flex gap-3 items-start">
+                                                        <div className="w-1.5 h-1.5 bg-rose-400 rounded-full mt-1.5 shrink-0" />
+                                                        <p className="text-xs font-medium text-rose-700 italic">[{alert.type}] {alert.description}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+                                </div>
+
+                                <div className="pt-8 mt-auto flex gap-4">
+                                    <button 
+                                        onClick={handleEvaluationSubmit}
+                                        className="flex-1 bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                                    >
+                                        Enregistrer l'évaluation
+                                    </button>
+                                    <button 
+                                        onClick={() => setShowEvaluation(false)}
+                                        className="px-8 border-2 border-slate-100 rounded-3xl text-slate-400 font-bold text-xs hover:bg-white transition-colors"
+                                    >
+                                        Annuler
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

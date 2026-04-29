@@ -68,7 +68,7 @@ PROFIL DU CANDIDAT :
 - Nom : ${candidate.name}
 - Compétences : ${candidate.skills?.join(', ') || 'Aucune'}
 - Expériences : ${candidate.experiences?.map(e => `${e.poste} chez ${e.entreprise}`).join(' | ') || 'Aucune'}
-- Formations : ${candidate.formations?.map(f => `${f.diplome}`).join(' | ') || 'Aucune'}
+- Anomalies détectées par l'IA : ${candidate.anomalies?.map(a => `[${a.severite.toUpperCase()}] ${a.description}`).join(' | ') || 'Aucune'}
 - Texte brut du CV pertinent: ${candidate.rawText ? candidate.rawText.substring(0, 500) : ''}`;
 
         console.log(`🤖 AI is generating interview kit for ${candidate.name}...`);
@@ -78,7 +78,7 @@ PROFIL DU CANDIDAT :
             model: 'gpt-4o-mini',
             messages: [
                 { role: 'system', content: KIT_SYSTEM_PROMPT },
-                { role: 'user', content: `Génère le kit d'entretien pour cette situation :\n\n${jobContext}\n\n${candidateContext}` }
+                { role: 'user', content: `Génère le kit d'entretien pour cette situation. IMPORTANT : Prends en compte les anomalies IA détectées pour proposer des questions de vérification.\n\n${jobContext}\n\n${candidateContext}` }
             ],
             temperature: 0.3,
             response_format: { type: 'json_object' },
@@ -94,12 +94,19 @@ PROFIL DU CANDIDAT :
             return res.status(500).json({ success: false, message: 'Erreur de parsing de la réponse IA.' });
         }
 
+        // Fusionner les anomalies de haute sévérité directement dans les points de vigilance
+        const highSeverityAnomalies = (candidate.anomalies || [])
+            .filter(a => a.severite === 'elevee')
+            .map(a => `[ALERTE IA] ${a.description}`);
+            
+        const combinedVigilance = [...highSeverityAnomalies, ...(kitData.points_vigilance || [])];
+
         // Save Kit to DB
         const kitEntretien = new KitEntretien({
             interview: interviewId,
             resume_profil: kitData.resume_profil || "Résumé indisponible",
             questions: kitData.questions || [],
-            points_vigilance: kitData.points_vigilance || []
+            points_vigilance: combinedVigilance
         });
 
         await kitEntretien.save();

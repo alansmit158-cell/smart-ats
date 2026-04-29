@@ -36,6 +36,15 @@ const InterviewSchema = new mongoose.Schema(
         notes: {
             type: String,
             default: ''
+        },
+        rating: {
+            type: Number,
+            min: 1,
+            max: 5
+        },
+        finalNotes: {
+            type: String,
+            default: ''
         }
     },
     {

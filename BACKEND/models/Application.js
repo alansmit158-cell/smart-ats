@@ -13,13 +13,22 @@ const applicationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Reviewed', 'Interviewed', 'Rejected'],
+        enum: ['Pending', 'Reviewed', 'Interviewed', 'Rejected', 'Accepted'],
         default: 'Pending',
+        required: true
+    },
+    cv: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Candidate',
         required: true
     },
     scoreMatching: {
         type: Number,
         default: 0
+    },
+    dateDepot: {
+        type: Date,
+        default: Date.now
     }
 }, { 
     timestamps: true 

@@ -246,4 +246,104 @@ const getCandidateById = async (req, res) => {
     }
 };
 
-module.exports = { uploadAndParse, getAllCandidates, getCandidateById };
+// =============================================================================
+// CONTROLLER : getMyProfile
+// Route : GET /api/candidates/me
+// =============================================================================
+const getMyProfile = async (req, res) => {
+    try {
+        const candidate = await Candidate.findOne({ user: req.user.id });
+
+        if (!candidate) {
+            return res.status(200).json({
+                success: true,
+                data: null,
+                message: 'Aucun profil candidat trouvé.'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: candidate,
+        });
+    } catch (error) {
+        console.error('❌ Erreur dans getMyProfile:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération de votre profil.',
+        });
+    }
+};
+
+// =============================================================================
+// CONTROLLER : detectAnomalies
+// Route : POST /api/candidates/:id/detect-anomalies
+// =============================================================================
+const detectAnomalies = async (req, res) => {
+    try {
+        const candidate = await Candidate.findById(req.params.id);
+        if (!candidate) {
+            return res.status(404).json({ success: false, message: 'Candidat non trouvé.' });
+        }
+
+        console.log(`🤖 Analyse des anomalies pour : ${candidate.fileName}`);
+
+        const prompt = `Tu es un expert en détection de fraudes et en analyse RH. 
+Analyse les données suivantes d'un CV et identifie les anomalies potentielles (trous dans le parcours, incohérences de dates, compétences surévaluées par rapport aux expériences, contradictions).
+
+DONNÉES DU CV :
+${candidate.rawText}
+
+Retourne UNIQUEMENT un objet JSON avec ce format :
+{
+  "anomalies": [
+    {
+      "type": "gap_temporel | competence_surestimee | contradiction | date_invalide | experience_insuffisante",
+      "severite": "faible | moyenne | elevee",
+      "description": "Description claire de l'anomalie",
+      "element_concerne": "L'élément du CV concerné",
+      "recommandation": "Question à poser en entretien pour clarifier"
+    }
+  ],
+  "score_fiabilite": 0-100,
+  "resume_anomalies": "Résumé global en 2 phrases"
+}`;
+
+        const aiResponse = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.3
+        });
+
+        const result = JSON.parse(aiResponse.choices[0].message.content);
+
+        // Sauvegarde dans la base
+        candidate.anomalies = result.anomalies;
+        candidate.scoreFiabilite = result.score_fiabilite;
+        candidate.resumeAnomalies = result.resume_anomalies;
+        await candidate.save();
+
+        res.status(200).json({
+            success: true,
+            data: {
+                anomalies: result.anomalies,
+                scoreFiabilite: result.score_fiabilite,
+                resumeAnomalies: result.resume_anomalies
+            },
+            message: "Analyse des anomalies terminée avec succès."
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur detectAnomalies:', error);
+        res.status(500).json({ success: false, message: 'Erreur lors de la détection des anomalies.' });
+    }
+};
+
+module.exports = { 
+    uploadAndParse, 
+    getAllCandidates, 
+    getCandidateById,
+    getMyProfile,
+    detectAnomalies
+};

@@ -1,6 +1,6 @@
 ================================================================================
                         SMART-ATS — NOTES & SUIVI DU PROJET
-                        Dernière mise à jour : 07 Mars 2026
+                        Dernière mise à jour : 29 Avril 2026
 ================================================================================
 
   Système de Tracking des Candidatures assisté par Intelligence Artificielle.
@@ -557,6 +557,60 @@ smart-ATS/
     - Micro-animations : Transition `hover:scale-[1.02]` sur les cartes d'offres pour un retour haptique visuel.
     - Expérience Sonore : Notification cristalline discrète lors de la réception d'un conseil IA dans le chat.
     - Aesthétique : Bordures ultra-arrondies (3rem), Glassmorphism (Backdrop-blur) et ombres portées douces.
+
+================================================================================
+           EXTENSION DE L'INTERFACE RECRUTEUR (LUXE & MINIMALISTE)
+================================================================================
+
+[✅] CRUD JOBS AVANCÉ (RecruiterJobs.jsx)
+    - Implémentation du cycle de vie complet (Update/Delete) via API Axios.
+    - Modale d'édition ultra-élégante avec pré-remplissage automatique des données.
+    - Modale de confirmation de suppression au design minimaliste (bordures dorées).
+    - Animations de transition fluides sur les lignes du tableau (Framer Motion).
+
+[✅] CENTRE DE MESSAGERIE (RecruiterMessages.jsx)
+    - Interface Inbox à deux colonnes avec Glassmorphism (Nacre/Rose Doré).
+    - Liste des candidats avec avatars circulaires, statuts en ligne et badges Rose Doré.
+    - Fenêtre de chat immersive avec bulles de messages stylisées (Recruteur en #B76E79).
+    - **Feature "AI Suggest"** : Bouton Sparkles permettant de générer instantanément des suggestions de réponses professionnelles basées sur le contexte du recrutement.
+
+[✅] ÉVALUATION POST-ENTRETIEN (RecruiterInterviews.jsx)
+    - Bouton "Évaluer l'entretien" conditionnel (uniquement si le statut est "Completed").
+    - **Slide-over Panel (Panneau coulissant)** : Pour une saisie sans quitter le contexte de la liste.
+    - Système de notation par étoiles interactif (Star Rating).
+    - Champ "Commentaires décisifs" pour une prise de note stratégique.
+    - Rappel visuel des "Points de vigilance IA" pour assurer une évaluation sans biais.
+
+[✅] INFRASTRUCTURE BACKEND (Messagerie & Évaluations)
+    - Création du modèle `Message.js` et des routes associées (`/api/messages`).
+    - Extension du modèle `Interview.js` (ajout des champs `rating` et `finalNotes`).
+    - Mise à jour de `jobController.js` et `jobRoutes.js` pour supporter le cycle de vie complet des offres.
+
+[✅] POLISSAGE & UX
+    - Installation et intégration de `framer-motion` pour des interactions premium.
+    - Gestion des erreurs et succès en temps réel via `react-hot-toast`.
+    - Responsive Design : Messagerie utilisable sur mobile avec layout empilé.
+    - Dernière mise à jour : 29 Avril 2026
+
+[✅] MODULE 4 : ABONNEMENT & QUOTAS (Priorité 2)
+    - Modèle `Abonnement.js` : Gestion des plans Starter, Pro et Enterprise.
+    - Suivi de consommation : Limites d'offres et d'analyses IA par recruteur.
+    - Interface Recruteur : Grille tarifaire "Luxe" avec barre de progression de quota.
+    - Administration : Table de monitoring des abonnements et revenus "Live".
+
+[✅] MODULE 5 : DÉTECTION D'ANOMALIES IA (Priorité 3)
+    - Audit de CV automatique via OpenAI (GPT-4o-mini).
+    - Identification des trous temporels, contradictions et incohérences.
+    - Slide-over "Focus IA" : Visualisation des alertes de sévérité et recommandations RH.
+    - Intégration Interview : Fusion des anomalies critiques dans les kits d'entretien.
+
+[✅] MODULE 6 : FILTRAGE & SUIVI STRATÉGIQUE (Priorité 4)
+    - Backend Dynamique : Support des filtres (Status, ScoreMin, Sorting) dans `applicationController.js`.
+    - Interface de Suivi : Barre de recherche et filtres multi-critères sur le pipeline de recrutement.
+    - UX Premium : Transitions fluides et télémétrie en temps réel sur le vivier de talents.
+
+[✅] DOCUMENTATION PFE (Priorité 5)
+    - Création de `RAPPORT_PFE_PAGES.md` : Guide complet des pages et fonctionnalités IA pour le rapport final.
 
 ================================================================================
                                 FIN DES NOTES

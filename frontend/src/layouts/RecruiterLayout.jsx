@@ -12,7 +12,8 @@ import {
   Search,
   Menu,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Crown
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 
@@ -27,6 +28,7 @@ const RecruiterLayout = () => {
         { path: '/recruiter/candidates', icon: <Users size={20} />, label: 'Vivier Talents' },
         { path: '/recruiter/interviews', icon: <Calendar size={20} />, label: 'Entretiens IA' },
         { path: '/recruiter/messages', icon: <MessageSquare size={20} />, label: 'Messagerie' },
+        { path: '/recruiter/subscription', icon: <Crown size={20} />, label: 'Abonnement' },
         { path: '/recruiter/settings', icon: <Settings size={20} />, label: 'Paramètres' },
     ];
 

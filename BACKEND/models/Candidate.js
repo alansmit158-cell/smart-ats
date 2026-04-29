@@ -29,7 +29,18 @@ const candidateSchema = new mongoose.Schema({
         trim: true
     }],
     rawText: { type: String, default: '' },
-    fileName: { type: String, default: '' }
+    fileName: { type: String, default: '' },
+    anomalies: [
+        {
+            type: { type: String },
+            severite: { type: String, enum: ['faible', 'moyenne', 'elevee'] },
+            description: { type: String },
+            element_concerne: { type: String },
+            recommandation: { type: String }
+        }
+    ],
+    scoreFiabilite: { type: Number, default: 100 },
+    resumeAnomalies: { type: String, default: '' }
 }, { 
     timestamps: true 
 });

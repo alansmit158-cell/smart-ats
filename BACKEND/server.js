@@ -28,6 +28,9 @@ app.use('/api/interviews', require('./routes/interviewRoutes'));
 app.use('/api/kits', require('./routes/kitRoutes'));
 // Routes du module Candidatures (Applications)
 app.use('/api/applications', require('./routes/applicationRoutes'));
+app.use('/api/messages', require('./routes/messageRoutes'));
+app.use('/api/abonnements', require('./routes/abonnementRoutes'));
+
 
 app.get('/', (req, res) => {
     res.send('Smart-ATS API is Running!');

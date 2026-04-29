@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { uploadAndParse, getAllCandidates, getCandidateById } = require('../controllers/candidateController');
+const { 
+    uploadAndParse, 
+    getAllCandidates, 
+    getCandidateById, 
+    getMyProfile,
+    detectAnomalies 
+} = require('../controllers/candidateController');
 
 // Configuration de multer (stockage en mémoire pour passage direct à pdf-parse)
 const storage = multer.memoryStorage();
@@ -46,9 +52,19 @@ router.post('/upload', handleUpload, uploadAndParse);
 // @access  Public
 router.get('/', getAllCandidates);
 
+const { protect } = require('../middlewares/authMiddleware');
+
+// @desc    Récupérer mon propre profil candidat
+// @route   GET /api/candidates/me
+// @access  Private
+router.get('/me', protect, getMyProfile);
+
 // @desc    Récupérer un candidat spécifique
-// @route   GET /api/candidates/:id
-// @access  Public
 router.get('/:id', getCandidateById);
+
+// @desc    Détecter les anomalies dans un CV via IA
+// @route   POST /api/candidates/:id/detect-anomalies
+// @access  Private (Recruiter/Admin)
+router.post('/:id/detect-anomalies', protect, detectAnomalies);
 
 module.exports = router;

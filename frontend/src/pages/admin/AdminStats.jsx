@@ -210,6 +210,64 @@ const AdminStats = () => {
                 </div>
             </div>
 
+            {/* Subscriptions Management Section (Priority 2) */}
+            <div className="bg-[#1e293b]/10 backdrop-blur-md rounded-[3rem] border border-[#1e293b] overflow-hidden shadow-2xl">
+                <div className="p-8 border-b border-[#1e293b] flex justify-between items-center bg-black/20">
+                     <h3 className="text-xl font-serif font-bold text-white flex items-center gap-3">
+                        <Crown size={20} className="text-amber-500" /> Gestion des Abonnements
+                     </h3>
+                     <span className="bg-amber-500/10 text-amber-500 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/20">Revenue Live: 1,420€</span>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-[#1e293b]">
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Recruteur</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Plan</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Fin d'engagement</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Usage Offres</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#1e293b]">
+                            {[
+                                { id: 1, name: 'Alice HR', plan: 'Enterprise', date: '12/12/2024', usage: '42 / ∞', status: 'active' },
+                                { id: 2, name: 'Jean Recrute', plan: 'Pro', date: '01/11/2023', usage: '18 / 20', status: 'active' },
+                                { id: 3, name: 'Startup Flow', plan: 'Starter', date: '15/10/2023', usage: '5 / 5', status: 'limit_reached' },
+                            ].map((sub) => (
+                                <tr key={sub.id} className="hover:bg-white/5 transition-colors group">
+                                    <td className="px-8 py-6">
+                                        <p className="text-sm font-bold text-white">{sub.name}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                            sub.plan === 'Enterprise' ? 'bg-amber-900/20 text-amber-500 border-amber-500/20' : 
+                                            sub.plan === 'Pro' ? 'bg-blue-900/20 text-blue-500 border-blue-500/20' : 'bg-slate-900/20 text-slate-400 border-slate-700/50'
+                                        }`}>
+                                            {sub.plan}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6 text-sm font-medium text-slate-400">{sub.date}</td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex justify-between text-[9px] font-black uppercase text-slate-500">
+                                                <span>{sub.usage}</span>
+                                            </div>
+                                            <div className="w-24 h-1 bg-slate-800 rounded-full overflow-hidden">
+                                                <div className={`h-full ${sub.status === 'limit_reached' ? 'bg-rose-500' : 'bg-[#B76E79]'} w-[80%]`}></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <button className="text-[10px] font-black text-[#B76E79] uppercase tracking-widest hover:underline">Suspendre</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             {/* Audit Logs Flow */}
             <div className="bg-[#1e293b]/5 backdrop-blur-md rounded-[3rem] border border-[#1e293b] p-10 space-y-8">
                 <div className="flex items-center gap-3">
