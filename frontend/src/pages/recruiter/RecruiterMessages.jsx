@@ -12,7 +12,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 
 const RecruiterMessages = () => {

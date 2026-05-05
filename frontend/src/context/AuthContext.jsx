@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../api/axiosConfig';
 
 const AuthContext = createContext();
 
@@ -9,22 +9,28 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Check if user is logged in
-        const userInfo = localStorage.getItem('userInfo');
-        if (userInfo) {
-            setUser(JSON.parse(userInfo));
-            // Optional: Set default auth header for axios if token exists
-            axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(userInfo).token}`;
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+        
+        if (token && storedUser) {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (e) {
+                console.error("Erreur parsing user from localStorage", e);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
         }
         setLoading(false);
     }, []);
 
     const login = async (email, password) => {
         try {
-            const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            setUser(data);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-            return data;
+            const { data } = await API.post('/auth/login', { email, password });
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
+            return data.user;
         } catch (error) {
             throw error.response?.data?.message || 'Login failed';
         }
@@ -32,20 +38,23 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (nom, email, password) => {
         try {
-            const { data } = await axios.post('http://localhost:5000/api/auth/register', { nom, email, password });
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            setUser(data);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-            return data;
+            const { data } = await API.post('/auth/register', { nom, email, password });
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
+            return data.user;
         } catch (error) {
             throw error.response?.data?.message || 'Registration failed';
         }
     };
 
     const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         localStorage.removeItem('userInfo');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('jwt');
         setUser(null);
-        delete axios.defaults.headers.common['Authorization'];
     };
 
     return (

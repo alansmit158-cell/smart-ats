@@ -23,6 +23,7 @@ import Reports from './pages/Reports';
 
 // Pages - Candidate
 import CandidatePortal from './pages/candidate/CandidatePortal';
+import CandidateExplorer from './pages/candidate/CandidateExplorer';
 import CandidateApplications from './pages/candidate/CandidateApplications';
 import CandidateChat from './pages/candidate/CandidateChat';
 import CandidateProfile from './pages/candidate/CandidateProfile';
@@ -69,7 +70,7 @@ function App() {
             </ProtectedRoute>
           }>
             <Route path="portal" element={<CandidatePortal />} />
-            <Route path="explorer" element={<CandidatePortal />} />
+            <Route path="explorer" element={<CandidateExplorer />} />
             <Route path="applications" element={<CandidateApplications />} />
             <Route path="messages" element={<CandidateChat />} />
             <Route path="profile" element={<CandidateProfile />} />

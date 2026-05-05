@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../api/axiosConfig';
 import { X, Calendar, Video, MapPin, Clock } from 'lucide-react';
 
 const ScheduleInterviewModal = ({ isOpen, onClose, candidateId, defaultJobId }) => {
@@ -24,9 +24,7 @@ const ScheduleInterviewModal = ({ isOpen, onClose, candidateId, defaultJobId }) 
     const fetchJobs = async () => {
         try {
             const token = localStorage.getItem('token');
-            const { data } = await axios.get('http://localhost:5000/api/jobs', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const { data } = await API.get(`/jobs`);
             if (data.success) {
                 setJobs(data.data);
             }
@@ -57,9 +55,7 @@ const ScheduleInterviewModal = ({ isOpen, onClose, candidateId, defaultJobId }) 
                 notes: formData.notes
             };
 
-            await axios.post('http://localhost:5000/api/interviews', payload, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.post(`/interviews`, payload);
             
             alert('Interview scheduled securely and email sent to candidate!');
             onClose();

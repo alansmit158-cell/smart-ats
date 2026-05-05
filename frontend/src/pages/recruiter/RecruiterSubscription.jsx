@@ -9,7 +9,7 @@ import {
   Calendar,
   AlertCircle
 } from 'lucide-react';
-import axios from 'axios';
+import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
@@ -23,11 +23,9 @@ const RecruiterSubscription = () => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const config = { headers: { Authorization: `Bearer ${token}` } };
-                
                 const [plansRes, myPlanRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/abonnements/plans'),
-                    axios.get('http://localhost:5000/api/abonnements/my-plan', config)
+                    API.get(`/abonnements/plans`),
+                    API.get(`/abonnements/my-plan`)
                 ]);
 
                 setPlans(plansRes.data.data);
@@ -46,9 +44,7 @@ const RecruiterSubscription = () => {
         setSubmitting(true);
         try {
             const token = localStorage.getItem('token');
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            
-            const res = await axios.post('http://localhost:5000/api/abonnements/subscribe', { planType }, config);
+            const res = await API.post(`/abonnements/subscribe`, { planType });
             
             if (res.data.success) {
                 setMyPlan(res.data.data);

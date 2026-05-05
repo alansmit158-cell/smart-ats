@@ -34,12 +34,16 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
+            const token = generateToken(user._id);
             res.status(201).json({
-                _id: user.id,
-                nom: user.nom,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id),
+                success: true,
+                token: token,
+                user: {
+                    id: user._id,
+                    nom: user.nom,
+                    email: user.email,
+                    role: user.role
+                }
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -61,12 +65,16 @@ const loginUser = async (req, res) => {
 
         // 2. Vérifier si l'utilisateur existe et si le mot de passe correspond
         if (user && (await user.matchPassword(password))) {
-            res.json({
-                _id: user._id,
-                nom: user.nom,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id),
+            const token = generateToken(user._id);
+            res.status(200).json({
+                success: true,
+                token: token,
+                user: {
+                    id: user._id,
+                    nom: user.nom,
+                    email: user.email,
+                    role: user.role
+                }
             });
         } else {
             res.status(401).json({ message: 'Email ou mot de passe invalide' });

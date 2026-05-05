@@ -1,6 +1,6 @@
 ================================================================================
                         SMART-ATS — NOTES & SUIVI DU PROJET
-                        Dernière mise à jour : 29 Avril 2026
+                        Dernière mise à jour : 05 Mai 2026
 ================================================================================
 
   Système de Tracking des Candidatures assisté par Intelligence Artificielle.
@@ -18,35 +18,84 @@
 smart-ATS/
 │
 ├── BACKEND/                      ← Serveur Node.js / Express / MongoDB
-│   ├── server.js                 ← Point d'entrée du serveur
-│   ├── .env                      ← Variables d'environnement (PORT, MONGO_URI)
-│   ├── package.json              ← Dépendances backend
+│   ├── server.js                 ← Point d'entrée du serveur global
+│   ├── resetDB.js                ← Script de purge de la base de données
+│   ├── .env                      ← Variables d'environnement (PORT, MONGO_URI, OPENAI_API_KEY)
 │   ├── config/
-│   │   └── db.js                 ← Connexion MongoDB (Mongoose)
-│   ├── controllers/              ← (Vide — à remplir)
-│   ├── middlewares/              ← (Vide — à remplir)
-│   ├── models/                   ← (Vide — à remplir)
-│   ├── routes/                   ← (Vide — à remplir)
-│   └── utils/                    ← (Vide — à remplir)
+│   │   ├── db.js                 ← Connexion MongoDB (Mongoose)
+│   │   └── openaiConfig.js       ← Instance configuration OpenAI
+│   ├── controllers/              ← Logique métier des API
+│   │   ├── abonnementController.js
+│   │   ├── adminController.js
+│   │   ├── applicationController.js
+│   │   ├── authController.js
+│   │   ├── candidateController.js
+│   │   ├── dashboardController.js
+│   │   ├── interviewController.js
+│   │   ├── jobController.js
+│   │   ├── kitController.js
+│   │   ├── matchingController.js
+│   │   └── messageController.js
+│   ├── middlewares/              
+│   │   └── authMiddleware.js     ← Vérification JWT et rôles
+│   ├── models/                   ← Schémas Mongoose
+│   │   ├── Abonnement.js
+│   │   ├── Application.js
+│   │   ├── Candidate.js
+│   │   ├── Interview.js
+│   │   ├── Job.js
+│   │   ├── Message.js
+│   │   └── User.js
+│   ├── routes/                   ← Définition des endpoints API
+│   │   ├── abonnementRoutes.js
+│   │   ├── adminRoutes.js
+│   │   ├── applicationRoutes.js
+│   │   ├── authRoutes.js
+│   │   ├── candidateRoutes.js
+│   │   ├── dashboardRoutes.js
+│   │   ├── interviewRoutes.js
+│   │   ├── jobRoutes.js
+│   │   ├── kitRoutes.js
+│   │   ├── matchingRoutes.js
+│   │   └── messageRoutes.js
+│   └── uploads/                  ← Stockage temporaire des PDF (CVs)
 │
-└── frontend/                     ← Application React (Vite + Tailwind)
-    ├── index.html                ← Page HTML principale
-    ├── package.json              ← Dépendances frontend
+└── frontend/                     ← Application React (Vite + Tailwind v4)
     ├── vite.config.js            ← Configuration Vite
     ├── postcss.config.js         ← Configuration PostCSS/Tailwind
     └── src/
         ├── main.jsx              ← Point d'entrée React
-        ├── App.jsx               ← Composant racine (affiche Dashboard)
-        ├── App.css               ← Styles globaux App
-        ├── index.css             ← Styles globaux + tokens CSS
+        ├── App.jsx               ← Routeur global de l'application
+        ├── index.css             ← Design System Luxe (Tokens Nacre, Rose Doré)
+        ├── api/
+        │   └── axiosConfig.js    ← Intercepteur API centralisé (JWT)
+        ├── context/
+        │   └── AuthContext.jsx   ← Gestion état connexion utilisateur
         ├── components/
-        │   ├── Header.jsx        ← Barre de navigation supérieure (fixed)
-        │   ├── Sidebar.jsx       ← Barre latérale de navigation (fixed)
-        │   ├── StatsCard.jsx     ← Carte statistique réutilisable
-        │   └── AIAnalysisCard.jsx ← Carte bannière analyse IA
-        └── pages/
-            └── Dashboard.jsx     ← Page principale du tableau de bord
-
+        │   └── ProtectedRoute.jsx ← Gardien de route par rôle
+        ├── layouts/              ← Structures de pages par rôle
+        │   ├── AdminLayout.jsx
+        │   ├── CandidateLayout.jsx
+        │   └── RecruiterLayout.jsx
+        └── pages/                ← Vues complètes
+            ├── Login.jsx         ← Page de connexion unifiée
+            ├── Register.jsx      ← Inscription
+            ├── admin/
+            │   └── AdminStats.jsx ← Console de monitoring (OpenAI, Users)
+            ├── candidate/
+            │   ├── CandidateApplications.jsx ← Suivi candidatures
+            │   ├── CandidateChat.jsx         ← Messagerie
+            │   ├── CandidateExplorer.jsx     ← Moteur de recherche offres IA
+            │   ├── CandidatePortal.jsx       ← Dashboard candidat
+            │   ├── CandidateProfile.jsx      ← Profil candidat
+            │   └── CandidateUpload.jsx       ← Upload de CV
+            └── recruiter/
+                ├── RecruiterDashboard.jsx    ← Dashboard recruteur
+                ├── RecruiterInterviews.jsx   ← Gestion entretiens & IA Kits
+                ├── RecruiterJobs.jsx         ← Gestion offres
+                ├── RecruiterMessages.jsx     ← Messagerie & IA Suggest
+                ├── RecruiterScoring.jsx      ← Matching CV / Offre
+                └── RecruiterSubscription.jsx ← Paramètres Abonnement
 
 ================================================================================
                          CE QUI A ÉTÉ RÉALISÉ (FRONTEND)
@@ -611,6 +660,17 @@ smart-ATS/
 
 [✅] DOCUMENTATION PFE (Priorité 5)
     - Création de `RAPPORT_PFE_PAGES.md` : Guide complet des pages et fonctionnalités IA pour le rapport final.
+
+[✅] MODULE 7 : OPTIMISATION HAUTE PERFORMANCE (Worker Threads)
+    - Architecture Asynchrone : Implémentation de `BACKEND/workers/nlpWorker.js` et `workerPool.js` pour déléguer l'analyse IA (OpenAI) à des threads isolés.
+    - Non-blocage : L'API `/upload` répond immédiatement (202 Accepted) tandis que le parsing s'effectue en arrière-plan.
+    - Polling Status : Système de suivi en temps réel via `/api/candidates/status/:candidateId`.
+    - Monitoring Admin : Ajout d'une console "Worker Thread Pool" dans `AdminStats.jsx` pour surveiller les workers actifs, la file d'attente et la charge CPU.
+
+[✅] POLISSAGE FINAL & INTERACTIVITÉ
+    - Candidate Portal : Rétablissement de l'interactivité sur les boutons de notification (Bell), "Éditer le profil" et "Changer le mot de passe" via des retours `toast` professionnels.
+    - Candidate Upload : Intégration du flux asynchrone réel avec barre de progression et étapes détaillées (Worker started, Extraction, Analysis).
+    - Correction de bugs critiques : Importations manquantes (toast, Crown) et stabilisation du routage.
 
 ================================================================================
                                 FIN DES NOTES

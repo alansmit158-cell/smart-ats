@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import API from '../api/axiosConfig';
 import {
     UploadCloud, FileText, CheckCircle, AlertCircle, Loader2,
     Users, Search, Mail, Phone, ChevronDown, ChevronUp, X, Plus
@@ -129,7 +129,7 @@ const UploadZone = ({ onSuccess }) => {
         formData.append('cv', file);
         try {
             setTimeout(() => setStatus('parsing'), 1500);
-            const response = await axios.post('http://localhost:5000/api/candidates/upload', formData, {
+            const response = await API.post(`/candidates/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             if (response.data.success) {
@@ -234,7 +234,7 @@ const Candidates = () => {
 
     const fetchCandidates = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/candidates');
+            const { data } = await API.get(`/candidates`);
             if (data.success) setCandidates(data.data);
         } catch (err) {
             console.error('Erreur chargement candidats:', err);

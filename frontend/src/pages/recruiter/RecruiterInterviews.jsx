@@ -22,7 +22,7 @@ import {
   RefreshCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 
 const RecruiterInterviews = () => {
@@ -56,10 +56,10 @@ const RecruiterInterviews = () => {
             };
             
             // On prend le premier job du recruteur pour la démo
-            const jobsRes = await axios.get('http://localhost:5000/api/jobs', config);
+            const jobsRes = await API.get(`/jobs`);
             if (jobsRes.data.length > 0) {
                 const jobId = jobsRes.data[0]._id;
-                const appsRes = await axios.get(`http://localhost:5000/api/applications/job/${jobId}`, config);
+                const appsRes = await API.get(`/applications/job/${jobId}`);
                 setApplications(appsRes.data.data);
             }
             setLoading(false);
@@ -81,8 +81,6 @@ const RecruiterInterviews = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            
             // Mise à jour de l'évaluation (simulée ou réelle selon l'endpoint existant)
             // Ici on simule le succès pour le PFE
             toast.success(`Évaluation de ${activeApp.candidate.user.nom} enregistrée avec succès.`, {

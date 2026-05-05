@@ -13,7 +13,7 @@ import {
   Bookmark,
   Loader2
 } from 'lucide-react';
-import axios from 'axios';
+import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,18 +30,16 @@ const CandidatePortal = () => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const config = { headers: { Authorization: `Bearer ${token}` } };
-                
                 // Fetch All Jobs
-                const jobsRes = await axios.get('http://localhost:5000/api/jobs', config);
+                const jobsRes = await API.get(`/jobs`);
                 setJobs(jobsRes.data);
 
                 // Check if candidate has CV
-                const candidateRes = await axios.get('http://localhost:5000/api/candidates/me', config).catch(() => null);
+                const candidateRes = await API.get(`/candidates/me`).catch(() => null);
                 setHasCV(!!candidateRes?.data?.data);
 
                 // Fetch My Applications to disable apply button if already applied
-                const appsRes = await axios.get('http://localhost:5000/api/applications/my-applications', config);
+                const appsRes = await API.get(`/applications/my-applications`);
                 setMyApplications(appsRes.data.data);
 
                 setLoading(false);
@@ -65,9 +63,7 @@ const CandidatePortal = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            
-            const res = await axios.post(`http://localhost:5000/api/applications/apply/${jobId}`, {}, config);
+            const res = await API.post(`/applications/apply/${jobId}`, {});
             
             if (res.data.success) {
                 toast.success(res.data.message);

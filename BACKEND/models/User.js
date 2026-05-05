@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['candidate', 'recruiter', 'admin']
+    },
+    status: {
+        type: String,
+        enum: ['active', 'suspended'],
+        default: 'active'
     }
 }, { 
     timestamps: true 

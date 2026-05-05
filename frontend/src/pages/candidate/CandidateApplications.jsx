@@ -14,7 +14,7 @@ import {
   Calendar,
   Briefcase
 } from 'lucide-react';
-import axios from 'axios';
+import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
@@ -27,8 +27,7 @@ const CandidateApplications = () => {
         const fetchApplications = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const config = { headers: { Authorization: `Bearer ${token}` } };
-                const res = await axios.get('http://localhost:5000/api/applications/my-applications', config);
+                const res = await API.get(`/applications/my-applications`);
                 setApplications(res.data.data);
                 setLoading(false);
             } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../api/axiosConfig';
 import {
     Plus, Briefcase, MapPin, Building, AlertCircle, X,
     Sparkles, Loader2, Trophy, CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp
@@ -136,7 +136,7 @@ const Jobs = () => {
 
     const fetchJobs = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/jobs');
+            const { data } = await API.get(`/jobs`);
             setJobs(data);
         } catch (err) {
             console.error('Error fetching jobs', err);
@@ -153,7 +153,7 @@ const Jobs = () => {
         try {
             // Séparation des compétences par virgule
             const competencesArray = competences.split(',').map(s => s.trim());
-            await axios.post('http://localhost:5000/api/jobs', { 
+            await API.post(`/jobs`, { 
                 titre, 
                 description, 
                 lieu, 
@@ -176,7 +176,7 @@ const Jobs = () => {
         setIsMatching(true);
 
         try {
-            const { data } = await axios.post(`http://localhost:5000/api/matching/job/${job._id}`);
+            const { data } = await API.post(`/matching/job/${job._id}`);
             if (data.success) {
                 setMatchResults(data.data);
             }

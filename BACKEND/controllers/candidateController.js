@@ -2,6 +2,7 @@ const pdfParse = require('pdf-parse');
 const { OpenAI } = require('openai');
 const Candidate = require('../models/Candidate');
 const User = require('../models/User');
+const workerPool = require('../workers/workerPool');
 
 // Initialisation du client OpenAI (utilise process.env.OPENAI_API_KEY)
 const openai = new OpenAI();
@@ -57,141 +58,107 @@ FORMAT DE SORTIE ATTENDU :
 // Body  : multipart/form-data avec champ "cv" (fichier PDF)
 // =============================================================================
 const uploadAndParse = async (req, res) => {
-    try {
-        // --- Étape 1 : Vérification du fichier uploadé ---
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: 'Aucun fichier CV fourni. Veuillez uploader un fichier PDF.',
-            });
-        }
-
-        const { originalname, buffer, mimetype } = req.file;
-
-        // Vérification du type MIME
-        if (mimetype !== 'application/pdf') {
-            return res.status(400).json({
-                success: false,
-                message: 'Format de fichier invalide. Seuls les fichiers PDF sont acceptés.',
-            });
-        }
-
-        console.log(`📄 Fichier reçu : ${originalname} (${(buffer.length / 1024).toFixed(1)} KB)`);
-
-        // --- Étape 2 : Extraction du texte brut depuis le PDF ---
-        const pdfData = await pdfParse(buffer);
-        const rawText = pdfData.text.trim();
-
-        if (!rawText || rawText.length < 50) {
-            return res.status(422).json({
-                success: false,
-                message: 'Impossible d\'extraire le texte du PDF. Le fichier est peut-être scanné (image) ou vide.',
-            });
-        }
-
-        console.log(`📝 Texte extrait : ${rawText.length} caractères`);
-
-        // --- Étape 3 : Analyse IA via OpenAI (Moteur NLP) ---
-        console.log('🤖 Envoi à OpenAI pour analyse NLP...');
-
-        const aiResponse = await openai.chat.completions.create({
-            model: 'gpt-4o-mini', // Modèle optimisé : rapide et économique pour l'extraction
-            messages: [
-                {
-                    role: 'system',
-                    content: SYSTEM_PROMPT,
-                },
-                {
-                    role: 'user',
-                    content: `Voici le texte brut du CV à analyser :\n\n---\n${rawText}\n---`,
-                },
-            ],
-            temperature: 0.1,       // Faible créativité = résultats déterministes et fiables
-            response_format: { type: 'json_object' }, // Force le mode JSON d'OpenAI
-            max_tokens: 2000,
-        });
-
-        const aiContent = aiResponse.choices[0].message.content;
-        console.log('✅ Réponse OpenAI reçue');
-
-        // --- Étape 4 : Parsing de la réponse JSON ---
-        let parsedData;
-        try {
-            parsedData = JSON.parse(aiContent);
-        } catch (parseError) {
-            console.error('❌ Erreur de parsing JSON depuis OpenAI:', aiContent);
-            return res.status(500).json({
-                success: false,
-                message: 'L\'IA a retourné un format invalide. Veuillez réessayer.',
-            });
-        }
-
-        // --- Étape 5 : Gestion de l'Utilisateur et Sauvegarde dans MongoDB ---
-        let userId;
-
-        // On cherche si un User existe déjà avec cet email
-        let user = await User.findOne({ email: parsedData.email });
-
-if (!user) {
-    // Si l'utilisateur n'existe pas, on le crée (rôle candidat)
-    user = await User.create({
-        nom: parsedData.name || 'Inconnu',
-        email: parsedData.email || `temp_${Date.now()}@smart-ats.com`,
-        password: 'password123', // Mot de passe par défaut pour le PFE
-        role: 'candidate'
-    });
-}
-userId = user._id;
-
-const candidate = await Candidate.create({
-    user: userId,
-    skills: Array.isArray(parsedData.skills) ? parsedData.skills : [],
-    experiences: Array.isArray(parsedData.experiences) ? parsedData.experiences.map(exp => ({
-        titre: exp.poste,
-        entreprise: exp.entreprise,
-        description: exp.description
-        // On pourrait parser la durée pour dateDebut/dateFin si besoin
-    })) : [],
-    formations: Array.isArray(parsedData.formations) ? parsedData.formations.map(f => ({
-        diplome: f.diplome,
-        etablissement: f.etablissement
-        // On pourrait parser l'année si besoin
-    })) : [],
-    rawText: rawText,
-    fileName: originalname,
-});
-
-console.log(`💾 Candidat sauvegardé en base : ${candidate._id} — ${parsedData.name}`);
-
-// --- Étape 6 : Réponse succès ---
-return res.status(201).json({
-    success: true,
-    message: `CV de "${parsedData.name}" analysé et lié à l'utilisateur ${user.email}.`,
-    data: candidate,
-});
-
-    } catch (error) {
-        // Gestion des erreurs OpenAI spécifiques
-        if (error?.status === 401) {
-            return res.status(500).json({
-                success: false,
-                message: 'Clé API OpenAI invalide ou manquante. Vérifiez votre fichier .env.',
-            });
-        }
-        if (error?.status === 429) {
-            return res.status(429).json({
-                success: false,
-                message: 'Quota OpenAI dépassé. Veuillez réessayer dans quelques instants.',
-            });
-        }
-
-        console.error('❌ Erreur dans uploadAndParse:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Une erreur interne est survenue lors de l\'analyse du CV.',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-        });
+  try {
+    const fs = require('fs');
+    
+    // 1. Vérifications de base
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Aucun fichier PDF reçu'
+      });
     }
+
+    if (!req.user || !req.user.id) {
+      // Nettoyer en cas d'erreur
+      fs.unlinkSync(req.file.path);
+      return res.status(401).json({
+        success: false,
+        message: 'Utilisateur non authentifié'
+      });
+    }
+
+    // 2. Extraire le texte du PDF (rapide — pas d'IA ici)
+    const dataBuffer = fs.readFileSync(req.file.path);
+    let pdfText = '';
+    
+    try {
+      const pdfData = await pdfParse(dataBuffer);
+      pdfText = pdfData.text;
+    } catch (pdfError) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({
+        success: false,
+        message: 'PDF illisible ou corrompu'
+      });
+    }
+
+    // Nettoyer le fichier temporaire immédiatement
+    fs.unlinkSync(req.file.path);
+
+    if (!pdfText || pdfText.trim().length < 50) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le PDF semble vide. Utilisez un PDF avec du texte sélectionnable.'
+      });
+    }
+
+    // 3. Créer un candidat "en cours de traitement" en MongoDB
+    // RÉPONSE IMMÉDIATE possible grâce au Worker Thread
+    let candidate = await Candidate.findOne({ user: req.user.id });
+    
+    if (!candidate) {
+      candidate = await Candidate.create({
+        user: req.user.id,
+        prenom: 'En cours...',
+        nom: '...',
+        skills: [],
+        experiences: [],
+        formations: [],
+        status: 'processing',
+        fileName: req.file.originalname
+      });
+    } else {
+        // Mettre à jour si existe déjà
+        candidate.status = 'processing';
+        candidate.fileName = req.file.originalname;
+        await candidate.save();
+    }
+
+    // 4. Répondre IMMÉDIATEMENT au frontend
+    // Le parsing IA continue en arrière-plan dans un Worker Thread
+    res.status(202).json({
+      success: true,
+      message: 'CV reçu. Analyse IA en cours dans un Worker Thread...',
+      candidateId: candidate._id,
+      status: 'processing'
+    });
+
+    // 5. Déléguer le traitement NLP au Worker Pool
+    // (s'exécute APRÈS la réponse HTTP, sans bloquer)
+    workerPool.processCV({
+      pdfText,
+      candidateId: candidate._id.toString()
+    }).then((result) => {
+      console.log(`✅ NLP terminé pour candidat ${candidate._id}`);
+    }).catch((error) => {
+      console.error(`❌ NLP échoué pour candidat ${candidate._id}:`, error.message);
+      // Mettre à jour le statut en erreur
+      Candidate.findByIdAndUpdate(candidate._id, { status: 'failed' }).exec();
+    });
+
+  } catch (error) {
+    console.error('Upload CV Error:', error);
+    const fs = require('fs');
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Erreur serveur lors de l\\'upload'
+    });
+  }
 };
 
 // =============================================================================
@@ -340,10 +307,53 @@ Retourne UNIQUEMENT un objet JSON avec ce format :
     }
 };
 
+const updateMyProfile = async (req, res) => {
+    try {
+        let candidate = await Candidate.findOne({ user: req.user.id });
+        if (!candidate) {
+            return res.status(404).json({ success: false, message: 'Profil non trouvé' });
+        }
+        
+        // Update fields allowed
+        if (req.body.skills) candidate.skills = req.body.skills;
+        if (req.body.experiences) candidate.experiences = req.body.experiences;
+        if (req.body.formations) candidate.formations = req.body.formations;
+        
+        await candidate.save();
+        
+        res.status(200).json({ success: true, data: candidate, message: 'Profil mis à jour' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Erreur lors de la mise à jour' });
+    }
+};
+
+const getParsingStatus = async (req, res) => {
+  try {
+    const candidate = await Candidate.findById(req.params.candidateId);
+    if (!candidate) {
+      return res.status(404).json({ success: false, message: 'Candidat non trouvé' });
+    }
+    res.json({
+      success: true,
+      status: candidate.status,
+      data: candidate.status === 'completed' ? candidate : null,
+      message: candidate.status === 'processing' 
+        ? 'Analyse IA en cours...' 
+        : candidate.status === 'completed'
+        ? 'Analyse terminée !'
+        : 'Analyse échouée'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = { 
     uploadAndParse, 
     getAllCandidates, 
     getCandidateById,
     getMyProfile,
-    detectAnomalies
+    detectAnomalies,
+    updateMyProfile,
+    getParsingStatus
 };

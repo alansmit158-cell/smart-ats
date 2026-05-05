@@ -22,6 +22,13 @@ const candidateSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    prenom: { type: String, trim: true, default: '' },
+    nom: { type: String, trim: true, default: '' },
+    status: {
+        type: String,
+        enum: ['pending', 'processing', 'completed', 'failed'],
+        default: 'pending'
+    },
     experiences: [experienceSchema],
     formations: [formationSchema],
     skills: [{

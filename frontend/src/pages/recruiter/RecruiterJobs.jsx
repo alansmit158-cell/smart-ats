@@ -11,7 +11,7 @@ import {
   X,
   AlertCircle
 } from 'lucide-react';
-import axios from 'axios';
+import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -38,9 +38,7 @@ const RecruiterJobs = () => {
     const fetchJobs = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/jobs', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await API.get(`/jobs`);
             setJobs(res.data);
             setLoading(false);
         } catch (error) {
@@ -53,9 +51,7 @@ const RecruiterJobs = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/jobs', formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.post(`/jobs`, formData);
             toast.success('Offre créée avec succès');
             setShowCreateModal(false);
             resetForm();
@@ -69,9 +65,7 @@ const RecruiterJobs = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/jobs/${selectedJob._id}`, formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.put(`/jobs/${selectedJob._id}`, formData);
             toast.success('Offre mise à jour');
             setShowEditModal(false);
             fetchJobs();
@@ -83,9 +77,7 @@ const RecruiterJobs = () => {
     const handleDelete = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/jobs/${selectedJob._id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.delete(`/jobs/${selectedJob._id}`);
             toast.success('Offre supprimée');
             setShowDeleteModal(false);
             fetchJobs();

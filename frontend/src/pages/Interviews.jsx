@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import API from '../api/axiosConfig';
 import { Calendar, MapPin, Video, CheckCircle, XCircle, Clock, BrainCircuit, Download, FileText, AlertTriangle } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -19,9 +19,7 @@ const Interviews = () => {
     const fetchInterviews = async () => {
         try {
             const token = localStorage.getItem('token');
-            const { data } = await axios.get('http://localhost:5000/api/interviews', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const { data } = await API.get(`/interviews`);
             if (data.success) {
                 setInterviews(data.data);
             }
@@ -39,9 +37,7 @@ const Interviews = () => {
     const updateStatus = async (id, status) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/interviews/${id}/status`, { status }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.put(`/interviews/${id}/status`, { status });
             fetchInterviews(); // refresh layout
         } catch (error) {
             console.error('Error updating status:', error);
@@ -58,9 +54,7 @@ const Interviews = () => {
         
         try {
             const token = localStorage.getItem('token');
-            const { data } = await axios.get(`http://localhost:5000/api/kits/${interview._id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const { data } = await API.get(`/kits/${interview._id}`);
             if (data.success && data.data) {
                 setKitData(data.data);
             }
@@ -77,9 +71,7 @@ const Interviews = () => {
         
         try {
             const token = localStorage.getItem('token');
-            const { data } = await axios.post(`http://localhost:5000/api/kits/generate/${selectedInterview._id}`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const { data } = await API.post(`/kits/generate/${selectedInterview._id}`, {});
             if (data.success) {
                 setKitData(data.data);
             }

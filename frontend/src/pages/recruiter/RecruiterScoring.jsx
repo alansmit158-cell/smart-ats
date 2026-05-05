@@ -17,7 +17,7 @@ import {
   ChevronLeft,
   Zap
 } from 'lucide-react';
-import axios from 'axios';
+import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -33,13 +33,11 @@ const RecruiterScoring = () => {
         const fetchApplications = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const config = { headers: { Authorization: `Bearer ${token}` } };
-                
                 // On récupère d'abord les jobs pour en choisir un
-                const jobsRes = await axios.get('http://localhost:5000/api/jobs', config);
+                const jobsRes = await API.get(`/jobs`);
                 if (jobsRes.data.length > 0) {
                     const jobId = jobsRes.data[0]._id;
-                    const appsRes = await axios.get(`http://localhost:5000/api/applications/job/${jobId}`, config);
+                    const appsRes = await API.get(`/applications/job/${jobId}`);
                     setApplications(appsRes.data.data);
                 }
                 setLoading(false);
@@ -59,9 +57,7 @@ const RecruiterScoring = () => {
         setAnalyzingAnomalies(true);
         try {
             const token = localStorage.getItem('token');
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            
-            const res = await axios.post(`http://localhost:5000/api/candidates/${selectedApp.candidate._id}/detect-anomalies`, {}, config);
+            const res = await API.post(`/candidates/${selectedApp.candidate._id}/detect-anomalies`, {});
             
             if (res.data.success) {
                 // Update local state

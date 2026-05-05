@@ -13,6 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const CandidateLayout = () => {
   const { user, logout } = useContext(AuthContext);
@@ -117,7 +118,10 @@ const CandidateLayout = () => {
           </div>
 
           <div className="flex items-center gap-4 lg:gap-8">
-            <div className="relative cursor-pointer group">
+            <div 
+              className="relative cursor-pointer group"
+              onClick={() => toast("Aucune nouvelle notification pour le moment.", { icon: '🔔' })}
+            >
               <Bell size={20} className="text-slate-400 group-hover:text-[#B76E79] transition-colors" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#B76E79] rounded-full border-2 border-white"></span>
             </div>

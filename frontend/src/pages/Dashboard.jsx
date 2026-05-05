@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../api/axiosConfig';
 import { Users, Calendar, Briefcase } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -18,7 +18,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/dashboard/stats');
+                const { data } = await API.get(`/dashboard/stats`);
                 if (data.success) {
                     setStats((prev) => ({
                         ...prev,

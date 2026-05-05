@@ -1,5 +1,28 @@
 import React from 'react';
-import { User, Mail, Shield, Smartphone, MapPin, Globe, Award, Sparkles } from 'lucide-react';
+import { 
+  User, 
+  Star, 
+  Award, 
+  BookOpen, 
+  TrendingUp, 
+  TrendingDown, 
+  Briefcase, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Calendar, 
+  CheckCircle, 
+  AlertCircle, 
+  Edit, 
+  Save, 
+  X, 
+  Brain, 
+  Sparkles,
+  Shield,
+  Smartphone,
+  Globe
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CandidateProfile = () => {
     return (
@@ -20,7 +43,12 @@ const CandidateProfile = () => {
                         <span className="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100"><Globe size={14}/> github.com/anisderbel</span>
                     </div>
                 </div>
-                <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-sm hover:translate-y-[-2px] transition-all shadow-xl shadow-slate-200">Éditer le profil</button>
+                <button 
+                    onClick={() => toast("Le mode édition sera disponible dans la prochaine version !", { icon: '✏️' })}
+                    className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-sm hover:translate-y-[-2px] transition-all shadow-xl shadow-slate-200"
+                >
+                    Éditer le profil
+                </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -46,7 +74,12 @@ const CandidateProfile = () => {
                         </div>
                     </div>
                     <div className="pt-4">
-                        <button className="text-[#B76E79] font-black text-xs uppercase tracking-widest hover:underline italic">Changer le mot de passe →</button>
+                        <button 
+                            onClick={() => toast.success("Un email avec le lien de réinitialisation a été envoyé.")}
+                            className="text-[#B76E79] font-black text-xs uppercase tracking-widest hover:underline italic"
+                        >
+                            Changer le mot de passe →
+                        </button>
                     </div>
                 </div>
 
@@ -68,11 +101,11 @@ const CandidateProfile = () => {
                         </div>
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
-                                <CheckCircle2 size={16} className="text-emerald-500" />
+                                <CheckCircle size={16} className="text-emerald-500" />
                                 <span className="text-xs font-bold text-slate-600">CV Optimisé</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <CheckCircle2 size={16} className="text-emerald-500" />
+                                <CheckCircle size={16} className="text-emerald-500" />
                                 <span className="text-xs font-bold text-slate-600">Compétences validées</span>
                             </div>
                             <div className="flex items-center gap-2">
