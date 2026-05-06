@@ -1,6 +1,6 @@
 ================================================================================
                         SMART-ATS — NOTES & SUIVI DU PROJET
-                        Dernière mise à jour : 05 Mai 2026
+                        Dernière mise à jour : 06 Mai 2026
 ================================================================================
 
   Système de Tracking des Candidatures assisté par Intelligence Artificielle.
@@ -671,6 +671,16 @@ smart-ATS/
     - Candidate Portal : Rétablissement de l'interactivité sur les boutons de notification (Bell), "Éditer le profil" et "Changer le mot de passe" via des retours `toast` professionnels.
     - Candidate Upload : Intégration du flux asynchrone réel avec barre de progression et étapes détaillées (Worker started, Extraction, Analysis).
     - Correction de bugs critiques : Importations manquantes (toast, Crown) et stabilisation du routage.
+
+[✅] FINALISATION INTERFACE ADMIN (Full Console)
+    - Admin Security : Création de `AdminSecurity.jsx` pour le monitoring du Firewall IA (Prompt injection, menaces sémantiques).
+    - Admin Settings : Création de `AdminSettings.jsx` (Gestion API OpenAI, Quotas Workers, Maintenance).
+    - Admin Users : Création de `AdminUsers.jsx` (Annuaire haute performance, contrôle des accès root).
+    - Admin Logs : Création de `AdminLogs.jsx` (Flux de télémétrie système et audit de sécurité).
+
+[✅] EXTENSION PARAMÈTRES RECRUTEUR
+    - Recruiter Settings : Création de `RecruiterSettings.jsx` pour la gestion du profil entreprise et des préférences de l'agent IA.
+    - Routage Global : Finalisation du fichier `App.jsx` pour lier toutes les routes "Bientôt disponible" à leurs composants réels.
 
 ================================================================================
                                 FIN DES NOTES

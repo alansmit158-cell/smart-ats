@@ -18,6 +18,7 @@ import RecruiterScoring from './pages/recruiter/RecruiterScoring';
 import RecruiterMessages from './pages/recruiter/RecruiterMessages';
 import RecruiterInterviews from './pages/recruiter/RecruiterInterviews';
 import RecruiterSubscription from './pages/recruiter/RecruiterSubscription';
+import RecruiterSettings from './pages/recruiter/RecruiterSettings';
 import Candidates from './pages/Candidates';
 import Reports from './pages/Reports';
 
@@ -31,6 +32,10 @@ import CandidateUpload from './pages/candidate/CandidateUpload';
 
 // Pages - Admin
 import AdminStats from './pages/admin/AdminStats';
+import AdminSecurity from './pages/admin/AdminSecurity';
+import AdminSettings from './pages/admin/AdminSettings';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminLogs from './pages/admin/AdminLogs';
 
 import './App.css';
 
@@ -59,6 +64,7 @@ function App() {
             <Route path="interviews" element={<RecruiterInterviews />} />
             <Route path="messages" element={<RecruiterMessages />} />
             <Route path="subscription" element={<RecruiterSubscription />} />
+            <Route path="settings" element={<RecruiterSettings />} />
             <Route path="reports" element={<Reports />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
@@ -85,10 +91,10 @@ function App() {
             </ProtectedRoute>
           }>
             <Route path="stats" element={<AdminStats />} />
-            <Route path="users" element={<AdminStats />} /> {/* Using same for now as requested */}
-            <Route path="security" element={<div className="p-8 text-white"><h1 className="text-2xl font-bold">Firewall IA (Bientôt disponible)</h1></div>} />
-            <Route path="logs" element={<AdminStats />} />
-            <Route path="settings" element={<div className="p-8 text-white"><h1 className="text-2xl font-bold">Configuration Système (Bientôt disponible)</h1></div>} />
+            <Route path="users" element={<AdminUsers />} /> 
+            <Route path="security" element={<AdminSecurity />} />
+            <Route path="logs" element={<AdminLogs />} />
+            <Route path="settings" element={<AdminSettings />} />
             <Route index element={<Navigate to="stats" replace />} />
           </Route>
 
