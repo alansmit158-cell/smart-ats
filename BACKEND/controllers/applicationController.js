@@ -130,7 +130,11 @@ const updateApplicationStatus = async (req, res) => {
             return res.status(400).json({ success: false, message: "Statut invalide." });
         }
 
-        const application = await Application.findById(id).populate('job');
+        const application = await Application.findById(id).populate('job').populate({
+            path: 'candidate',
+            populate: { path: 'user' }
+        });
+        
         if (!application) {
             return res.status(404).json({ success: false, message: "Candidature non trouvée." });
         }
@@ -142,6 +146,29 @@ const updateApplicationStatus = async (req, res) => {
 
         application.status = status;
         await application.save();
+
+        // Envoi automatique d'un message en cas de rejet ou d'acceptation
+        if (status === 'Rejected') {
+            const Message = require('../models/Message');
+            
+            const content = `Bonjour ${application.candidate.user.nom},\n\nSuite à l'analyse de votre candidature pour le poste de ${application.job.titre}, nous avons le regret de vous informer que nous ne donnerons pas suite à votre candidature. Nous conservons néanmoins votre profil dans notre vivier pour de futures opportunités.\n\nCordialement,\nL'équipe de recrutement.`;
+            
+            await Message.create({
+                sender: req.user.id, // Recruiter
+                receiver: application.candidate.user._id, // Candidate User ID
+                content: content
+            });
+        } else if (status === 'Interviewed') {
+            const Message = require('../models/Message');
+            
+            const content = `Bonjour ${application.candidate.user.nom},\n\nFélicitations ! Suite à l'analyse très positive de votre profil par notre système et notre équipe, nous avons le plaisir de vous annoncer que votre candidature pour le poste de ${application.job.titre} a été retenue pour la prochaine étape.\n\nNous vous contacterons très prochainement pour planifier un entretien.\n\nCordialement,\nL'équipe de recrutement.`;
+            
+            await Message.create({
+                sender: req.user.id, // Recruiter
+                receiver: application.candidate.user._id, // Candidate User ID
+                content: content
+            });
+        }
 
         res.status(200).json({
             success: true,

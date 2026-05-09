@@ -33,6 +33,8 @@ const RecruiterInterviews = () => {
     const [activeApp, setActiveApp] = useState(null);
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
+    const [isGeneratingKit, setIsGeneratingKit] = useState(false);
+    const [generatedKit, setGeneratedKit] = useState(null);
 
     // Filters State
     const [statusFilter, setStatusFilter] = useState('');
@@ -91,6 +93,30 @@ const RecruiterInterviews = () => {
             setRating(0);
         } catch (error) {
             toast.error("Erreur lors de l'enregistrement");
+        }
+    };
+
+    const handleGenerateKit = async () => {
+        if (!activeApp) return;
+        setIsGeneratingKit(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await API.post(`/kits/generate/direct`, {
+                candidateId: activeApp.candidate._id,
+                jobId: activeApp.job._id
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (res.data.success) {
+                setGeneratedKit(res.data.data);
+                toast.success("Kit d'entretien généré avec succès !");
+            }
+        } catch (error) {
+            toast.error("Erreur lors de la génération du kit IA");
+            console.error(error);
+        } finally {
+            setIsGeneratingKit(false);
         }
     };
 
@@ -252,7 +278,7 @@ const RecruiterInterviews = () => {
                             <div className="flex items-center gap-3">
                                 {app.status === 'Interviewed' ? (
                                     <button 
-                                        onClick={() => { setActiveApp(app); setShowEvaluation(true); }}
+                                        onClick={() => { setActiveApp(app); setGeneratedKit(null); setShowEvaluation(true); }}
                                         className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl hover:scale-110 active:scale-95 transition-all"
                                     >
                                         <CheckCircle2 size={16} className="text-[#B76E79]" /> Évaluer l'entretien
@@ -349,6 +375,60 @@ const RecruiterInterviews = () => {
                                             </div>
                                         </section>
                                     )}
+
+                                    {/* Section IA Kit d'entretien */}
+                                    <section className="space-y-6 pt-4 border-t border-slate-50">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-[#B76E79] italic">
+                                                <BrainCircuit size={14} /> Assistant IA d'Entretien
+                                            </h4>
+                                            {!generatedKit && (
+                                                <button 
+                                                    onClick={handleGenerateKit}
+                                                    disabled={isGeneratingKit}
+                                                    className="px-4 py-2 bg-[#B76E79]/10 text-[#B76E79] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#B76E79] hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
+                                                >
+                                                    {isGeneratingKit ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                                    {isGeneratingKit ? 'Génération...' : 'Générer le Kit'}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {generatedKit && (
+                                            <div className="bg-[#FDFCF0] border border-[#B76E79]/20 rounded-3xl p-6 space-y-6">
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Résumé Profil IA</p>
+                                                    <p className="text-sm font-medium text-slate-700 italic">"{generatedKit.resumeIA}"</p>
+                                                </div>
+                                                
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Questions Suggérées</p>
+                                                    <ul className="space-y-3">
+                                                        {generatedKit.questionsTechniques?.map((q, idx) => (
+                                                            <li key={idx} className="flex gap-3 items-start">
+                                                                <span className="text-[#B76E79] font-black mt-0.5">Q{idx + 1}.</span>
+                                                                <span className="text-sm font-bold text-slate-800">{q}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+
+                                                {generatedKit.pointsVigilance?.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Points à creuser absolument</p>
+                                                        <ul className="space-y-2">
+                                                            {generatedKit.pointsVigilance.map((p, idx) => (
+                                                                <li key={idx} className="flex gap-2 items-start text-xs font-medium text-rose-600 bg-rose-50/50 p-2 rounded-lg">
+                                                                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                                                                    <span>{p}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </section>
                                 </div>
 
                                 <div className="pt-8 mt-auto flex gap-4">

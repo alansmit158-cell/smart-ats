@@ -76,6 +76,25 @@ const RecruiterScoring = () => {
         }
     };
 
+    const handleUpdateStatus = async (status) => {
+        if (!selectedApp) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await API.patch(`/applications/${selectedApp._id}/status`, { status });
+            
+            if (res.data.success) {
+                setApplications(prev => prev.map(app => 
+                    app._id === selectedApp._id 
+                    ? { ...app, status }
+                    : app
+                ));
+                toast.success(status === 'Rejected' ? "Candidature rejetée. Message automatique envoyé." : "Candidature acceptée pour entretien !");
+            }
+        } catch (error) {
+            toast.error("Erreur lors de la mise à jour du statut");
+        }
+    };
+
     const getScoreColor = (score) => {
         if (score >= 80) return 'text-emerald-500 bg-emerald-50 border-emerald-100';
         if (score >= 60) return 'text-blue-500 bg-blue-50 border-blue-100';
@@ -200,6 +219,22 @@ const RecruiterScoring = () => {
                                         ? "Le profil présente une corrélation sémantique forte avec les prérequis techniques de l'offre."
                                         : "Certaines compétences clés manquent à l'appel, un entretien technique est recommandé pour valider le potentiel."}
                                 </p>
+                           </div>
+
+                           {/* Actions Recruteur */}
+                           <div className="pt-6 border-t border-[#B76E79]/10 flex gap-4">
+                                <button 
+                                    onClick={() => handleUpdateStatus('Rejected')}
+                                    className="flex-1 bg-white border border-rose-100 text-rose-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-50 hover:scale-[1.02] active:scale-95 transition-all shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <XCircle size={16} /> Rejeter
+                                </button>
+                                <button 
+                                    onClick={() => handleUpdateStatus('Interviewed')}
+                                    className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
+                                >
+                                    <CheckCircle size={16} className="text-[#B76E79]" /> Continuer vers Entretien
+                                </button>
                            </div>
                         </div>
                     ) : (

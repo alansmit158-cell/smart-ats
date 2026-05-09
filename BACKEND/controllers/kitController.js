@@ -33,35 +33,46 @@ FORMAT DE SORTIE ATTENDU :
 const generateKit = async (req, res) => {
     try {
         const { interviewId } = req.params;
+        const { candidateId, jobId } = req.body; // Accept from body as fallback
 
-        // Verify Interview
-        const interview = await Interview.findById(interviewId)
-            .populate('candidate')
-            .populate('job');
+        let candidate;
+        let job;
 
-        if (!interview) {
-            return res.status(404).json({ success: false, message: 'Interview not found' });
+        if (interviewId && interviewId !== 'direct') {
+            // Verify Interview
+            const interview = await Interview.findById(interviewId)
+                .populate('candidate')
+                .populate('job');
+
+            if (!interview) {
+                return res.status(404).json({ success: false, message: 'Interview not found' });
+            }
+
+            // Check if kit already exists
+            const existingKit = await KitEntretien.findOne({ interview: interviewId });
+            if (existingKit) {
+                return res.status(200).json({ success: true, data: existingKit, message: 'Kit already exists.' });
+            }
+
+            candidate = interview.candidate;
+            job = interview.job;
+        } else if (candidateId) {
+            candidate = await Candidate.findById(candidateId);
+            if (jobId) {
+                job = await Job.findById(jobId);
+            }
         }
-
-        // Check if kit already exists
-        const existingKit = await KitEntretien.findOne({ interview: interviewId });
-        if (existingKit) {
-            return res.status(200).json({ success: true, data: existingKit, message: 'Kit already exists.' });
-        }
-
-        const candidate = interview.candidate;
-        const job = interview.job;
 
         if (!candidate) {
-            return res.status(400).json({ success: false, message: 'Candidate not linked to this interview.' });
+            return res.status(400).json({ success: false, message: 'Candidate not found or not linked.' });
         }
 
         // Context construction
         const jobContext = job ? `
 OFFRE D'EMPLOI :
-- Titre : ${job.title}
+- Titre : ${job.titre || job.title}
 - Description : ${job.description}
-- Compétences requises : ${job.requirements?.join(', ') || 'Non spécifiées'}` : "Pas d'offre d'emploi liée (Entretien spontané).";
+- Compétences requises : ${job.competences?.join(', ') || job.requirements?.join(', ') || 'Non spécifiées'}` : "Pas d'offre d'emploi liée (Entretien spontané).";
 
         const candidateContext = `
 PROFIL DU CANDIDAT :
@@ -101,17 +112,22 @@ PROFIL DU CANDIDAT :
             
         const combinedVigilance = [...highSeverityAnomalies, ...(kitData.points_vigilance || [])];
 
-        // Save Kit to DB
-        const kitEntretien = new KitEntretien({
-            interview: interviewId,
-            resume_profil: kitData.resume_profil || "Résumé indisponible",
-            questions: kitData.questions || [],
-            points_vigilance: combinedVigilance
-        });
+        // Field mapping to match KitEntretien schema
+        const kitEntretienData = {
+            resumeIA: kitData.resume_profil || "Résumé indisponible",
+            questionsTechniques: kitData.questions || [],
+            pointsVigilance: combinedVigilance
+        };
 
-        await kitEntretien.save();
-
-        res.status(201).json({ success: true, data: kitEntretien, message: 'Interview kit generated successfully' });
+        if (interviewId && interviewId !== 'direct') {
+            kitEntretienData.interview = interviewId;
+            const kitEntretien = new KitEntretien(kitEntretienData);
+            await kitEntretien.save();
+            return res.status(201).json({ success: true, data: kitEntretien, message: 'Interview kit generated and saved successfully' });
+        } else {
+            // Return on-the-fly generated kit without saving to DB (since there's no Interview ID)
+            return res.status(200).json({ success: true, data: kitEntretienData, message: 'Interview kit generated on-the-fly' });
+        }
     } catch (error) {
         console.error('Error generating kit:', error);
         res.status(500).json({ success: false, message: error.message });
