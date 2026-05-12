@@ -44,6 +44,7 @@ smart-ATS/
 │   │   ├── Candidate.js
 │   │   ├── Interview.js
 │   │   ├── Job.js
+│   │   ├── KitEntretien.js
 │   │   ├── Message.js
 │   │   └── User.js
 │   ├── routes/                   ← Définition des endpoints API
@@ -58,7 +59,10 @@ smart-ATS/
 │   │   ├── kitRoutes.js
 │   │   ├── matchingRoutes.js
 │   │   └── messageRoutes.js
-│   └── uploads/                  ← Stockage temporaire des PDF (CVs)
+│   ├── uploads/                  ← Stockage temporaire des PDF (CVs)
+│   └── workers/                  ← Traitements asynchrones (Multi-threading)
+│       ├── nlpWorker.js          ← Thread isolé pour l'analyse IA (OpenAI)
+│       └── workerPool.js         ← Gestion de la file d'attente et répartition
 │
 └── frontend/                     ← Application React (Vite + Tailwind v4)
     ├── vite.config.js            ← Configuration Vite
@@ -81,7 +85,11 @@ smart-ATS/
             ├── Login.jsx         ← Page de connexion unifiée
             ├── Register.jsx      ← Inscription
             ├── admin/
-            │   └── AdminStats.jsx ← Console de monitoring (OpenAI, Users)
+            │   ├── AdminLogs.jsx      ← Flux de télémétrie système
+            │   ├── AdminSecurity.jsx  ← Firewall IA & Sécurité
+            │   ├── AdminSettings.jsx  ← Configuration API OpenAI
+            │   ├── AdminStats.jsx     ← Console de monitoring (OpenAI, Users)
+            │   └── AdminUsers.jsx     ← Gestion utilisateurs (Root)
             ├── candidate/
             │   ├── CandidateApplications.jsx ← Suivi candidatures
             │   ├── CandidateChat.jsx         ← Messagerie
@@ -89,13 +97,15 @@ smart-ATS/
             │   ├── CandidatePortal.jsx       ← Dashboard candidat
             │   ├── CandidateProfile.jsx      ← Profil candidat
             │   └── CandidateUpload.jsx       ← Upload de CV
-            └── recruiter/
-                ├── RecruiterDashboard.jsx    ← Dashboard recruteur
-                ├── RecruiterInterviews.jsx   ← Gestion entretiens & IA Kits
-                ├── RecruiterJobs.jsx         ← Gestion offres
-                ├── RecruiterMessages.jsx     ← Messagerie & IA Suggest
-                ├── RecruiterScoring.jsx      ← Matching CV / Offre
-                └── RecruiterSubscription.jsx ← Paramètres Abonnement
+            ├── recruiter/
+            │   ├── RecruiterDashboard.jsx    ← Dashboard recruteur
+            │   ├── RecruiterInterviews.jsx   ← Gestion entretiens & IA Kits
+            │   ├── RecruiterJobs.jsx         ← Gestion offres
+            │   ├── RecruiterMessages.jsx     ← Messagerie & IA Suggest
+            │   ├── RecruiterScoring.jsx      ← Matching CV / Offre
+            │   ├── RecruiterSettings.jsx     ← Profil entreprise, IA preferences
+            │   └── RecruiterSubscription.jsx ← Paramètres Abonnement
+            └── Reports.jsx       ← Analytiques (Recrutement Funnel)
 
 ================================================================================
                          CE QUI A ÉTÉ RÉALISÉ (FRONTEND)
