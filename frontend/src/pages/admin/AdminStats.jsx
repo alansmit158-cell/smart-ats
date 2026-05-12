@@ -25,26 +25,23 @@ const AdminStats = () => {
     const [users, setUsers] = useState([]);
     const [abonnements, setAbonnements] = useState([]);
     const [workerStats, setWorkerStats] = useState({ activeWorkers: 0, maxWorkers: 3, queueLength: 0, available: 3 });
+    const [openAiStats, setOpenAiStats] = useState({ tokensUsed: 0, tokenLimit: 1000000, estimatedCost: 0, model: "N/A", status: "N/A" });
+    const [auditLogs, setAuditLogs] = useState([]);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                // Fetch stats (if dashboard/stats is available, fallback to basic calculation)
                 const usersRes = await API.get('/admin/users');
-                const usersData = usersRes.data.data || [];
-                setUsers(usersData);
+                setUsers(usersRes.data.data || []);
 
-                const cCount = usersData.filter(u => u.role === 'candidate').length;
-                const rCount = usersData.filter(u => u.role === 'recruiter').length;
+                const healthRes = await API.get('/admin/health-stats');
+                if (healthRes.data.success) setStats(healthRes.data.data);
 
-                setStats({
-                    users: usersData.length,
-                    candidates: cCount,
-                    recruiters: rCount,
-                    applications: 0, // Mock for now if no endpoint
-                    jobs: 0,         // Mock for now
-                    avgScore: 94.2
-                });
+                const openaiRes = await API.get('/admin/openai-stats');
+                if (openaiRes.data.success) setOpenAiStats(openaiRes.data.data);
+
+                const logsRes = await API.get('/admin/audit-logs');
+                if (logsRes.data.success) setAuditLogs(logsRes.data.data);
 
                 // Set mock abonnements for now if endpoint isn't fully returning yet
                 setAbonnements([
@@ -62,19 +59,20 @@ const AdminStats = () => {
 
         fetchDashboardData();
 
-        // Worker stats polling
-        const fetchWorkerStats = async () => {
+        // Worker and Audit stats polling
+        const fetchDynamicStats = async () => {
             try {
-                const res = await API.get('/admin/worker-stats');
-                if (res.data.success) {
-                    setWorkerStats(res.data.data);
-                }
+                const resWorker = await API.get('/admin/worker-stats');
+                if (resWorker.data.success) setWorkerStats(resWorker.data.data);
+
+                const resLogs = await API.get('/admin/audit-logs');
+                if (resLogs.data.success) setAuditLogs(resLogs.data.data);
             } catch (err) {
-                console.error("Worker stats fetch error");
+                console.error("Dynamic stats fetch error");
             }
         };
-        fetchWorkerStats();
-        const intervalId = setInterval(fetchWorkerStats, 5000);
+        fetchDynamicStats();
+        const intervalId = setInterval(fetchDynamicStats, 5000);
 
         return () => clearInterval(intervalId);
     }, []);
@@ -92,14 +90,8 @@ const AdminStats = () => {
 
     const dashboardStats = [
         { label: 'Utilisateurs Totaux', value: stats.users, sub: `Recruteurs: ${stats.recruiters} | Candidats: ${stats.candidates}`, icon: <Users />, color: 'text-blue-500' },
-        { label: 'CV Analysés (IA)', value: '8,924', sub: '+12% ce mois-ci', icon: <FileText />, color: 'text-[#B76E79]' },
-        { label: 'Succès Matching', value: `${stats.avgScore}%`, sub: 'Précision du moteur v4.0', icon: <TrendingUp />, color: 'text-emerald-500' },
-    ];
-
-    const logs = [
-        { time: '10:45', action: 'Recruteur Orange a créé une offre "Dev React"', icon: <Zap size={14} className="text-amber-500" /> },
-        { time: '10:30', action: 'Candidat 452 a déposé un CV (PDF)', icon: <FileText size={14} className="text-blue-500" /> },
-        { time: '10:15', action: 'Moteur IA : Scoring complété pour #Job88', icon: <Cpu size={14} className="text-[#B76E79]" /> },
+        { label: 'Applications', value: stats.applications, sub: 'Candidatures actives', icon: <FileText />, color: 'text-[#B76E79]' },
+        { label: 'Score Moyen Matching', value: `${stats.avgScore}%`, sub: 'Sur les candidatures', icon: <TrendingUp />, color: 'text-emerald-500' },
     ];
 
     if (loading) {
@@ -174,7 +166,7 @@ const AdminStats = () => {
                          </div>
                          <div>
                             <h3 className="text-lg font-serif font-bold text-white leading-none">Console OpenAI</h3>
-                            <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1 italic">Status: Online</p>
+                            <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1 italic">Status: {openAiStats.status}</p>
                          </div>
                     </div>
 
@@ -182,22 +174,22 @@ const AdminStats = () => {
                         <div className="space-y-2">
                              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
                                 <span>Token Usage</span>
-                                <span className="text-[#B76E79]">482k / 1M</span>
+                                <span className="text-[#B76E79]">{(openAiStats.tokensUsed / 1000).toFixed(0)}k / {(openAiStats.tokenLimit / 1000000).toFixed(0)}M</span>
                              </div>
                              <div className="h-2 w-full bg-[#1e293b] rounded-full overflow-hidden p-0.5 border border-slate-800">
-                                <div className="h-full bg-gradient-to-r from-[#B76E79] to-amber-500 rounded-full w-[48%] shadow-[0_0_10px_rgba(183,110,121,0.3)]"></div>
+                                <div className="h-full bg-gradient-to-r from-[#B76E79] to-amber-500 rounded-full shadow-[0_0_10px_rgba(183,110,121,0.3)]" style={{ width: `${(openAiStats.tokensUsed / openAiStats.tokenLimit) * 100}%` }}></div>
                              </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-[#1e293b]/40 p-5 rounded-2xl border border-[#334155] text-center">
                                 <DollarSign size={16} className="mx-auto mb-2 text-emerald-400" />
-                                <p className="text-xl font-black text-white">$14.28</p>
+                                <p className="text-xl font-black text-white">${openAiStats.estimatedCost}</p>
                                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic">Coût Estimé</p>
                             </div>
                             <div className="bg-[#1e293b]/40 p-5 rounded-2xl border border-[#334155] text-center">
                                 <CircleDot size={16} className="mx-auto mb-2 text-blue-400" />
-                                <p className="text-xl font-black text-white">4.0o-mini</p>
+                                <p className="text-xl font-black text-white">{openAiStats.model}</p>
                                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic">Modèle Actif</p>
                             </div>
                         </div>
@@ -374,15 +366,23 @@ const AdminStats = () => {
                     <Activity size={20} className="text-[#B76E79]" />
                     <h3 className="text-xl font-serif font-bold text-white">Audit Logs : Signal Flux</h3>
                 </div>
-                <div className="space-y-4">
-                    {logs.map((log, i) => (
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                    {auditLogs.length === 0 ? (
+                        <p className="text-slate-500 text-sm">Aucun log récent...</p>
+                    ) : auditLogs.slice().reverse().map((log, i) => (
                         <div key={i} className="flex items-center gap-6 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-[#1e293b] transition-all group">
-                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest w-12 italic">{log.time}</p>
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest w-16 italic text-center">
+                                {new Date(log.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </p>
                             <div className="w-8 h-8 rounded-xl bg-black/40 flex items-center justify-center border border-[#1e293b] group-hover:bg-[#B76E79]/10 group-hover:text-[#B76E79] transition-all">
-                                {log.icon}
+                                {log.action.includes('ERROR') || log.action.includes('FAIL') || log.action.includes('EXIT') || log.action.includes('ABORTED') ? <ShieldAlert size={14} className="text-rose-500" /> : 
+                                 log.action.includes('SUCCESS') ? <Zap size={14} className="text-emerald-500" /> :
+                                 <FileText size={14} className="text-blue-500" />}
                             </div>
-                            <p className="text-sm font-medium text-slate-400 group-hover:text-white transition-colors">{log.action}</p>
-                            <ShieldAlert size={14} className="ml-auto text-slate-800" />
+                            <div>
+                                <p className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">{log.action}</p>
+                                <p className="text-xs text-slate-500 mt-1">{log.details}</p>
+                            </div>
                         </div>
                     ))}
                 </div>

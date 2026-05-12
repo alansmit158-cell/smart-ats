@@ -1,8 +1,7 @@
-const { OpenAI } = require('openai');
+const openai = require('../config/openaiConfig');
 const Job = require('../models/Job');
 const Candidate = require('../models/Candidate');
-
-const openai = new OpenAI();
+const Application = require('../models/Application');
 
 // =============================================================================
 // PROMPT SYSTÈME — Moteur de Matching Sémantique
@@ -103,6 +102,19 @@ PROFIL DU CANDIDAT :
         const aiContent = aiResponse.choices[0].message.content;
         const matchResult = JSON.parse(aiContent);
 
+        // Update or Create Application (OffreCandidat)
+        let application = await Application.findOne({ candidate: candidateId, job: jobId });
+        if (!application) {
+            application = new Application({
+                candidate: candidateId,
+                job: jobId,
+                cv: candidateId // Assuming cv references Candidate ID
+            });
+        }
+        application.status = 'Scored';
+        application.scoreMatching = matchResult.score;
+        await application.save();
+
         return res.status(200).json({
             success: true,
             data: {
@@ -110,6 +122,7 @@ PROFIL DU CANDIDAT :
                 candidateName: candidateName,
                 jobId: job._id,
                 jobTitle: job.titre,
+                applicationId: application._id,
                 ...matchResult
             }
         });

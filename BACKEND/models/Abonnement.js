@@ -10,7 +10,7 @@ const abonnementSchema = new mongoose.Schema({
         type: Number, 
         required: true 
     },
-    statut: { 
+    status: { 
         type: String, 
         enum: ['active', 'inactive', 'suspended'], 
         default: 'inactive' 

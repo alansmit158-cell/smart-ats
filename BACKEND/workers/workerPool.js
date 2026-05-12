@@ -5,29 +5,39 @@ const EventEmitter = require('events');
 class NLPWorkerPool extends EventEmitter {
   constructor(maxWorkers = 3) {
     super();
-    this.maxWorkers = maxWorkers;    // Maximum 3 analyses simultanées
+    this.maxWorkers = maxWorkers;
     this.activeWorkers = 0;
-    this.queue = [];                 // File d'attente si tous les workers sont occupés
+    this.queue = [];
+    this.auditLogs = []; // Stores audit logs
   }
 
-  // Lancer un traitement NLP dans un Worker Thread
-  processCV({ pdfText, candidateId }) {
+  addAuditLog(action, details = '') {
+      const log = {
+          time: new Date().toISOString(),
+          action,
+          details
+      };
+      this.auditLogs.push(log);
+      if (this.auditLogs.length > 100) this.auditLogs.shift(); // Keep last 100
+      console.log(`[AUDIT] ${action} ${details}`);
+  }
+
+  processCV({ pdfText, candidateId, retries = 0 }) {
     return new Promise((resolve, reject) => {
-      const task = { pdfText, candidateId, resolve, reject };
+      const task = { pdfText, candidateId, retries, resolve, reject };
       
       if (this.activeWorkers < this.maxWorkers) {
         this._runWorker(task);
       } else {
-        // Mettre en file d'attente si tous les workers sont occupés
-        console.log(`⏳ Worker pool plein (${this.activeWorkers}/${this.maxWorkers}). Mise en file d'attente du candidat ${candidateId}`);
+        this.addAuditLog('TASK_QUEUED', `Candidat ${candidateId} mis en file d'attente.`);
         this.queue.push(task);
       }
     });
   }
 
-  _runWorker({ pdfText, candidateId, resolve, reject }) {
+  _runWorker({ pdfText, candidateId, retries, resolve, reject }) {
     this.activeWorkers++;
-    console.log(`🚀 Worker Thread démarré pour candidat ${candidateId} (${this.activeWorkers}/${this.maxWorkers} actifs)`);
+    this.addAuditLog('WORKER_START', `Démarrage pour candidat ${candidateId} (Tentative ${retries + 1})`);
 
     const worker = new Worker(
       path.join(__dirname, 'nlpWorker.js'),
@@ -41,45 +51,52 @@ class NLPWorkerPool extends EventEmitter {
       }
     );
 
-    // Réponse du worker
     worker.on('message', (result) => {
       this.activeWorkers--;
-      console.log(`✅ Worker Thread terminé pour candidat ${candidateId}`);
-      
       if (result.success) {
+        this.addAuditLog('WORKER_SUCCESS', `Terminé pour candidat ${candidateId}`);
         resolve(result);
         this.emit('completed', result);
       } else {
-        reject(new Error(result.error));
-        this.emit('failed', result);
+        this.addAuditLog('WORKER_FAIL', `Échec pour candidat ${candidateId}: ${result.error}`);
+        this._handleWorkerFailure({ pdfText, candidateId, retries, resolve, reject }, new Error(result.error));
       }
-      
-      // Traiter la tâche suivante dans la file
       this._processQueue();
     });
 
-    // Erreur du worker
     worker.on('error', (error) => {
       this.activeWorkers--;
-      console.error(`❌ Worker Thread erreur pour ${candidateId}:`, error.message);
-      reject(error);
+      this.addAuditLog('WORKER_ERROR', `Crash pour candidat ${candidateId}: ${error.message}`);
+      this._handleWorkerFailure({ pdfText, candidateId, retries, resolve, reject }, error);
       this._processQueue();
     });
 
-    // Worker terminé sans message
     worker.on('exit', (code) => {
       if (code !== 0) {
         this.activeWorkers--;
-        reject(new Error(`Worker stopped with exit code ${code}`));
+        this.addAuditLog('WORKER_EXIT', `Arrêt inattendu (code ${code}) pour candidat ${candidateId}`);
+        this._handleWorkerFailure({ pdfText, candidateId, retries, resolve, reject }, new Error(`Exit code ${code}`));
         this._processQueue();
       }
     });
   }
 
+  _handleWorkerFailure(task, error) {
+      if (task.retries < 2) {
+          this.addAuditLog('TASK_RETRY', `Réassignation de la tâche pour candidat ${task.candidateId}`);
+          task.retries++;
+          this.queue.unshift(task); // Put back at the front of the queue
+      } else {
+          this.addAuditLog('TASK_ABORTED', `Tâche abandonnée après ${task.retries} tentatives pour candidat ${task.candidateId}`);
+          task.reject(error);
+          this.emit('failed', { candidateId: task.candidateId, error: error.message });
+      }
+  }
+
   _processQueue() {
     if (this.queue.length > 0 && this.activeWorkers < this.maxWorkers) {
       const nextTask = this.queue.shift();
-      console.log(`📤 Traitement tâche suivante en file (${this.queue.length} restantes)`);
+      this.addAuditLog('QUEUE_POP', `Traitement depuis la file (${this.queue.length} restantes)`);
       this._runWorker(nextTask);
     }
   }
