@@ -686,6 +686,24 @@ smart-ATS/
     - Recruiter Settings : Création de `RecruiterSettings.jsx` (Profil entreprise, IA preferences).
     - Routage Global : Finalisation du fichier `App.jsx` liant toutes les routes à leurs composants finaux.
 
+[✅] AUDIT DE COHÉRENCE CONCEPTION-RÉALISATION (UML vs MONGOOSE)
+    - Modèle `KitEntretien` : Remplacement des tableaux basiques par des sous-schémas embarqués (Embedded Subdocuments) pour `ResumeIA`, `QuestionTechnique` et `PointVigilance`.
+    - Modèle `Application` : Rétablissement strict de l'attribut `scoreMatching` à la place de `score` pour l'entité OffreCandidat.
+    - Modèle `User` : Ajout de l'attribut `prenom` défini au niveau de la classe parente dans l'UML.
+    - Modèle `Abonnement` : Correction de `statut` en `status`.
+
+[✅] SÉCURISATION & CONTRÔLE D'ACCÈS
+    - Centralisation de l'authentification admin : Intégration du middleware `admin` dans `authMiddleware.js` pour protéger drastiquement toutes les routes `/api/admin/*`.
+    - Configuration OpenAI : Isolé dans `config/openaiConfig.js` pour une vérification des variables d'environnement dès le lancement.
+
+[✅] INFRASTRUCTURE WORKER POOL AVANCÉE
+    - Traçabilité : Ajout d'un système asynchrone de `Audit Logs` embarqué en mémoire (100 dernières actions).
+    - Auto-Healing (Retry) : Si un Worker Thread NLP subit un crash ou un `exit` inattendu, la tâche retourne en tête de la file d'attente (2 tentatives max).
+
+[✅] DASHBOARD D'ADMINISTRATION EN TEMPS RÉEL
+    - Création des endpoints `/api/admin/health-stats`, `/api/admin/openai-stats` et `/api/admin/audit-logs`.
+    - Refactorisation de `AdminStats.jsx` : Passage aux vraies données API avec rafraîchissement dynamique (`polling` toutes les 5s) du statut des workers et du flux d'audit.
+
 ================================================================================
                                 FIN DES NOTES
 ================================================================================
