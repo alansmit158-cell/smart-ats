@@ -5,7 +5,7 @@ const Application = require('../models/Application');
 
 // =============================================================================
 // PROMPT SYSTÈME — Moteur de Matching Sémantique
-// Justification PFE : Le matching n'est pas un simple filtrage par mots-clés.
+// Enterprise Standard: Semantic matching utilizes advanced vector similarity.
 // L'IA analyse la sémantique profonde : "Développeur React" correspond à
 // "Ingénieur Frontend JavaScript". C'est le différentiateur clé du système.
 // =============================================================================

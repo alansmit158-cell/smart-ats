@@ -233,7 +233,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/5 py-12 text-center bg-slate-950">
         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-700">
-            &copy; 2026 SMART-ATS NEURAL ECOSYSTEM • TUNISIA PFE DEFENSE
+            &copy; 2026 SMART-ATS NEURAL ECOSYSTEM • ENTERPRISE TALENT SOLUTIONS
         </p>
       </footer>
     </div>
