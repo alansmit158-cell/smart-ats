@@ -1,6 +1,5 @@
 const Interview = require('../models/Interview');
 const Candidate = require('../models/Candidate');
-const { sendInterviewEmail } = require('../utils/emailService');
 
 // @desc    Create a new interview and send email
 // @route   POST /api/interviews
@@ -28,17 +27,7 @@ const createInterview = async (req, res) => {
 
         await interview.save();
 
-        // Send Email using Nodemailer
-        if (candidate.email) {
-            await sendInterviewEmail(candidate.email, candidate.name, {
-                date,
-                type,
-                meetLink: interview.meetLink,
-                location: interview.location
-            });
-        }
-
-        res.status(201).json({ success: true, data: interview, message: 'Interview scheduled and email sent' });
+        res.status(201).json({ success: true, data: interview, message: 'Interview scheduled successfully' });
     } catch (error) {
         console.error('Error creating interview:', error);
         res.status(500).json({ success: false, message: error.message });

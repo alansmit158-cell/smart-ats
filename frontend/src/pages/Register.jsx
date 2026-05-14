@@ -22,32 +22,36 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="bg-blue-600 p-8 text-center">
-                    <h2 className="text-3xl font-bold text-white mb-2">Join Us</h2>
-                    <p className="text-blue-100">Create your Smart-ATS account</p>
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background elements */}
+            <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-blue-600/10 blur-[120px]" />
+            <div className="absolute bottom-[-10%] left-[-5%] w-[30vw] h-[30vw] rounded-full bg-rose-500/5 blur-[100px]" />
+
+            <div className="max-w-md w-full bg-white/5 backdrop-blur-2xl rounded-[3rem] shadow-2xl shadow-black overflow-hidden border border-white/10 relative z-10">
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-10 text-center">
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Create Account</h2>
+                    <p className="text-blue-100/70 text-sm italic font-medium">Join the next generation of Smart Recruitment.</p>
                 </div>
                 
-                <div className="p-8">
+                <div className="p-10">
                     {error && (
-                        <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-center">
-                            <AlertCircle className="text-red-500 mr-2" size={20} />
-                            <p className="text-red-700 text-sm">{error}</p>
+                        <div className="mb-6 bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center">
+                            <AlertCircle className="text-rose-400 mr-2" size={20} />
+                            <p className="text-rose-200 text-sm font-medium">{error}</p>
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <User className="h-5 w-5 text-gray-400" />
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Full Name</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
+                                    <User className="h-5 w-5 text-slate-500" />
                                 </div>
                                 <input 
                                     type="text" 
                                     required
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900" 
+                                    className="block w-full pl-12 pr-4 py-3.5 border border-white/5 rounded-2xl focus:ring-0 focus:border-blue-500/50 bg-white/5 text-white transition-all font-medium outline-none placeholder-slate-600 shadow-inner" 
                                     placeholder="John Doe"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
@@ -55,16 +59,16 @@ const Register = () => {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-gray-400" />
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Email Address</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
+                                    <Mail className="h-5 w-5 text-slate-500" />
                                 </div>
                                 <input 
                                     type="email" 
                                     required
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900" 
+                                    className="block w-full pl-12 pr-4 py-3.5 border border-white/5 rounded-2xl focus:ring-0 focus:border-blue-500/50 bg-white/5 text-white transition-all font-medium outline-none placeholder-slate-600 shadow-inner" 
                                     placeholder="you@company.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -72,16 +76,16 @@ const Register = () => {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-gray-400" />
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Secure Password</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
+                                    <Lock className="h-5 w-5 text-slate-500" />
                                 </div>
                                 <input 
                                     type="password" 
                                     required
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900" 
+                                    className="block w-full pl-12 pr-4 py-3.5 border border-white/5 rounded-2xl focus:ring-0 focus:border-blue-500/50 bg-white/5 text-white transition-all font-medium outline-none placeholder-slate-600 shadow-inner" 
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -91,17 +95,17 @@ const Register = () => {
 
                         <button 
                             type="submit" 
-                            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                            className="w-full flex justify-center items-center py-4 px-4 rounded-2xl shadow-xl shadow-blue-600/20 font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all mt-4"
                         >
                             <UserPlus className="mr-2 h-5 w-5" />
-                            Create Account
+                            Sign Up
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
+                    <div className="mt-8 text-center border-t border-white/5 pt-6">
+                        <p className="text-sm text-slate-400 font-medium">
                             Already have an account?{' '}
-                            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                            <Link to="/login" className="font-bold text-blue-400 hover:text-blue-300 transition-colors">
                                 Sign in here
                             </Link>
                         </p>

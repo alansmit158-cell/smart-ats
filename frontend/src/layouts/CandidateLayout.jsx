@@ -30,34 +30,41 @@ const CandidateLayout = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-[#FDFCF0] text-slate-800 font-sans overflow-hidden">
+    <div className="flex h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden">
+      {/* Background Atmosphere */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-500/5 blur-[120px] rounded-full" />
+      </div>
+
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar (Dark Glass) */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 w-72 bg-white border-r border-slate-100 z-50 transition-transform duration-300 ease-in-out
+        fixed lg:static inset-y-0 left-0 w-72 bg-slate-900/50 backdrop-blur-2xl border-r border-white/5 z-50 transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col relative z-10">
           {/* Logo Section */}
           <div className="p-8 flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#B76E79] to-[#E5C4A7] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[#B76E79]/20">
-              <span className="font-serif text-xl font-bold italic">S</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+               <Sparkles className="w-6 h-6" />
             </div>
             <div>
-               <h1 className="text-xl font-serif font-bold tracking-tight text-slate-900">Smart-ATS</h1>
-               <p className="text-[10px] uppercase tracking-widest text-[#B76E79] font-bold">Luxe Recruitment</p>
+               <h1 className="text-xl font-bold tracking-tight text-white">Smart<span className="text-rose-400">-ATS</span></h1>
+               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Candidate Portal</p>
             </div>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto pt-4">
+            <div className="px-5 mb-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Navigation</div>
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
@@ -66,54 +73,54 @@ const CandidateLayout = () => {
                 className={({ isActive }) => 
                   `flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-300 group ${
                     isActive 
-                      ? 'bg-gradient-to-r from-[#B76E79]/10 to-transparent text-[#B76E79] font-semibold border-l-4 border-[#B76E79]' 
-                      : 'text-slate-400 hover:text-[#B76E79] hover:bg-[#B76E79]/5'
+                      ? 'bg-white/5 text-white font-bold border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)]' 
+                      : 'text-slate-500 hover:text-white hover:bg-white/5'
                   }`
                 }
               >
-                <span className="transition-transform duration-300 group-hover:scale-110">{item.icon}</span>
+                <span className={`transition-transform duration-300 group-hover:scale-110 ${location.pathname === item.path ? 'text-blue-400' : ''}`}>{item.icon}</span>
                 <span className="text-sm tracking-wide">{item.label}</span>
               </NavLink>
             ))}
           </nav>
 
-          {/* User Section Footer */}
-          <div className="p-6 border-t border-slate-50">
-            <div className="bg-[#B76E79]/5 p-4 rounded-2xl mb-4 border border-[#B76E79]/10">
+          {/* AI Profile Progress Footer */}
+          <div className="p-6">
+            <div className="bg-white/5 p-5 rounded-3xl mb-4 border border-white/5 backdrop-blur-sm group hover:border-white/10 transition-all">
                <div className="flex items-center gap-3 mb-2">
-                  <Sparkles size={14} className="text-[#B76E79]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Premium AI Profile</span>
+                  <div className="w-2 h-2 bg-rose-400 rounded-full animate-pulse shadow-[0_0_8px_#f43f5e]"></div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">AI Profile Score</span>
                </div>
-               <div className="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
-                  <div className="bg-[#B76E79] h-full w-[85%] rounded-full shadow-[0_0_8px_rgba(183,110,121,0.5)]"></div>
+               <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-2">
+                  <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-[85%] rounded-full"></div>
                </div>
-               <p className="text-[10px] text-slate-400 mt-2">Visibilité Recruteurs : <span className="text-[#B76E79] font-bold">Optimale</span></p>
+               <p className="text-[10px] text-slate-500 font-medium">Visibility : <span className="text-blue-400 font-bold uppercase">Optimal</span></p>
             </div>
 
             <button 
               onClick={logout}
-              className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-slate-400 hover:text-red-400 hover:bg-red-50 transition-all duration-300"
+              className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-300"
             >
               <LogOut size={20} />
-              <span className="text-sm font-medium">Se déconnecter</span>
+              <span className="text-sm font-bold">Sign Out</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header */}
-        <header className="h-20 bg-white/50 backdrop-blur-md border-b border-white flex items-center justify-between px-4 lg:px-10 flex-shrink-0 z-30">
-          <div className="flex items-center gap-4">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+        {/* Header (Glass) */}
+        <header className="h-20 bg-slate-950/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 lg:px-12 flex-shrink-0 z-30">
+          <div className="flex items-center gap-4 text-slate-400">
             <button 
-              className="lg:hidden p-2 text-slate-600"
+              className="lg:hidden p-2 hover:text-white"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu size={24} />
             </button>
-            <h2 className="text-lg font-serif font-bold text-slate-800">
-               {menuItems.find(i => location.pathname === i.path)?.label || 'Aperçu'}
+            <h2 className="text-lg font-bold text-white tracking-wide uppercase italic">
+               {menuItems.find(i => location.pathname === i.path)?.label || 'Overview'}
             </h2>
           </div>
 
@@ -122,26 +129,26 @@ const CandidateLayout = () => {
               className="relative cursor-pointer group"
               onClick={() => toast("Aucune nouvelle notification pour le moment.", { icon: '🔔' })}
             >
-              <Bell size={20} className="text-slate-400 group-hover:text-[#B76E79] transition-colors" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#B76E79] rounded-full border-2 border-white"></span>
+              <Bell size={20} className="text-slate-400 group-hover:text-white transition-colors" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-950 shadow-[0_0_8px_#f43f5e]"></span>
             </div>
 
-            <div className="flex items-center gap-3 pl-6 border-l border-slate-100">
+            <div className="flex items-center gap-4 pl-6 border-l border-white/5">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-800">{user?.nom}</p>
-                <p className="text-[10px] font-bold text-[#B76E79] uppercase tracking-tighter italic">Candidat Premium</p>
+                <p className="text-sm font-bold text-white tracking-tight">{user?.nom}</p>
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">Candidate Premium</p>
               </div>
-              <div className="w-11 h-11 bg-white border border-slate-100 rounded-2xl flex items-center justify-center shadow-sm relative overflow-hidden group">
-                 <div className="absolute inset-0 bg-gradient-to-br from-[#B76E79]/10 to-transparent group-hover:opacity-100 transition-opacity opacity-0"></div>
-                 <UserIcon size={20} className="text-[#B76E79]" />
+              <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-lg group overflow-hidden relative">
+                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent group-hover:opacity-100 transition-opacity opacity-0"></div>
+                 <UserIcon size={20} className="text-white group-hover:text-blue-400 transition-colors" />
               </div>
             </div>
           </div>
         </header>
 
-        {/* Dynamic Outlet with scroll and fade effect */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-10 scroll-smooth">
-          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {/* Dynamic Content */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-12 scroll-smooth">
+          <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Outlet />
           </div>
         </main>

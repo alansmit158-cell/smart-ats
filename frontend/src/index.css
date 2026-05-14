@@ -2,7 +2,56 @@
 
 @theme {
   --color-primary: #3B82F6;
-  --color-accent: #10B981;
-  --color-background: #F9FAFB;
-  --color-sidebar: #1E293B;
+  --color-accent: #F43F5E;
+  --color-background: #020617; /* Slate-950 */
+  --color-surface: #0f172a;    /* Slate-900 */
+  --color-text: #e2e8f0;       /* Slate-200 */
+}
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-200 antialiased;
+  }
+}
+
+@layer components {
+  /* Global Glassmorphism Class */
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.2)];
+  }
+
+  .glass-nav {
+    @apply bg-slate-900/50 backdrop-blur-md border-b border-white/5;
+  }
+
+  .glass-sidebar {
+    @apply bg-slate-900/80 backdrop-blur-xl border-r border-white/5;
+  }
+
+  /* Animated Glowing Border Component */
+  .glow-border {
+    @apply relative border border-white/10 rounded-2xl overflow-hidden;
+  }
+  .glow-border::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-blue-500/20 to-rose-500/20 opacity-0 transition-opacity duration-300;
+  }
+  .glow-border:hover::before {
+    @apply opacity-100;
+  }
+}
+
+/* Custom Scrollbar for Dark Theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }

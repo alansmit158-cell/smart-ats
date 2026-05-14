@@ -8,6 +8,7 @@ import CandidateLayout from './layouts/CandidateLayout';
 import AdminLayout from './layouts/AdminLayout';
 
 // Pages - Auth
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -36,9 +37,6 @@ import AdminSecurity from './pages/admin/AdminSecurity';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminLogs from './pages/admin/AdminLogs';
-
-import './App.css';
-
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -98,8 +96,8 @@ function App() {
             <Route index element={<Navigate to="stats" replace />} />
           </Route>
 
-          {/* Default Redirect */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Default Redirect & Landing */}
+          <Route path="/" element={<Landing />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

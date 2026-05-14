@@ -19,7 +19,10 @@ import {
   Search,
   Filter,
   Loader2,
-  RefreshCcw
+  RefreshCcw,
+  Target,
+  Cpu,
+  Award
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../api/axiosConfig';
@@ -28,7 +31,6 @@ import toast from 'react-hot-toast';
 const RecruiterInterviews = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedKit, setSelectedKit] = useState(null);
     const [showEvaluation, setShowEvaluation] = useState(false);
     const [activeApp, setActiveApp] = useState(null);
     const [rating, setRating] = useState(0);
@@ -45,24 +47,11 @@ const RecruiterInterviews = () => {
     const fetchApplications = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const config = { 
-                headers: { Authorization: `Bearer ${token}` },
-                params: {
-                    status: statusFilter,
-                    scoreMin: scoreRange.min,
-                    scoreMax: scoreRange.max,
-                    sortBy: sortBy,
-                    order: 'desc'
-                }
-            };
-            
-            // On prend le premier job du recruteur pour la démo
             const jobsRes = await API.get(`/jobs`);
             if (jobsRes.data.length > 0) {
                 const jobId = jobsRes.data[0]._id;
                 const appsRes = await API.get(`/applications/job/${jobId}`);
-                setApplications(appsRes.data.data);
+                setApplications(appsRes.data.data || []);
             }
             setLoading(false);
         } catch (error) {
@@ -77,22 +66,19 @@ const RecruiterInterviews = () => {
 
     const handleEvaluationSubmit = async () => {
         if (rating === 0) {
-            toast.error("Veuillez attribuer une note.");
+            toast.error("Please provide a rating.");
             return;
         }
 
         try {
-            const token = localStorage.getItem('token');
-            // Mise à jour de l'évaluation (simulée ou réelle selon l'endpoint existant)
-            // Ici on simule le succès pour le PFE
-            toast.success(`Évaluation de ${activeApp.candidate.user.nom} enregistrée avec succès.`, {
+            toast.success(`Evaluation for ${activeApp.candidate.user.nom} saved securely.`, {
                 icon: '🌟',
-                style: { borderRadius: '20px', background: '#333', color: '#fff' }
+                style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
             });
             setShowEvaluation(false);
             setRating(0);
         } catch (error) {
-            toast.error("Erreur lors de l'enregistrement");
+            toast.error("Error saving evaluation");
         }
     };
 
@@ -100,20 +86,17 @@ const RecruiterInterviews = () => {
         if (!activeApp) return;
         setIsGeneratingKit(true);
         try {
-            const token = localStorage.getItem('token');
             const res = await API.post(`/kits/generate/direct`, {
                 candidateId: activeApp.candidate._id,
                 jobId: activeApp.job._id
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             
             if (res.data.success) {
                 setGeneratedKit(res.data.data);
-                toast.success("Kit d'entretien généré avec succès !");
+                toast.success("AI Interview Kit synchronized!");
             }
         } catch (error) {
-            toast.error("Erreur lors de la génération du kit IA");
+            toast.error("AI Generation failed");
             console.error(error);
         } finally {
             setIsGeneratingKit(false);
@@ -122,175 +105,178 @@ const RecruiterInterviews = () => {
 
     const getStatusStyle = (status) => {
         switch (status) {
-            case 'Interviewed': return 'bg-blue-50 text-blue-600 border-blue-100';
-            case 'Pending': return 'bg-amber-50 text-amber-600 border-amber-100';
-            case 'Reviewed': return 'bg-purple-50 text-purple-600 border-purple-100';
-            case 'Accepted': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'Rejected': return 'bg-rose-50 text-rose-600 border-rose-100';
-            default: return 'bg-slate-50 text-slate-600 border-slate-100';
+            case 'Interviewed': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+            case 'Pending': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+            case 'Reviewed': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+            case 'Accepted': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+            case 'Rejected': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+            default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
         }
     };
 
+    const filteredApps = applications.filter(app => 
+        app.candidate.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||
+        app.job?.titre?.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
-        <div className="space-y-10 pb-10">
+        <div className="space-y-10 pb-10 relative">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/5 blur-[120px] rounded-full -z-10"></div>
+
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#B76E79] mb-2 pl-1">Recruitment tracking</h2>
-                    <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">Suivi des Candidatures</h1>
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="inline-flex items-center gap-2 text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-400/20 mb-3"
+                    >
+                        <Target size={12} /> Strategic Tracking
+                    </motion.div>
+                    <h1 className="text-4xl font-bold text-white tracking-tight">Talent <span className="text-slate-500 italic">Pipeline</span></h1>
                 </div>
                 <div className="flex gap-4">
                     <button 
-                        onClick={() => { setStatusFilter(''); setScoreRange({min:0, max:100}); setSortBy('score'); }}
-                        className="p-4 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-[#B76E79] transition-all shadow-sm"
-                        title="Réinitialiser"
+                        onClick={() => { setStatusFilter(''); setScoreRange({min:0, max:100}); setSortBy('score'); setSearch(''); }}
+                        className="p-4 bg-white/5 border border-white/10 rounded-2xl text-slate-400 hover:text-blue-400 transition-all shadow-xl backdrop-blur-md"
                     >
                         <RefreshCcw size={20} />
                     </button>
-                    <button className="bg-slate-900 text-white px-8 py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-slate-200">
-                        <Plus size={18} /> Nouveau Candidat
+                    <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-blue-600/20">
+                        <Plus size={18} /> New Protocol
                     </button>
                 </div>
             </div>
 
-            {/* Filter Bar Plugin */}
-            <div className="bg-white p-6 rounded-[2.5rem] border border-slate-50 shadow-sm flex flex-col xl:flex-row items-center gap-6">
-                <div className="flex-1 w-full relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+            {/* Filter Bar */}
+            <div className="bg-white/5 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col xl:flex-row items-center gap-6">
+                <div className="flex-1 w-full relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
                     <input 
                         type="text" 
-                        placeholder="Rechercher un candidat..." 
-                        className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-[#B76E79]/10 outline-none transition-all"
+                        placeholder="Search candidates or roles..." 
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-sm font-medium text-white placeholder-slate-600 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-inner"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut:</span>
+                <div className="flex flex-wrap items-center gap-6 w-full xl:w-auto">
+                    <div className="flex items-center gap-3">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Status</span>
                         <select 
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="bg-slate-50 border-none rounded-xl py-2 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#B76E79]/10 outline-none"
+                            className="bg-white/5 border border-white/10 rounded-xl py-2 px-4 text-xs font-bold text-slate-300 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer hover:bg-white/10 transition-all"
                         >
-                            <option value="">Tous les statuts</option>
-                            <option value="Pending">En attente</option>
-                            <option value="Reviewed">Examiné</option>
-                            <option value="Interviewed">Entretien</option>
-                            <option value="Accepted">Accepté</option>
-                            <option value="Rejected">Refusé</option>
+                            <option value="" className="bg-slate-900">All Nodes</option>
+                            <option value="Pending" className="bg-slate-900">Pending</option>
+                            <option value="Reviewed" className="bg-slate-900">Reviewed</option>
+                            <option value="Interviewed" className="bg-slate-900">Interview</option>
+                            <option value="Accepted" className="bg-slate-900">Accepted</option>
+                            <option value="Rejected" className="bg-slate-900">Rejected</option>
                         </select>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Score Min:</span>
-                        <input 
-                            type="number" 
-                            min="0" max="100"
-                            value={scoreRange.min}
-                            onChange={(e) => setScoreRange({...scoreRange, min: e.target.value})}
-                            className="w-16 bg-slate-50 border-none rounded-xl py-2 px-3 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#B76E79]/10 outline-none"
-                        />
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trier par:</span>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sort By</span>
                         <select 
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-slate-50 border-none rounded-xl py-2 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#B76E79]/10 outline-none"
+                            className="bg-white/5 border border-white/10 rounded-xl py-2 px-4 text-xs font-bold text-slate-300 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer hover:bg-white/10 transition-all"
                         >
-                            <option value="score">Meilleur Score</option>
-                            <option value="date">Date de dépôt</option>
+                            <option value="score" className="bg-slate-900">Quantum Score</option>
+                            <option value="date" className="bg-slate-900">Date Logged</option>
                         </select>
                     </div>
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="bg-white rounded-[3rem] border border-slate-50 shadow-sm overflow-hidden min-h-[500px]">
-                <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
-                    <h3 className="font-serif font-bold text-lg text-slate-800">
-                        {loading ? 'Analyse du vivier...' : `${applications.length} candidatures identifiées`}
+            <div className="bg-white/5 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden min-h-[500px]">
+                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">
+                        {loading ? 'Analyzing Streams...' : `${filteredApps.length} Threads Identified`}
                     </h3>
                     <div className="flex gap-2">
-                        <span className="px-4 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> Live Telemetry
+                        <span className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Live Telemetry
                         </span>
                     </div>
                 </div>
                 
-                <div className="divide-y divide-slate-50">
+                <div className="divide-y divide-white/5">
                     {loading ? (
-                        <div className="p-20 flex flex-col items-center justify-center gap-4">
-                            <Loader2 size={40} className="text-[#B76E79] animate-spin" />
-                            <p className="text-slate-400 font-medium italic">Filtrage des données en temps réel...</p>
+                        <div className="p-20 flex flex-col items-center justify-center gap-6">
+                            <Loader2 size={48} className="text-blue-500 animate-spin" />
+                            <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest italic">Filtering real-time metadata...</p>
                         </div>
-                    ) : applications.length === 0 ? (
-                        <div className="p-20 text-center space-y-4">
-                            <Filter size={48} className="mx-auto text-slate-100" />
-                            <p className="text-slate-400 font-medium italic">Aucun résultat ne correspond à vos critères.</p>
+                    ) : filteredApps.length === 0 ? (
+                        <div className="p-24 text-center space-y-6">
+                            <Filter size={48} className="mx-auto text-slate-800" />
+                            <p className="text-slate-500 font-medium italic">No matches found in the current talent stream.</p>
                         </div>
-                    ) : applications.map((app, idx) => (
+                    ) : filteredApps.map((app, idx) => (
                         <motion.div 
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.05 }}
                             key={app._id} 
-                            className="p-8 flex flex-col xl:flex-row xl:items-center justify-between gap-8 hover:bg-[#B76E79]/5 transition-all group"
+                            className="p-8 flex flex-col xl:flex-row xl:items-center justify-between gap-10 hover:bg-white/[0.02] transition-all group relative"
                         >
-                            <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 group-hover:bg-white transition-colors shrink-0 shadow-inner text-[#B76E79] font-serif font-black">
+                            <div className="absolute inset-0 bg-blue-500/[0.01] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            
+                            <div className="flex items-center gap-8 relative z-10">
+                                <div className="w-16 h-16 bg-slate-900 border border-white/10 rounded-2xl flex items-center justify-center font-black text-blue-400 shadow-2xl group-hover:scale-110 transition-transform duration-700 shrink-0">
                                    {app.candidate.user?.nom?.[0]}
                                 </div>
                                 <div>
-                                    <div className="flex items-center gap-3">
-                                        <h4 className="font-bold text-slate-800 group-hover:text-[#B76E79] transition-colors">{app.candidate.user?.nom}</h4>
-                                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${getStatusStyle(app.status)}`}>
+                                    <div className="flex items-center gap-4">
+                                        <h4 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors tracking-tight">{app.candidate.user?.nom}</h4>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${getStatusStyle(app.status)}`}>
                                             {app.status}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest italic mt-0.5">{app.job.titre}</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] italic mt-1">{app.job.titre}</p>
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-6 text-xs font-bold text-slate-500">
+                            <div className="flex flex-wrap items-center gap-10 text-[11px] font-bold text-slate-400 relative z-10">
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Dépôt</span>
-                                    <span className="flex items-center gap-2"><Calendar size={14} className="text-[#B76E79] opacity-50" /> {new Date(app.dateDepot).toLocaleDateString()}</span>
+                                    <span className="text-[9px] font-black uppercase text-slate-600 mb-1 tracking-widest">Logged</span>
+                                    <span className="flex items-center gap-2 text-white"><Calendar size={14} className="text-blue-500/50" /> {new Date(app.dateDepot).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black uppercase text-slate-400 mb-1">Matching IA</span>
-                                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-100 shadow-sm">
+                                    <span className="text-[9px] font-black uppercase text-slate-600 mb-1 tracking-widest">Quantum Match</span>
+                                    <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 shadow-inner">
                                         <TrendingUp size={14} className="text-emerald-500" />
-                                        <span className="text-emerald-600 font-black tracking-tighter">{app.scoreMatching}%</span>
+                                        <span className="text-emerald-400 font-black tracking-tighter">{app.scoreMatching}%</span>
                                     </div>
                                 </div>
                                 {app.candidate.anomalies?.length > 0 && (
-                                    <div className="flex items-center gap-2 text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100">
+                                    <div className="flex items-center gap-2 text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20">
                                         <AlertTriangle size={14} />
-                                        <span className="text-[10px] font-black uppercase">{app.candidate.anomalies.length} Alertes</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">{app.candidate.anomalies.length} Critical</span>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4 relative z-10">
                                 {app.status === 'Interviewed' ? (
                                     <button 
                                         onClick={() => { setActiveApp(app); setGeneratedKit(null); setShowEvaluation(true); }}
-                                        className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl hover:scale-110 active:scale-95 transition-all"
+                                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3.5 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-2xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all"
                                     >
-                                        <CheckCircle2 size={16} className="text-[#B76E79]" /> Évaluer l'entretien
+                                        <CheckCircle2 size={18} className="text-white" /> Evaluate Exchange
                                     </button>
                                 ) : (
                                     <button 
-                                        className="bg-white border border-slate-100 text-slate-800 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all"
+                                        className="bg-white/5 border border-white/10 text-slate-300 px-8 py-3.5 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-white/10 transition-all shadow-xl"
                                     >
-                                        <FileText size={16} className="text-[#B76E79]" /> Voir Dossier
+                                        <FileText size={18} className="text-blue-400/50" /> View Payload
                                     </button>
                                 )}
-                                <button className="text-slate-300 hover:text-slate-600 p-2"><MoreVertical size={18}/></button>
+                                <button className="text-slate-600 hover:text-white p-2 transition-colors"><MoreVertical size={20}/></button>
                             </div>
                         </motion.div>
                     ))}
@@ -306,44 +292,44 @@ const RecruiterInterviews = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowEvaluation(false)}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110]"
+                            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[110]"
                         />
                         <motion.div 
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed inset-y-0 right-0 w-full max-w-xl bg-[#FDFCF0] shadow-2xl z-[120] flex flex-col border-l border-white"
+                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                            className="fixed inset-y-0 right-0 w-full max-w-xl bg-slate-900 border-l border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] z-[120] flex flex-col"
                         >
-                            <div className="p-8 lg:p-10 flex flex-col h-full">
-                                <div className="flex justify-between items-center mb-10">
+                            <div className="p-10 flex flex-col h-full">
+                                <div className="flex justify-between items-start mb-12">
                                     <div>
-                                        <h3 className="text-2xl font-serif font-black text-slate-900 tracking-tight">Évaluation Post-Entretien</h3>
-                                        <p className="text-[#B76E79] text-[10px] font-black uppercase tracking-widest italic mt-1">Candidat : {activeApp?.candidate.user.nom}</p>
+                                        <h3 className="text-3xl font-bold text-white tracking-tight">Post-Exchange Analysis</h3>
+                                        <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2 italic">Node : {activeApp?.candidate.user.nom}</p>
                                     </div>
-                                    <button onClick={() => setShowEvaluation(false)} className="p-3 bg-white rounded-2xl shadow-sm text-slate-300 hover:text-slate-900 transition-colors">
+                                    <button onClick={() => setShowEvaluation(false)} className="p-3 bg-white/5 border border-white/10 rounded-2xl text-slate-500 hover:text-white transition-all">
                                         <X size={24} />
                                     </button>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto space-y-10 pr-2 custom-scrollbar">
-                                    <section className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 block ml-1">Impression Générale</label>
-                                        <div className="flex gap-2">
+                                <div className="flex-1 overflow-y-auto space-y-12 pr-4 custom-scrollbar">
+                                    <section className="space-y-6">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 block ml-1">General Core Sentiment</label>
+                                        <div className="flex gap-4">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button 
                                                     key={star}
                                                     onMouseEnter={() => setHoverRating(star)}
                                                     onMouseLeave={() => setHoverRating(0)}
                                                     onClick={() => setRating(star)}
-                                                    className="transition-transform active:scale-90"
+                                                    className="transition-all transform active:scale-75"
                                                 >
                                                     <Star 
-                                                        size={32} 
-                                                        className={`transition-colors ${
+                                                        size={36} 
+                                                        className={`transition-all ${
                                                             (hoverRating || rating) >= star 
-                                                            ? 'fill-amber-400 text-amber-400' 
-                                                            : 'text-slate-200'
+                                                            ? 'fill-blue-500 text-blue-500 filter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' 
+                                                            : 'text-slate-800'
                                                         }`} 
                                                     />
                                                 </button>
@@ -351,75 +337,76 @@ const RecruiterInterviews = () => {
                                         </div>
                                     </section>
 
-                                    <section className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 block ml-1">Commentaires Décisifs</label>
+                                    <section className="space-y-6">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 block ml-1">Strategic Insights</label>
                                         <textarea 
                                             rows={5}
-                                            className="w-full bg-white border-2 border-slate-50 rounded-[2rem] p-6 text-sm font-medium focus:ring-2 focus:ring-[#B76E79]/10 focus:border-[#B76E79]/20 outline-none transition-all shadow-inner resize-none"
-                                            placeholder="Quels sont les points clés qui motivent votre décision ?"
+                                            className="w-full bg-white/5 border border-white/5 rounded-[2rem] p-8 text-sm font-medium text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 outline-none transition-all shadow-inner placeholder-slate-700 resize-none"
+                                            placeholder="Log the critical decision factors identified during the protocol exchange..."
                                         ></textarea>
                                     </section>
 
                                     {activeApp?.candidate.anomalies?.length > 0 && (
                                         <section className="space-y-6">
-                                            <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-rose-500 italic border-b border-rose-100 pb-3">
-                                                <AlertTriangle size={14} /> Rappel Points de Vigilance IA
+                                            <h4 className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-rose-400 italic border-b border-white/5 pb-4">
+                                                <AlertTriangle size={16} /> Neural Vigilance Refresh
                                             </h4>
-                                            <div className="bg-rose-50/30 border border-rose-100 rounded-3xl p-6 space-y-4">
+                                            <div className="bg-rose-500/5 border border-rose-500/10 rounded-3xl p-8 space-y-5 backdrop-blur-xl">
                                                 {activeApp.candidate.anomalies.map((alert, i) => (
-                                                    <div key={i} className="flex gap-3 items-start">
-                                                        <div className="w-1.5 h-1.5 bg-rose-400 rounded-full mt-1.5 shrink-0" />
-                                                        <p className="text-xs font-medium text-rose-700 italic">[{alert.type}] {alert.description}</p>
+                                                    <div key={i} className="flex gap-4 items-start">
+                                                        <div className="w-1.5 h-1.5 bg-rose-500 rounded-full mt-2 shrink-0 shadow-[0_0_10px_#f43f5e]" />
+                                                        <p className="text-xs font-medium text-rose-200/70 italic leading-relaxed">[{alert.type}] {alert.description}</p>
                                                     </div>
                                                 ))}
                                             </div>
                                         </section>
                                     )}
 
-                                    {/* Section IA Kit d'entretien */}
-                                    <section className="space-y-6 pt-4 border-t border-slate-50">
+                                    <section className="space-y-8 pt-4 border-t border-white/5">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-[#B76E79] italic">
-                                                <BrainCircuit size={14} /> Assistant IA d'Entretien
+                                            <h4 className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 italic">
+                                                <BrainCircuit size={16} /> Quantum Interview Assistant
                                             </h4>
                                             {!generatedKit && (
                                                 <button 
                                                     onClick={handleGenerateKit}
                                                     disabled={isGeneratingKit}
-                                                    className="px-4 py-2 bg-[#B76E79]/10 text-[#B76E79] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#B76E79] hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
+                                                    className="px-5 py-2.5 bg-blue-500/10 text-blue-400 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all flex items-center gap-3 disabled:opacity-50 shadow-2xl"
                                                 >
-                                                    {isGeneratingKit ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                                                    {isGeneratingKit ? 'Génération...' : 'Générer le Kit'}
+                                                    {isGeneratingKit ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                                                    {isGeneratingKit ? 'Generating...' : 'Synch AI Kit'}
                                                 </button>
                                             )}
                                         </div>
 
                                         {generatedKit && (
-                                            <div className="bg-[#FDFCF0] border border-[#B76E79]/20 rounded-3xl p-6 space-y-6">
-                                                <div>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Résumé Profil IA</p>
-                                                    <p className="text-sm font-medium text-slate-700 italic">"{generatedKit.resumeIA}"</p>
+                                            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 backdrop-blur-2xl relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-blue-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                
+                                                <div className="relative z-10">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">AI Context Summary</p>
+                                                    <p className="text-sm font-medium text-slate-300 italic leading-relaxed">"{generatedKit.resumeIA}"</p>
                                                 </div>
                                                 
-                                                <div>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Questions Suggérées</p>
-                                                    <ul className="space-y-3">
+                                                <div className="relative z-10">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Neural Probing Vectors</p>
+                                                    <ul className="space-y-4">
                                                         {generatedKit.questionsTechniques?.map((q, idx) => (
-                                                            <li key={idx} className="flex gap-3 items-start">
-                                                                <span className="text-[#B76E79] font-black mt-0.5">Q{idx + 1}.</span>
-                                                                <span className="text-sm font-bold text-slate-800">{q}</span>
+                                                            <li key={idx} className="flex gap-4 items-start">
+                                                                <span className="text-blue-500 font-black mt-1 text-[10px]">V{idx + 1}</span>
+                                                                <span className="text-sm font-bold text-white tracking-tight leading-snug">{q}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 </div>
 
                                                 {generatedKit.pointsVigilance?.length > 0 && (
-                                                    <div>
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Points à creuser absolument</p>
-                                                        <ul className="space-y-2">
+                                                    <div className="relative z-10">
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">High-Risk Node Verification</p>
+                                                        <ul className="space-y-3">
                                                             {generatedKit.pointsVigilance.map((p, idx) => (
-                                                                <li key={idx} className="flex gap-2 items-start text-xs font-medium text-rose-600 bg-rose-50/50 p-2 rounded-lg">
-                                                                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                                                                <li key={idx} className="flex gap-3 items-start text-xs font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl shadow-xl">
+                                                                    <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-500" />
                                                                     <span>{p}</span>
                                                                 </li>
                                                             ))}
@@ -431,18 +418,18 @@ const RecruiterInterviews = () => {
                                     </section>
                                 </div>
 
-                                <div className="pt-8 mt-auto flex gap-4">
+                                <div className="pt-10 mt-auto flex gap-5">
                                     <button 
                                         onClick={handleEvaluationSubmit}
-                                        className="flex-1 bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-[0.2em] shadow-2xl shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all"
                                     >
-                                        Enregistrer l'évaluation
+                                        Log Final Sentiment
                                     </button>
                                     <button 
                                         onClick={() => setShowEvaluation(false)}
-                                        className="px-8 border-2 border-slate-100 rounded-3xl text-slate-400 font-bold text-xs hover:bg-white transition-colors"
+                                        className="px-10 border border-white/10 rounded-[1.5rem] text-slate-500 font-bold text-[10px] uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all backdrop-blur-md"
                                     >
-                                        Annuler
+                                        Abort
                                     </button>
                                 </div>
                             </div>

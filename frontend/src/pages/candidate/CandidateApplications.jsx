@@ -12,11 +12,12 @@ import {
   Sparkles,
   Loader2,
   Calendar,
-  Briefcase
+  Briefcase,
+  Target
 } from 'lucide-react';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CandidateApplications = () => {
     const [applications, setApplications] = useState([]);
@@ -26,9 +27,8 @@ const CandidateApplications = () => {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const token = localStorage.getItem('token');
                 const res = await API.get(`/applications/my-applications`);
-                setApplications(res.data.data);
+                setApplications(res.data.data || []);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching applications:", error);
@@ -41,20 +41,20 @@ const CandidateApplications = () => {
 
     const getStatusStyle = (status) => {
         switch (status) {
-            case 'Interviewed': return 'bg-blue-50 text-blue-600 border-blue-100';
-            case 'Pending': return 'bg-amber-50 text-amber-600 border-amber-100';
-            case 'Reviewed': return 'bg-purple-50 text-purple-600 border-purple-100';
-            case 'Accepted': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'Rejected': return 'bg-rose-50 text-rose-600 border-rose-100';
-            default: return 'bg-slate-50 text-slate-600 border-slate-100';
+            case 'Interviewed': return 'bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]';
+            case 'Pending': return 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]';
+            case 'Reviewed': return 'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]';
+            case 'Accepted': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]';
+            case 'Rejected': return 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]';
+            default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
         }
-    };
+    }
 
     const getStatusText = (status) => {
         switch (status) {
             case 'Interviewed': return 'Entretien';
             case 'Pending': return 'En attente';
-            case 'Reviewed': return 'En cours d\'examen';
+            case 'Reviewed': return 'Examiné';
             case 'Accepted': return 'Accepté';
             case 'Rejected': return 'Refusé';
             default: return status;
@@ -74,69 +74,86 @@ const CandidateApplications = () => {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'Interviewed': return <Clock size={14} />;
-            case 'Pending': return <Calendar size={14} />;
-            case 'Reviewed': return <Sparkles size={14} />;
-            case 'Accepted': return <CheckCircle2 size={14} />;
-            case 'Rejected': return <XCircle size={14} />;
+            case 'Interviewed': return <Clock size={12} />;
+            case 'Pending': return <Calendar size={12} />;
+            case 'Reviewed': return <Sparkles size={12} />;
+            case 'Accepted': return <CheckCircle2 size={12} />;
+            case 'Rejected': return <XCircle size={12} />;
             default: return null;
         }
     };
 
     const filteredApps = applications.filter(app => 
-        app.job.titre.toLowerCase().includes(search.toLowerCase()) ||
-        app.job.recruiter?.nom?.toLowerCase().includes(search.toLowerCase())
+        app.job?.titre?.toLowerCase().includes(search.toLowerCase()) ||
+        app.job?.recruiter?.nom?.toLowerCase().includes(search.toLowerCase())
     );
 
     if (loading) {
         return (
-            <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
-                <Loader2 size={40} className="text-[#B76E79] animate-spin" />
-                <p className="text-slate-400 font-medium italic">Récupération de vos candidatures stratégiques...</p>
+            <div className="h-[60vh] flex flex-col items-center justify-center gap-6">
+                <div className="relative">
+                    <Loader2 size={48} className="text-blue-500 animate-spin" />
+                    <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
+                </div>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Accessing Application Threads...</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-12 pb-24 relative">
+            {/* Background effects */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/5 blur-[120px] rounded-full -z-10"></div>
+
             {/* Page Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">Mes Candidatures</h1>
-                    <p className="text-slate-400 text-sm mt-1 font-medium italic">Suivez en temps réel l'évolution de vos opportunités.</p>
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="inline-flex items-center gap-2 text-rose-400 bg-rose-400/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-rose-400/20 mb-3"
+                    >
+                        <Target size={12} /> Live Monitoring
+                    </motion.div>
+                    <h1 className="text-4xl font-bold text-white tracking-tight">Application <span className="text-slate-500 italic">Vault</span></h1>
+                    <p className="text-slate-500 text-sm mt-2 font-medium italic">Track your professional trajectory with quantum precision.</p>
                 </div>
-                <div className="flex bg-white p-1 rounded-2xl border border-slate-100 shadow-sm">
-                    <button className="px-5 py-2 text-xs font-bold bg-[#B76E79] text-white rounded-xl shadow-lg shadow-[#B76E79]/20">Toutes</button>
-                    <button className="px-5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">Entretiens</button>
-                    <button className="px-5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">Archives</button>
+                <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-md">
+                    <button className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-blue-500/20">All Tracks</button>
+                    <button className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors">Interviews</button>
+                    <button className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors">Archived</button>
                 </div>
             </div>
 
             {/* Filter & Search Bar */}
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 bg-white p-2 rounded-2xl border border-slate-100 flex items-center shadow-sm">
-                    <div className="p-3 text-slate-400"><Search size={18}/></div>
+            <div className="flex flex-col md:flex-row gap-5">
+                <div className="flex-1 bg-white/5 p-2 rounded-2xl border border-white/10 flex items-center shadow-2xl backdrop-blur-xl group focus-within:border-blue-500/30 transition-all">
+                    <div className="p-3 text-slate-500 group-focus-within:text-blue-400 transition-colors"><Search size={20}/></div>
                     <input 
                         type="text" 
-                        placeholder="Rechercher par poste ou entreprise..." 
-                        className="flex-1 bg-transparent border-none outline-none text-sm font-medium focus:ring-0 pl-1"
+                        placeholder="Search by position or partner..." 
+                        className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-white placeholder-slate-600 focus:ring-0 pl-1 py-3"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <button className="bg-white border border-slate-100 text-slate-800 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 text-sm shadow-sm hover:bg-slate-50 transition-all">
-                    <Filter size={18} /> Filtrer
+                <button className="bg-white/5 border border-white/10 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 text-[11px] uppercase tracking-widest shadow-xl hover:bg-white/10 transition-all backdrop-blur-md">
+                    <Filter size={18} className="text-slate-400" /> Advanced Filter
                 </button>
             </div>
 
             {/* Applications List */}
-            <div className="grid grid-cols-1 gap-6 pb-12">
+            <div className="grid grid-cols-1 gap-8 pb-12">
                 {filteredApps.length === 0 ? (
-                    <div className="bg-white p-20 rounded-[3rem] border border-dashed border-slate-200 text-center">
-                        <Briefcase size={48} className="mx-auto text-slate-100 mb-4" />
-                        <h3 className="text-xl font-serif font-bold text-slate-400">Aucune candidature trouvée</h3>
-                        <p className="text-slate-300 text-sm italic mt-2">Commencez par postuler aux offres recommandées sur votre portail.</p>
-                    </div>
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="bg-white/5 p-24 rounded-[4rem] border border-dashed border-white/10 text-center backdrop-blur-md"
+                    >
+                        <Briefcase size={48} className="mx-auto text-slate-800 mb-6" />
+                        <h3 className="text-2xl font-bold text-slate-600">No Application Streams Detected</h3>
+                        <p className="text-slate-500 text-sm italic mt-3">Explore and apply to elite opportunities to initialize tracking.</p>
+                    </motion.div>
                 ) : filteredApps.map((app, idx) => {
                     const stepInfo = getStepInfo(app.status);
                     return (
@@ -145,75 +162,78 @@ const CandidateApplications = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             key={app._id} 
-                            className="bg-white rounded-[2.5rem] border border-slate-50 shadow-sm hover:shadow-xl hover:shadow-slate-100 transition-all duration-500 overflow-hidden group"
+                            className="bg-white/5 backdrop-blur-3xl rounded-[3.5rem] border border-white/10 shadow-2xl hover:border-blue-500/20 transition-all duration-700 overflow-hidden group"
                         >
-                            <div className="p-6 lg:p-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                            <div className="p-8 lg:p-12 flex flex-col xl:flex-row xl:items-center justify-between gap-10">
                                 {/* Company & Position Info */}
-                                <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 bg-[#FDFCF0] rounded-[1.5rem] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-500 border border-[#B76E79]/20 shadow-inner">
-                                       <Sparkles className="text-[#B76E79]" size={26} />
+                                <div className="flex items-center gap-8">
+                                    <div className="w-20 h-20 bg-slate-900 rounded-[2rem] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-700 border border-white/10 shadow-2xl relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors"></div>
+                                        <Sparkles className="text-blue-500 relative z-10" size={32} />
                                     </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-slate-800 group-hover:text-[#B76E79] transition-colors tracking-tight">{app.job.titre}</h3>
-                                        <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                                            <span className="text-sm font-semibold text-slate-500 italic">{app.job.recruiter?.nom || 'Smart Recruiter'}</span>
-                                            <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                                            <span className="text-xs text-slate-400 font-medium">Postulé le {new Date(app.dateDepot).toLocaleDateString()}</span>
+                                    <div className="space-y-2">
+                                        <h3 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors tracking-tight leading-tight">{app.job?.titre || 'Elite Position'}</h3>
+                                        <div className="flex flex-wrap items-center gap-4 mt-2">
+                                            <span className="text-sm font-bold text-slate-400 italic">{app.job?.recruiter?.nom || 'Smart Recruiter'}</span>
+                                            <span className="w-1.5 h-1.5 bg-slate-800 rounded-full"></span>
+                                            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Postulated {new Date(app.dateDepot).toLocaleDateString()}</span>
                                             {app.scoreMatching > 0 && (
-                                                <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-100 uppercase tracking-tighter">Match IA {app.scoreMatching}%</span>
+                                                <div className="flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                                                    <Target size={10} className="text-emerald-500" />
+                                                    <span className="text-emerald-500 text-[9px] font-black uppercase tracking-widest">Match {app.scoreMatching}%</span>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Status and Progress */}
-                                <div className="flex-1 max-w-sm">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusStyle(app.status)}`}>
+                                <div className="flex-1 max-w-sm space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border ${getStatusStyle(app.status)}`}>
                                             {getStatusIcon(app.status)} {getStatusText(app.status)}
                                         </span>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase">Étape {stepInfo.step}/{stepInfo.total}</span>
+                                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Node {stepInfo.step}/{stepInfo.total}</span>
                                     </div>
-                                    <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 shadow-inner p-[1px]">
                                         <motion.div 
                                             initial={{ width: 0 }}
                                             animate={{ width: `${(stepInfo.step / stepInfo.total) * 100}%` }}
-                                            transition={{ duration: 1.5, ease: "easeOut" }}
-                                            className={`h-full rounded-full ${
-                                                app.status === 'Rejected' ? 'bg-rose-400' : 
-                                                app.status === 'Accepted' ? 'bg-emerald-400' : 'bg-[#B76E79]'
+                                            transition={{ duration: 1.5, ease: "circOut" }}
+                                            className={`h-full rounded-full shadow-[0_0_15px_rgba(59,130,246,0.3)] ${
+                                                app.status === 'Rejected' ? 'bg-rose-500' : 
+                                                app.status === 'Accepted' ? 'bg-emerald-500' : 'bg-gradient-to-r from-blue-600 to-indigo-600'
                                             }`}
                                         ></motion.div>
                                     </div>
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex items-center gap-4 border-t xl:border-t-0 pt-6 xl:pt-0 border-slate-50">
-                                    <button className="p-4 bg-[#B76E79]/5 text-[#B76E79] rounded-2xl hover:bg-[#B76E79] hover:text-white transition-all duration-300 relative group/btn">
-                                        <MessageCircle size={20} />
-                                        <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">Contacter le recruteur</span>
+                                <div className="flex items-center gap-4 border-t xl:border-t-0 pt-8 xl:pt-0 border-white/5">
+                                    <button className="p-5 bg-white/5 text-slate-400 rounded-2xl hover:bg-white/10 hover:text-white transition-all duration-500 relative group/btn border border-white/5 shadow-xl">
+                                        <MessageCircle size={22} />
+                                        <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-950 text-white text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-xl opacity-0 group-hover/btn:opacity-100 transition-opacity border border-white/10 whitespace-nowrap">Open Channel</span>
                                     </button>
-                                    <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-xs flex items-center gap-2 shadow-xl shadow-slate-100 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest">
-                                        Détails <ChevronRight size={16} />
+                                    <button className="bg-white/5 text-white px-10 py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-2xl transition-all hover:bg-white/10 hover:border-blue-500/30 border border-white/10 active:scale-95">
+                                        Monitor <ChevronRight size={16} />
                                     </button>
-                                    <button className="text-slate-300 hover:text-slate-600 transition-colors p-2"><MoreVertical size={20}/></button>
                                 </div>
                             </div>
 
                             {/* Status Update Banner */}
-                            <div className="px-8 lg:px-10 py-4 bg-[#FDFCF0]/50 border-t border-slate-50 flex items-center justify-between">
-                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-3">
-                                    <div className={`w-2 h-2 rounded-full ${app.status === 'Pending' ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`}></div>
-                                    Dernière mise à jour : 
-                                    <span className="text-slate-800 lowercase normal-case ml-1">
-                                        {app.status === 'Pending' ? 'Votre candidature est en attente de lecture.' : 
-                                         app.status === 'Reviewed' ? 'Le recruteur a consulté votre profil.' :
-                                         app.status === 'Interviewed' ? 'Invitation à un entretien envoyée.' :
-                                         app.status === 'Accepted' ? 'Offre émise ! Félicitations.' : 'Profil non retenu.'}
+                            <div className="px-10 lg:px-12 py-5 bg-white/[0.02] border-t border-white/5 flex items-center justify-between backdrop-blur-md">
+                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] flex items-center gap-4">
+                                    <div className={`w-2 h-2 rounded-full ${app.status === 'Pending' ? 'bg-amber-400 animate-pulse shadow-[0_0_10px_#fbbf24]' : 'bg-emerald-400 shadow-[0_0_10px_#34d399]'}`}></div>
+                                    Quantum Update: 
+                                    <span className="text-slate-300 ml-2 font-medium italic normal-case">
+                                        {app.status === 'Pending' ? 'Thread initialized. Awaiting recruiter handshake.' : 
+                                         app.status === 'Reviewed' ? 'Profile data analyzed by human nodes.' :
+                                         app.status === 'Interviewed' ? 'Scheduling virtual protocol exchange.' :
+                                         app.status === 'Accepted' ? 'Final authorization granted. Deployment imminent.' : 'Thread terminated. Profiling rejected.'}
                                     </span>
                                  </p>
-                                 <button className="text-[10px] font-black text-[#B76E79] uppercase tracking-widest flex items-center gap-1 hover:underline group">
-                                    Historique complet <ExternalLink size={10} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                 <button className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2 hover:text-blue-300 group">
+                                    Full Node History <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                  </button>
                             </div>
                         </motion.div>

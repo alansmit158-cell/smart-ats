@@ -156,7 +156,7 @@ const uploadAndParse = async (req, res) => {
     
     res.status(500).json({
       success: false,
-      message: error.message || 'Erreur serveur lors de l\\'upload'
+      message: error.message || "Erreur serveur lors de l'upload"
     });
   }
 };

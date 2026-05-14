@@ -14,7 +14,8 @@ import {
   ArrowUpRight,
   Activity,
   UserCheck,
-  Crown
+  Crown,
+  Loader2
 } from 'lucide-react';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
@@ -96,12 +97,12 @@ const AdminStats = () => {
 
     if (loading) {
         return (
-            <div className="space-y-10 animate-pulse">
-                <div className="grid grid-cols-3 gap-8">
-                    {[1,2,3].map(i => <div key={i} className="h-40 bg-[#1e293b]/30 rounded-[2.5rem] border border-[#1e293b]"></div>)}
+            <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
+                <div className="relative">
+                    <Loader2 size={48} className="text-blue-500 animate-spin" />
+                    <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
                 </div>
-                <div className="h-64 bg-[#1e293b]/30 rounded-[3rem] border border-[#1e293b]"></div>
-                <div className="h-96 bg-[#1e293b]/30 rounded-[3rem] border border-[#1e293b]"></div>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Synchronizing Mainframe Core...</p>
             </div>
         );
     }

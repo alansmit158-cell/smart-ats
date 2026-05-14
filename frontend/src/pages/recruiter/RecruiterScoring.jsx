@@ -15,7 +15,8 @@ import {
   Loader2,
   Info,
   ChevronLeft,
-  Zap
+  Zap,
+  Cpu
 } from 'lucide-react';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
@@ -28,12 +29,9 @@ const RecruiterScoring = () => {
     const [showAnomalies, setShowAnomalies] = useState(false);
     const [analyzingAnomalies, setAnalyzingAnomalies] = useState(false);
 
-    // Pour la démo, on utilise un ID d'offre fictif ou le premier trouvé
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const token = localStorage.getItem('token');
-                // On récupère d'abord les jobs pour en choisir un
                 const jobsRes = await API.get(`/jobs`);
                 if (jobsRes.data.length > 0) {
                     const jobId = jobsRes.data[0]._id;
@@ -56,11 +54,9 @@ const RecruiterScoring = () => {
         
         setAnalyzingAnomalies(true);
         try {
-            const token = localStorage.getItem('token');
             const res = await API.post(`/candidates/${selectedApp.candidate._id}/detect-anomalies`, {});
             
             if (res.data.success) {
-                // Update local state
                 setApplications(prev => prev.map(app => 
                     app._id === selectedId 
                     ? { ...app, candidate: { ...app.candidate, ...res.data.data } }
@@ -79,7 +75,6 @@ const RecruiterScoring = () => {
     const handleUpdateStatus = async (status) => {
         if (!selectedApp) return;
         try {
-            const token = localStorage.getItem('token');
             const res = await API.patch(`/applications/${selectedApp._id}/status`, { status });
             
             if (res.data.success) {
@@ -96,153 +91,185 @@ const RecruiterScoring = () => {
     };
 
     const getScoreColor = (score) => {
-        if (score >= 80) return 'text-emerald-500 bg-emerald-50 border-emerald-100';
-        if (score >= 60) return 'text-blue-500 bg-blue-50 border-blue-100';
-        return 'text-amber-500 bg-amber-50 border-amber-100';
+        if (score >= 80) return 'text-emerald-400 bg-emerald-400/10 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]';
+        if (score >= 60) return 'text-blue-400 bg-blue-400/10 border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]';
+        return 'text-amber-400 bg-amber-400/10 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]';
     };
 
     if (loading) {
         return (
-            <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
-                <Loader2 size={40} className="text-[#B76E79] animate-spin" />
-                <p className="text-slate-400 font-medium italic">Calcul des scores sémantiques en cours...</p>
+            <div className="h-[60vh] flex flex-col items-center justify-center gap-6">
+                <div className="relative">
+                    <Loader2 size={48} className="text-blue-500 animate-spin" />
+                    <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
+                </div>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Initializing Semantic Neural Network...</p>
             </div>
         );
     }
 
     return (
         <div className="space-y-10 pb-10 relative">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/5 blur-[120px] rounded-full -z-10"></div>
+
             {/* Header / Context */}
-            <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="space-y-2 text-center md:text-left">
-                    <div className="flex items-center gap-3 justify-center md:justify-start">
-                        <div className="w-10 h-10 bg-[#B76E79] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[#B76E79]/20">
-                            <BrainCircuit size={20} />
+            <div className="bg-white/5 backdrop-blur-3xl p-10 rounded-[3.5rem] border border-white/10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 blur-[80px] rounded-full group-hover:bg-blue-600/20 transition-all duration-1000"></div>
+                
+                <div className="space-y-3 text-center md:text-left relative z-10">
+                    <div className="flex items-center gap-4 justify-center md:justify-start">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
+                            <BrainCircuit size={24} />
                         </div>
-                        <h1 className="text-3xl font-serif font-bold text-slate-900">Analyse Sémantique IA</h1>
+                        <div>
+                            <h1 className="text-3xl font-bold text-white tracking-tight">Semantic AI Scoring</h1>
+                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1 italic">Real-time analysis v5.0 • GPT-4o Enhanced</p>
+                        </div>
                     </div>
-                    <p className="text-slate-400 text-sm font-medium italic">Scoring en temps réel basé sur GPT-4o-mini.</p>
                 </div>
-                <div className="flex gap-4">
-                    <div className="bg-slate-50 p-4 px-8 rounded-2xl border border-slate-100 text-center">
-                        <p className="text-2xl font-black text-slate-800 tracking-tighter">{applications.length}</p>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">Candidats Matchés</p>
+                <div className="flex gap-4 relative z-10">
+                    <div className="bg-white/5 p-4 px-8 rounded-2xl border border-white/10 text-center backdrop-blur-md shadow-xl">
+                        <p className="text-3xl font-bold text-white tracking-tighter">{applications.length}</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-blue-400 mt-1">Matched Nodes</p>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* Candidates List Panel */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                        <h2 className="text-lg font-serif font-bold text-slate-800">Classement Stratégique</h2>
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between px-4">
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-500">Strategic Ranking</h2>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {applications.length === 0 ? (
-                            <div className="bg-white p-20 rounded-[3rem] border border-dashed border-slate-200 text-center">
-                                <Search size={48} className="mx-auto text-slate-100 mb-4" />
-                                <p className="text-slate-400 font-medium italic">Aucune candidature à analyser pour le moment.</p>
+                            <div className="bg-white/5 p-24 rounded-[4rem] border border-dashed border-white/10 text-center backdrop-blur-md">
+                                <Search size={48} className="mx-auto text-slate-800 mb-6" />
+                                <p className="text-slate-500 font-medium italic">No application data streams detected.</p>
                             </div>
-                        ) : applications.map((app) => (
-                            <div 
+                        ) : applications.map((app, idx) => (
+                            <motion.div 
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.05 }}
                                 key={app._id} 
                                 onClick={() => setSelectedId(app._id)}
-                                className={`group bg-white p-6 rounded-[2.5rem] border transition-all duration-500 cursor-pointer flex items-center justify-between
-                                    ${selectedId === app._id ? 'border-[#B76E79] ring-4 ring-[#B76E79]/5 scale-[1.02] shadow-xl' : 'border-slate-50 hover:border-[#B76E79]/30 shadow-sm'}
+                                className={`group bg-white/5 backdrop-blur-2xl p-6 rounded-[2.5rem] border transition-all duration-700 cursor-pointer flex items-center justify-between relative overflow-hidden
+                                    ${selectedId === app._id ? 'border-blue-500/50 bg-white/[0.08] shadow-2xl scale-[1.02]' : 'border-white/5 hover:border-white/20 hover:bg-white/[0.03] shadow-xl'}
                                 `}
                             >
-                                <div className="flex items-center gap-5">
-                                    <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center font-serif font-black text-[#B76E79] shadow-inner">
+                                <div className="absolute inset-0 bg-blue-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                
+                                <div className="flex items-center gap-6 relative z-10">
+                                    <div className="w-16 h-16 bg-slate-900 border border-white/10 rounded-2xl flex items-center justify-center font-black text-blue-400 shadow-2xl group-hover:scale-110 transition-transform duration-700">
                                         {app.candidate.user?.nom?.substring(0, 2).toUpperCase() || '??'}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-slate-800 text-base">{app.candidate.user?.nom}</h3>
-                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest italic mt-0.5">{app.job.titre}</p>
+                                        <h3 className="font-bold text-white text-lg tracking-tight">{app.candidate.user?.nom}</h3>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] italic mt-1">{app.job.titre}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-8">
-                                    <div className={`hidden md:flex flex-col items-center justify-center w-16 h-16 rounded-2xl border ${getScoreColor(app.scoreMatching)}`}>
-                                        <span className="text-lg font-black tracking-tighter">{app.scoreMatching}%</span>
-                                        <span className="text-[7px] font-black uppercase tracking-tighter">Score IA</span>
+                                <div className="flex items-center gap-8 relative z-10">
+                                    <div className={`hidden md:flex flex-col items-center justify-center w-16 h-16 rounded-2xl border transition-all duration-700 ${getScoreColor(app.scoreMatching)}`}>
+                                        <span className="text-lg font-bold tracking-tighter">{app.scoreMatching}%</span>
+                                        <span className="text-[7px] font-black uppercase tracking-tighter">Match</span>
                                     </div>
-                                    <ChevronRight size={20} className={`transition-transform duration-500 ${selectedId === app._id ? 'translate-x-2 text-[#B76E79]' : 'text-slate-200 group-hover:text-slate-400'}`} />
+                                    <ChevronRight size={24} className={`transition-all duration-700 ${selectedId === app._id ? 'translate-x-2 text-blue-400' : 'text-slate-700 group-hover:text-slate-400'}`} />
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
 
                 {/* AI Detail Analysis Side Panel */}
-                <div className="space-y-6">
-                    <h2 className="text-lg font-serif font-bold text-slate-800 px-2">Focus IA : Sélectionné</h2>
-                    {selectedApp ? (
-                        <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-xl space-y-8">
-                           <div className="text-center space-y-2">
-                               <div className="w-20 h-20 bg-gradient-to-br from-[#B76E79] to-[#E5C4A7] rounded-3xl mx-auto flex items-center justify-center text-white text-2xl font-serif font-black shadow-xl shadow-[#B76E79]/20">
-                                   {selectedApp.candidate.user?.nom?.[0]}
-                               </div>
-                               <h3 className="text-xl font-serif font-bold text-slate-900 pt-2">{selectedApp.candidate.user?.nom}</h3>
-                               <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getScoreColor(selectedApp.scoreMatching)}`}>
-                                   Match {selectedApp.scoreMatching > 80 ? 'Exceptionnel' : selectedApp.scoreMatching > 60 ? 'Favorable' : 'Modéré'}
-                               </span>
-                           </div>
+                <div className="space-y-8">
+                    <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-500 px-4">Neural Focus</h2>
+                    <AnimatePresence mode="wait">
+                        {selectedApp ? (
+                            <motion.div 
+                                key={selectedApp._id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="bg-white/5 backdrop-blur-3xl p-10 rounded-[3.5rem] border border-white/10 shadow-2xl space-y-10 relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[40px] rounded-full"></div>
+                                
+                                <div className="text-center space-y-4 relative z-10">
+                                    <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[2rem] mx-auto flex items-center justify-center text-white text-3xl font-bold shadow-2xl shadow-blue-500/20 border border-white/10">
+                                        {selectedApp.candidate.user?.nom?.[0]}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-bold text-white tracking-tight">{selectedApp.candidate.user?.nom}</h3>
+                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getScoreColor(selectedApp.scoreMatching)}`}>
+                                            <Sparkles size={12} /> {selectedApp.scoreMatching > 80 ? 'Exceptional' : selectedApp.scoreMatching > 60 ? 'Optimal' : 'Moderate'} Node
+                                        </div>
+                                    </div>
+                                </div>
 
-                           <div className="space-y-4">
-                                <button 
-                                    onClick={handleDetectAnomalies}
-                                    disabled={analyzingAnomalies}
-                                    className="w-full flex items-center justify-center gap-2 bg-slate-900 text-[#B76E79] py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-slate-200 disabled:opacity-50"
-                                >
-                                    {analyzingAnomalies ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-                                    {selectedApp.candidate.anomalies?.length > 0 ? "Re-détecter les anomalies" : "Détecter les anomalies CV"}
-                                </button>
-
-                                {selectedApp.candidate.anomalies?.length > 0 && (
+                                <div className="space-y-5 relative z-10">
                                     <button 
-                                        onClick={() => setShowAnomalies(true)}
-                                        className="w-full flex items-center justify-center gap-2 bg-[#B76E79]/10 text-[#B76E79] py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#B76E79] hover:text-white transition-all"
+                                        onClick={handleDetectAnomalies}
+                                        disabled={analyzingAnomalies}
+                                        className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 text-white py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 hover:border-blue-500/30 transition-all shadow-2xl disabled:opacity-50 group"
                                     >
-                                        <AlertTriangle size={16} /> Voir les {selectedApp.candidate.anomalies.length} alertes
+                                        {analyzingAnomalies ? <Loader2 size={18} className="animate-spin text-blue-400" /> : <ShieldCheck size={18} className="text-blue-400 group-hover:scale-110 transition-transform" />}
+                                        {selectedApp.candidate.anomalies?.length > 0 ? "Re-initialize Scan" : "Initialize CV Scan"}
                                     </button>
-                                )}
-                           </div>
 
-                           <div className="bg-[#FDFCF0] p-6 rounded-[2rem] border border-[#B76E79]/10 relative overflow-hidden group">
-                                <Sparkles className="absolute -right-2 -top-2 w-16 h-16 text-[#B76E79]/5 group-hover:scale-125 transition-transform duration-[2s]" />
-                                <h4 className="flex items-center gap-2 text-xs font-serif font-black mb-2 text-slate-800">
-                                    <Award size={14} className="text-[#B76E79]" /> Analyse Prédictive
-                                </h4>
-                                <p className="text-[11px] text-slate-500 italic leading-relaxed">
-                                    {selectedApp.scoreMatching > 80 
-                                        ? "Le profil présente une corrélation sémantique forte avec les prérequis techniques de l'offre."
-                                        : "Certaines compétences clés manquent à l'appel, un entretien technique est recommandé pour valider le potentiel."}
-                                </p>
-                           </div>
+                                    {selectedApp.candidate.anomalies?.length > 0 && (
+                                        <button 
+                                            onClick={() => setShowAnomalies(true)}
+                                            className="w-full flex items-center justify-center gap-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all shadow-xl"
+                                        >
+                                            <AlertTriangle size={18} /> View {selectedApp.candidate.anomalies.length} Critical Alerts
+                                        </button>
+                                    )}
+                                </div>
 
-                           {/* Actions Recruteur */}
-                           <div className="pt-6 border-t border-[#B76E79]/10 flex gap-4">
-                                <button 
-                                    onClick={() => handleUpdateStatus('Rejected')}
-                                    className="flex-1 bg-white border border-rose-100 text-rose-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-50 hover:scale-[1.02] active:scale-95 transition-all shadow-sm flex items-center justify-center gap-2"
-                                >
-                                    <XCircle size={16} /> Rejeter
-                                </button>
-                                <button 
-                                    onClick={() => handleUpdateStatus('Interviewed')}
-                                    className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
-                                >
-                                    <CheckCircle size={16} className="text-[#B76E79]" /> Continuer vers Entretien
-                                </button>
-                           </div>
-                        </div>
-                    ) : (
-                        <div className="h-64 border-2 border-dashed border-slate-100 rounded-[3rem] flex flex-col items-center justify-center p-10 text-center space-y-4 opacity-40">
-                            <BrainCircuit size={48} className="text-slate-200" />
-                            <p className="text-xs font-bold text-slate-400 italic">Sélectionnez un talent pour lancer l'analyse prédictive.</p>
-                        </div>
-                    )}
+                                <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group backdrop-blur-md">
+                                    <Cpu className="absolute -right-4 -top-4 w-20 h-20 text-blue-500/5 group-hover:scale-125 transition-transform duration-[3s]" />
+                                    <h4 className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest mb-4 text-blue-400 relative z-10">
+                                        <Award size={16} /> Predictive Logic
+                                    </h4>
+                                    <p className="text-xs text-slate-400 italic leading-relaxed relative z-10">
+                                        {selectedApp.scoreMatching > 80 
+                                            ? "Quantum correlation detected. High-performance trajectory expected based on technical metadata."
+                                            : "Partial node overlap detected. Manual verification recommended for high-risk nodes."}
+                                    </p>
+                                </div>
+
+                                {/* Actions Recruteur */}
+                                <div className="pt-8 border-t border-white/5 flex gap-4 relative z-10">
+                                    <button 
+                                        onClick={() => handleUpdateStatus('Rejected')}
+                                        className="flex-1 bg-white/5 border border-white/10 text-slate-400 py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center justify-center gap-2 shadow-xl"
+                                    >
+                                        <XCircle size={18} /> Terminate
+                                    </button>
+                                    <button 
+                                        onClick={() => handleUpdateStatus('Interviewed')}
+                                        className="flex-[1.5] bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:from-blue-500 hover:to-indigo-500 transition-all shadow-2xl shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-95"
+                                    >
+                                        <CheckCircle size={18} /> Initiate Exchange
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 0.5 }}
+                                className="h-[500px] border-2 border-dashed border-white/10 rounded-[3.5rem] flex flex-col items-center justify-center p-12 text-center space-y-6"
+                            >
+                                <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center border border-white/5">
+                                    <BrainCircuit size={40} className="text-slate-800" />
+                                </div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-700 italic">Select node for deep analysis.</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 
@@ -255,68 +282,79 @@ const RecruiterScoring = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowAnomalies(false)}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60]"
+                            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[60]"
                         />
                         <motion.div 
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed right-0 top-0 bottom-0 w-full md:w-[500px] bg-white z-[70] shadow-2xl overflow-hidden flex flex-col"
+                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                            className="fixed right-0 top-0 bottom-0 w-full md:w-[550px] bg-slate-900 border-l border-white/10 z-[70] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
                         >
-                            <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <button onClick={() => setShowAnomalies(false)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
-                                        <ChevronLeft size={20} />
+                            <div className="p-10 border-b border-white/10 bg-slate-950/40 flex items-center justify-between">
+                                <div className="flex items-center gap-6">
+                                    <button onClick={() => setShowAnomalies(false)} className="p-3 hover:bg-white/5 rounded-2xl transition-colors text-slate-400">
+                                        <ChevronLeft size={24} />
                                     </button>
                                     <div>
-                                        <h2 className="text-xl font-serif font-bold text-slate-900">Anomalies Détectées</h2>
-                                        <p className="text-xs text-slate-400 font-medium">Fiabilité du profil : <span className={selectedApp.candidate.scoreFiabilite > 70 ? 'text-emerald-500' : 'text-rose-500'}>{selectedApp.candidate.scoreFiabilite}%</span></p>
+                                        <h2 className="text-2xl font-bold text-white tracking-tight">Security Scan</h2>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-1 italic">Fiability Index: <span className={selectedApp.candidate.scoreFiabilite > 70 ? 'text-emerald-400' : 'text-rose-400'}>{selectedApp.candidate.scoreFiabilite}%</span></p>
                                     </div>
                                 </div>
-                                <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
-                                    <ShieldCheck size={24} />
+                                <div className="w-14 h-14 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-center text-rose-500 shadow-2xl">
+                                    <ShieldCheck size={28} />
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                                <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-2">
-                                        <Info size={14} /> Résumé de l'analyse IA
+                            <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+                                <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-xl relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                        <Info size={40} className="text-blue-400" />
+                                    </div>
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-4 flex items-center gap-3">
+                                        Neural Summary
                                     </h4>
-                                    <p className="text-sm text-slate-600 leading-relaxed italic">
+                                    <p className="text-sm text-slate-300 leading-relaxed italic font-medium">
                                         "{selectedApp.candidate.resumeAnomalies}"
                                     </p>
                                 </div>
 
-                                <div className="space-y-4">
+                                <div className="space-y-6">
                                     {selectedApp.candidate.anomalies.map((ano, i) => (
-                                        <div key={i} className="p-6 rounded-[2rem] border border-slate-50 bg-white shadow-sm hover:shadow-md transition-shadow">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
-                                                    ano.severite === 'elevee' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                                    ano.severite === 'moyenne' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                    'bg-blue-50 text-blue-600 border-blue-100'
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.1 }}
+                                            key={i} 
+                                            className="p-8 rounded-[3rem] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all relative group"
+                                        >
+                                            <div className="flex justify-between items-start mb-6">
+                                                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border shadow-2xl ${
+                                                    ano.severite === 'elevee' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                                                    ano.severite === 'moyenne' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                                    'bg-blue-500/10 text-blue-400 border-blue-500/20'
                                                 }`}>
-                                                    Sévérité {ano.severite}
+                                                    Severity {ano.severite}
                                                 </span>
-                                                <Zap size={14} className={ano.severite === 'elevee' ? 'text-rose-500' : 'text-slate-200'} />
+                                                <Zap size={18} className={ano.severite === 'elevee' ? 'text-rose-500 animate-pulse' : 'text-slate-800'} />
                                             </div>
-                                            <h5 className="font-bold text-slate-800 mb-1">{ano.type.replace('_', ' ').toUpperCase()}</h5>
-                                            <p className="text-xs text-slate-500 mb-4">{ano.description}</p>
+                                            <h5 className="text-lg font-bold text-white mb-2 tracking-tight">{ano.type.replace('_', ' ').toUpperCase()}</h5>
+                                            <p className="text-sm text-slate-400 mb-6 font-medium">{ano.description}</p>
                                             
-                                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                                <p className="text-[9px] font-black text-[#B76E79] uppercase tracking-widest mb-1">Recommandation Recruteur</p>
-                                                <p className="text-xs text-slate-600 font-medium italic">"{ano.recommandation}"</p>
+                                            <div className="p-6 bg-slate-950/60 rounded-[2rem] border border-white/5">
+                                                <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                    <Target size={12} /> Strategic Recommendation
+                                                </p>
+                                                <p className="text-xs text-slate-300 font-medium italic">"{ano.recommandation}"</p>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="p-8 bg-slate-50 border-t border-slate-100">
-                                <button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-colors">
-                                    Ajouter au Kit d'Entretien
+                            <div className="p-10 bg-slate-950/40 border-t border-white/10 backdrop-blur-3xl">
+                                <button className="w-full bg-white/5 border border-white/10 text-white py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all shadow-2xl active:scale-95">
+                                    Export to Interview Kit v5.0
                                 </button>
                             </div>
                         </motion.div>

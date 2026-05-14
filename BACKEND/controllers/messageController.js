@@ -41,7 +41,49 @@ const sendMessage = async (req, res) => {
     }
 };
 
+// @desc    Get all unique conversations for the current user
+// @route   GET /api/messages/conversations
+// @access  Private
+const getConversations = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Find messages where user is either sender or receiver
+        const messages = await Message.find({
+            $or: [{ sender: userId }, { receiver: userId }]
+        }).sort({ createdAt: -1 });
+
+        // Extract unique user IDs from messages
+        const conversationUserIds = new Set();
+        messages.forEach(msg => {
+            if (msg.sender.toString() !== userId) conversationUserIds.add(msg.sender.toString());
+            if (msg.receiver.toString() !== userId) conversationUserIds.add(msg.receiver.toString());
+        });
+
+        const User = require('../models/User');
+        const users = await User.find({ _id: { $in: Array.from(conversationUserIds) } }).select('nom email role');
+
+        // Add last message and unread count
+        const conversations = users.map(user => {
+            const lastMsg = messages.find(m => 
+                (m.sender.toString() === user._id.toString() && m.receiver.toString() === userId) ||
+                (m.sender.toString() === userId && m.receiver.toString() === user._id.toString())
+            );
+            return {
+                user,
+                lastMessage: lastMsg ? lastMsg.content : '',
+                lastMessageDate: lastMsg ? lastMsg.createdAt : null
+            };
+        });
+
+        res.status(200).json(conversations);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur serveur', error: error.message });
+    }
+};
+
 module.exports = {
     getMessages,
-    sendMessage
+    sendMessage,
+    getConversations
 };
