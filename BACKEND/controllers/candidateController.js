@@ -86,11 +86,17 @@ const uploadAndParse = async (req, res) => {
       const pdfData = await pdfParse(dataBuffer);
       pdfText = pdfData.text;
     } catch (pdfError) {
-      fs.unlinkSync(req.file.path);
-      return res.status(400).json({
-        success: false,
-        message: 'PDF illisible ou corrompu'
-      });
+      console.warn('PDF parse failed, attempting plain text fallback...');
+      // Fallback: Tentative de lecture en tant que texte brut (utile pour les tests ou PDF mal formés)
+      pdfText = dataBuffer.toString('utf8');
+      
+      if (!pdfText || pdfText.trim().length < 10) {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({
+          success: false,
+          message: 'Le fichier est illisible. Veuillez uploader un PDF valide.'
+        });
+      }
     }
 
     // Nettoyer le fichier temporaire immédiatement

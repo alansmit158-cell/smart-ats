@@ -11,7 +11,8 @@ import {
   Cpu,
   Menu,
   X,
-  Zap
+  Zap,
+  CreditCard
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 
@@ -25,6 +26,7 @@ const AdminLayout = () => {
         { path: '/admin/users', icon: <Users size={20} />, label: 'Utilisateurs' },
         { path: '/admin/security', icon: <ShieldCheck size={20} />, label: 'Sécurité' },
         { path: '/admin/logs', icon: <Activity size={20} />, label: 'Audit Logs' },
+        { path: '/admin/subscriptions', icon: <CreditCard size={20} />, label: 'Abonnements' },
         { path: '/admin/settings', icon: <Settings size={20} />, label: 'Système' },
     ];
 

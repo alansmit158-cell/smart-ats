@@ -37,6 +37,7 @@ import AdminSecurity from './pages/admin/AdminSecurity';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminLogs from './pages/admin/AdminLogs';
+import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -92,6 +93,7 @@ function App() {
             <Route path="users" element={<AdminUsers />} /> 
             <Route path="security" element={<AdminSecurity />} />
             <Route path="logs" element={<AdminLogs />} />
+            <Route path="subscriptions" element={<AdminSubscriptions />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route index element={<Navigate to="stats" replace />} />
           </Route>

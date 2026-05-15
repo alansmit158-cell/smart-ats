@@ -16,10 +16,21 @@ const getJobs = async (req, res) => {
 // @route   POST /api/jobs
 // @access  Private
 const createJob = async (req, res) => {
-    const { titre, description, competences, lieu, salaire } = req.body;
+    let { titre, description, competences, lieu, salaire } = req.body;
     
     if (!titre || !description || !competences || !lieu || !salaire) {
         return res.status(400).json({ message: 'Veuillez remplir tous les champs requis' });
+    }
+
+    // Conversion des compétences en tableau si c'est une chaîne
+    if (typeof competences === 'string') {
+        competences = competences.split(',').map(s => s.trim()).filter(s => s !== '');
+    }
+
+    // Nettoyage du salaire (enlever les symboles € et k pour la conversion en nombre)
+    if (typeof salaire === 'string') {
+        const numericSalaire = parseInt(salaire.replace(/[^0-9]/g, ''));
+        salaire = isNaN(numericSalaire) ? 0 : numericSalaire;
     }
 
     try {
@@ -29,7 +40,7 @@ const createJob = async (req, res) => {
             competences,
             lieu,
             salaire,
-            recruiter: req.user.id // Utilise l'ID de l'utilisateur authentifié
+            recruiter: req.user.id
         });
         res.status(201).json(job);
     } catch (error) {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Briefcase, Filter, Sparkles, ChevronRight, BookmarkPlus, ArrowUpRight, Loader2, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../api/axiosConfig';
@@ -25,6 +26,8 @@ const CandidateExplorer = () => {
         }
     };
 
+    const navigate = useNavigate();
+
     const handleApply = async (jobId) => {
         setApplyingId(jobId);
         try {
@@ -39,7 +42,21 @@ const CandidateExplorer = () => {
                 }
             });
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Erreur lors de la postulation');
+            const msg = error.response?.data?.message || 'Erreur lors de la postulation';
+            if (msg.includes('CV')) {
+                toast.error('CV requis pour postuler.', {
+                    icon: '📄',
+                    duration: 5000,
+                    style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+                });
+                setTimeout(() => {
+                    if (window.confirm("Voulez-vous être redirigé vers l'upload de CV ?")) {
+                        window.location.href = '/candidate/upload';
+                    }
+                }, 1000);
+            } else {
+                toast.error(msg);
+            }
         } finally {
             setApplyingId(null);
         }

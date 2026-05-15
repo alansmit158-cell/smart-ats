@@ -1,12 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, UserPlus, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, UserPlus, AlertCircle, Briefcase, GraduationCap } from 'lucide-react';
 
 const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('recruiter');
     const [error, setError] = useState('');
     const { register } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await register(name, email, password);
+            await register(name, email, password, role);
             navigate('/');
         } catch (err) {
             setError(err);
@@ -41,7 +42,7 @@ const Register = () => {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-1.5">
                             <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Full Name</label>
                             <div className="relative group">
@@ -93,12 +94,35 @@ const Register = () => {
                             </div>
                         </div>
 
+                        {/* Role Selection */}
+                        <div className="space-y-3">
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Account Perspective</label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setRole('recruiter')}
+                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border transition-all ${role === 'recruiter' ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
+                                >
+                                    <Briefcase size={16} />
+                                    <span className="text-xs font-bold uppercase tracking-widest">Recruiter</span>
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={() => setRole('candidate')}
+                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border transition-all ${role === 'candidate' ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
+                                >
+                                    <GraduationCap size={16} />
+                                    <span className="text-xs font-bold uppercase tracking-widest">Candidate</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <button 
                             type="submit" 
                             className="w-full flex justify-center items-center py-4 px-4 rounded-2xl shadow-xl shadow-blue-600/20 font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all mt-4"
                         >
                             <UserPlus className="mr-2 h-5 w-5" />
-                            Sign Up
+                            Initialize Profile
                         </button>
                     </form>
 
@@ -106,7 +130,7 @@ const Register = () => {
                         <p className="text-sm text-slate-400 font-medium">
                             Already have an account?{' '}
                             <Link to="/login" className="font-bold text-blue-400 hover:text-blue-300 transition-colors">
-                                Sign in here
+                                Access Node
                             </Link>
                         </p>
                     </div>
