@@ -46,7 +46,8 @@ class NLPWorkerPool extends EventEmitter {
           pdfText,
           candidateId,
           mongoUri: process.env.MONGO_URI,
-          openaiKey: process.env.OPENAI_API_KEY
+          groqKey: process.env.GROQ_API_KEY,
+          groqModel: process.env.GROQ_MODEL
         }
       }
     );

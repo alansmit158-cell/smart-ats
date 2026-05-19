@@ -89,7 +89,7 @@ PROFIL DU CANDIDAT :
 
         // Appel à l'IA
         const aiResponse = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
+            model: process.env.GROQ_MODEL || 'llama3-8b-8192',
             messages: [
                 { role: 'system', content: MATCHING_SYSTEM_PROMPT },
                 { role: 'user', content: `Évalue la compatibilité :\n\n${jobContext}\n\n${candidateContext}` }
@@ -169,7 +169,7 @@ PROFIL DU CANDIDAT :
 - Expériences : ${candidate.experiences?.map(e => `${e.titre} chez ${e.entreprise}`).join(' | ') || 'Aucune'}`;
 
                 const aiResponse = await openai.chat.completions.create({
-                    model: 'gpt-4o-mini',
+                    model: process.env.GROQ_MODEL || 'llama3-8b-8192',
                     messages: [
                         { role: 'system', content: MATCHING_SYSTEM_PROMPT },
                         { role: 'user', content: `Évalue la compatibilité :\n${jobContext}\n${candidateContext}` }

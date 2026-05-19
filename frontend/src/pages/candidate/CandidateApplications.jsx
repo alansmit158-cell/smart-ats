@@ -18,8 +18,10 @@ import {
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const CandidateApplications = () => {
+    const navigate = useNavigate();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -210,7 +212,21 @@ const CandidateApplications = () => {
 
                                 {/* Actions */}
                                 <div className="flex items-center gap-4 border-t xl:border-t-0 pt-8 xl:pt-0 border-white/5">
-                                    <button className="p-5 bg-white/5 text-slate-400 rounded-2xl hover:bg-white/10 hover:text-white transition-all duration-500 relative group/btn border border-white/5 shadow-xl">
+                                    <button 
+                                        onClick={() => {
+                                            if (app.job?.recruiter?._id) {
+                                                navigate('/candidate/messages', {
+                                                    state: {
+                                                        userId: app.job.recruiter._id,
+                                                        userName: app.job.recruiter.nom
+                                                    }
+                                                });
+                                            } else {
+                                                toast.error("Contact non disponible");
+                                            }
+                                        }}
+                                        className="p-5 bg-white/5 text-slate-400 rounded-2xl hover:bg-white/10 hover:text-white transition-all duration-500 relative group/btn border border-white/5 shadow-xl"
+                                    >
                                         <MessageCircle size={22} />
                                         <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-950 text-white text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-xl opacity-0 group-hover/btn:opacity-100 transition-opacity border border-white/10 whitespace-nowrap">Open Channel</span>
                                     </button>
@@ -222,7 +238,7 @@ const CandidateApplications = () => {
 
                             {/* Status Update Banner */}
                             <div className="px-10 lg:px-12 py-5 bg-white/[0.02] border-t border-white/5 flex items-center justify-between backdrop-blur-md">
-                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] flex items-center gap-4">
+                                 <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] flex items-center gap-4">
                                     <div className={`w-2 h-2 rounded-full ${app.status === 'Pending' ? 'bg-amber-400 animate-pulse shadow-[0_0_10px_#fbbf24]' : 'bg-emerald-400 shadow-[0_0_10px_#34d399]'}`}></div>
                                     Quantum Update: 
                                     <span className="text-slate-300 ml-2 font-medium italic normal-case">
@@ -231,7 +247,7 @@ const CandidateApplications = () => {
                                          app.status === 'Interviewed' ? 'Scheduling virtual protocol exchange.' :
                                          app.status === 'Accepted' ? 'Final authorization granted. Deployment imminent.' : 'Thread terminated. Profiling rejected.'}
                                     </span>
-                                 </p>
+                                 </div>
                                  <button className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2 hover:text-blue-300 group">
                                     Full Node History <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                  </button>

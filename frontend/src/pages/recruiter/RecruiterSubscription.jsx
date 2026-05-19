@@ -91,7 +91,7 @@ const RecruiterSubscription = () => {
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-[#B76E79] uppercase tracking-widest mb-1">Votre Plan Actuel</p>
-                            <h2 className="text-2xl font-serif font-bold text-slate-900">{myPlan.type} Professional</h2>
+                            <h2 className="text-2xl font-serif font-bold text-slate-900">{myPlan.plan} Professional</h2>
                         </div>
                     </div>
                     
@@ -109,9 +109,9 @@ const RecruiterSubscription = () => {
                     <div className="flex flex-col items-center md:items-end gap-2">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consommation</p>
                         <div className="w-40 h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                            <div className="h-full bg-[#B76E79] w-[40%] rounded-full"></div>
+                            <div className="h-full bg-[#B76E79] rounded-full" style={{ width: `${Math.min(((myPlan.jobsCreated || 0) / (myPlan.jobLimit || 1)) * 100, 100)}%` }}></div>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500">4 / {myPlan.limiteOffres === 9999 ? '∞' : myPlan.limiteOffres} offres utilisées</p>
+                        <p className="text-[10px] font-bold text-slate-500">{myPlan.jobsCreated || 0} / {myPlan.jobLimit === 9999 ? '∞' : myPlan.jobLimit} offres utilisées</p>
                     </div>
                 </motion.div>
             )}
@@ -119,8 +119,8 @@ const RecruiterSubscription = () => {
             {/* Pricing Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
                 {plans.map((plan, i) => {
-                    const isCurrent = myPlan?.type === plan.type;
-                    const isPremium = plan.type === 'Pro';
+                    const isCurrent = myPlan?.plan === plan.type;
+                    const isPremium = plan.type === 'Premium';
                     
                     return (
                         <motion.div 
@@ -142,12 +142,12 @@ const RecruiterSubscription = () => {
 
                             <div className="mb-10">
                                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${
-                                    plan.type === 'Starter' ? 'bg-slate-50 text-slate-400' :
-                                    plan.type === 'Pro' ? 'bg-[#B76E79]/10 text-[#B76E79]' :
+                                    plan.type === 'Basic' ? 'bg-slate-50 text-slate-400' :
+                                    plan.type === 'Premium' ? 'bg-[#B76E79]/10 text-[#B76E79]' :
                                     'bg-slate-900 text-amber-400'
                                 }`}>
-                                    {plan.type === 'Starter' ? <Rocket size={24} /> : 
-                                     plan.type === 'Pro' ? <Zap size={24} /> : <Crown size={24} />}
+                                    {plan.type === 'Basic' ? <Rocket size={24} /> : 
+                                     plan.type === 'Premium' ? <Zap size={24} /> : <Crown size={24} />}
                                 </div>
                                 <h3 className="text-2xl font-serif font-black text-slate-900 mb-2">{plan.type}</h3>
                                 <div className="flex items-baseline gap-1">

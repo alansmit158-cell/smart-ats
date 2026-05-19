@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import html2pdf from 'html2pdf.js';
 import { 
   Calendar, 
   Clock, 
@@ -103,6 +104,21 @@ const RecruiterInterviews = () => {
         }
     };
 
+    const handleExportPDF = () => {
+        const element = document.getElementById('interview-kit-content');
+        if (!element) return;
+        
+        const opt = {
+            margin:       15,
+            filename:     `InterviewKit_${activeApp.candidate.user.nom.replace(/\s+/g, '_')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f172a' },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().from(element).set(opt).save();
+    };
+
     const getStatusStyle = (status) => {
         switch (status) {
             case 'Interviewed': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
@@ -142,7 +158,10 @@ const RecruiterInterviews = () => {
                     >
                         <RefreshCcw size={20} />
                     </button>
-                    <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-blue-600/20">
+                    <button 
+                        onClick={() => toast("Nouveau protocole d'analyse IA en cours d'initialisation...", { icon: "🚀", style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } })}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-blue-600/20"
+                    >
                         <Plus size={18} /> New Protocol
                     </button>
                 </div>
@@ -271,12 +290,22 @@ const RecruiterInterviews = () => {
                                     </button>
                                 ) : (
                                     <button 
+                                        onClick={() => {
+                                            if(app.cvUrl) {
+                                                window.open(app.cvUrl, '_blank');
+                                            } else {
+                                                toast("Payload PDF temporairement inaccessible.", { icon: "🔒", style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } });
+                                            }
+                                        }}
                                         className="bg-white/5 border border-white/10 text-slate-300 px-8 py-3.5 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-white/10 transition-all shadow-xl"
                                     >
                                         <FileText size={18} className="text-blue-400/50" /> View Payload
                                     </button>
                                 )}
-                                <button className="text-slate-600 hover:text-white p-2 transition-colors"><MoreVertical size={20}/></button>
+                                <button 
+                                    onClick={() => toast("Menu des options du candidat ouvert.", { icon: "⚙️", style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } })}
+                                    className="text-slate-600 hover:text-white p-2 transition-colors"
+                                ><MoreVertical size={20}/></button>
                             </div>
                         </motion.div>
                     ))}
@@ -380,39 +409,52 @@ const RecruiterInterviews = () => {
                                         </div>
 
                                         {generatedKit && (
-                                            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 backdrop-blur-2xl relative overflow-hidden group">
-                                                <div className="absolute inset-0 bg-blue-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                                
-                                                <div className="relative z-10">
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">AI Context Summary</p>
-                                                    <p className="text-sm font-medium text-slate-300 italic leading-relaxed">"{generatedKit.resumeIA}"</p>
-                                                </div>
-                                                
-                                                <div className="relative z-10">
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Neural Probing Vectors</p>
-                                                    <ul className="space-y-4">
-                                                        {generatedKit.questionsTechniques?.map((q, idx) => (
-                                                            <li key={idx} className="flex gap-4 items-start">
-                                                                <span className="text-blue-500 font-black mt-1 text-[10px]">V{idx + 1}</span>
-                                                                <span className="text-sm font-bold text-white tracking-tight leading-snug">{q}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-
-                                                {generatedKit.pointsVigilance?.length > 0 && (
+                                            <div className="space-y-4">
+                                                <button 
+                                                    onClick={handleExportPDF}
+                                                    className="w-full bg-slate-800 text-slate-300 py-4 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-slate-700 transition-all shadow-xl flex items-center justify-center gap-2 border border-slate-700"
+                                                >
+                                                    <Download size={16} /> Exporter le Guide (PDF)
+                                                </button>
+                                                <div id="interview-kit-content" className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 backdrop-blur-2xl relative overflow-hidden group">
+                                                    <div className="absolute inset-0 bg-blue-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                    
                                                     <div className="relative z-10">
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">High-Risk Node Verification</p>
-                                                        <ul className="space-y-3">
-                                                            {generatedKit.pointsVigilance.map((p, idx) => (
-                                                                <li key={idx} className="flex gap-3 items-start text-xs font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl shadow-xl">
-                                                                    <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-500" />
-                                                                    <span>{p}</span>
-                                                                </li>
-                                                            ))}
+                                                        <h2 className="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">AI Interview Kit : {activeApp?.candidate?.user?.nom || 'Candidat'}</h2>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">AI Context Summary</p>
+                                                        <p className="text-sm font-medium text-slate-300 italic leading-relaxed">"{generatedKit.resumeIA || 'Analyse globale non disponible pour le moment.'}"</p>
+                                                    </div>
+                                                    
+                                                    <div className="relative z-10">
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Neural Probing Vectors</p>
+                                                        <ul className="space-y-4">
+                                                            {(generatedKit.questionsTechniques || []).length > 0 ? (
+                                                                (generatedKit.questionsTechniques || []).map((q, idx) => (
+                                                                    <li key={idx} className="flex gap-4 items-start">
+                                                                        <span className="text-blue-500 font-black mt-1 text-[10px]">V{idx + 1}</span>
+                                                                        <span className="text-sm font-bold text-white tracking-tight leading-snug">{q}</span>
+                                                                    </li>
+                                                                ))
+                                                            ) : (
+                                                                <li className="text-sm text-slate-400 italic">Aucune question générée.</li>
+                                                            )}
                                                         </ul>
                                                     </div>
-                                                )}
+
+                                                    {generatedKit.pointsVigilance && generatedKit.pointsVigilance.length > 0 && (
+                                                        <div className="relative z-10">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">High-Risk Node Verification</p>
+                                                            <ul className="space-y-3">
+                                                                {generatedKit.pointsVigilance.map((p, idx) => (
+                                                                    <li key={idx} className="flex gap-3 items-start text-xs font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl shadow-xl">
+                                                                        <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-500" />
+                                                                        <span>{p}</span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
                                     </section>

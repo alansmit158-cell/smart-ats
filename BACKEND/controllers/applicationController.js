@@ -62,7 +62,14 @@ const getMyApplications = async (req, res) => {
         }
 
         const applications = await Application.find({ candidate: candidateProfile._id })
-            .populate('job', 'titre lieu salaire recruiter description')
+            .populate({
+                path: 'job',
+                select: 'titre lieu salaire recruiter description',
+                populate: {
+                    path: 'recruiter',
+                    select: 'nom email'
+                }
+            })
             .sort({ dateDepot: -1 });
 
         res.status(200).json({ success: true, data: applications });

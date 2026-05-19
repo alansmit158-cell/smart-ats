@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const abonnementSchema = new mongoose.Schema({
-    type: { 
+    plan: { 
         type: String, 
-        enum: ['Starter', 'Pro', 'Enterprise'], 
+        enum: ['Basic', 'Premium', 'Enterprise'], 
         required: true 
     },
     prix: { 
@@ -27,7 +27,7 @@ const abonnementSchema = new mongoose.Schema({
         required: true,
         unique: true // Un seul abonnement par recruteur
     },
-    limiteOffres: {
+    jobLimit: {
         type: Number,
         required: true
     },
@@ -35,7 +35,7 @@ const abonnementSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    offresUtilisees: {
+    jobsCreated: {
         type: Number,
         default: 0
     },

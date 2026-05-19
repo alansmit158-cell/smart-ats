@@ -5,7 +5,7 @@ const User = require('../models/User');
 const workerPool = require('../workers/workerPool');
 
 // Initialisation du client OpenAI (utilise process.env.OPENAI_API_KEY)
-const openai = new OpenAI();
+const openai = require('../config/openaiConfig');
 
 // =============================================================================
 // PROMPT SYSTÈME — Moteur NLP pour extraction de données CV
@@ -283,7 +283,7 @@ Retourne UNIQUEMENT un objet JSON avec ce format :
 }`;
 
         const aiResponse = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
+            model: process.env.GROQ_MODEL || 'llama3-8b-8192',
             messages: [{ role: 'user', content: prompt }],
             response_format: { type: 'json_object' },
             temperature: 0.3

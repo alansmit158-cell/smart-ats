@@ -22,9 +22,9 @@ smart-ATS/
 │   ├── resetDB.js                ← Script de purge de la base de données
 │   ├── .env                      ← Variables d'environnement (PORT, MONGO_URI, OPENAI_API_KEY)
 │   ├── config/
-│   │   ├── db.js                 ← Connexion MongoDB (Mongoose)
-│   │   └── openaiConfig.js       ← Instance configuration OpenAI
-│   ├── controllers/              ← Logique métier des API
+│   │   ├── db.js
+│   │   └── openaiConfig.js
+│   ├── controllers/
 │   │   ├── abonnementController.js
 │   │   ├── adminController.js
 │   │   ├── applicationController.js

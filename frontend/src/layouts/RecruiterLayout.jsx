@@ -13,8 +13,11 @@ import {
   Menu,
   ChevronRight,
   Sparkles,
-  Crown
+  Crown,
+  Target,
+  FileText
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import AuthContext from '../context/AuthContext';
 
 const RecruiterLayout = () => {
@@ -27,8 +30,10 @@ const RecruiterLayout = () => {
         { path: '/recruiter/jobs', icon: <Briefcase size={20} />, label: 'Offres d\'emploi' },
         { path: '/recruiter/candidates', icon: <Users size={20} />, label: 'Vivier Talents' },
         { path: '/recruiter/interviews', icon: <Calendar size={20} />, label: 'Entretiens IA' },
+        { path: '/recruiter/scoring', icon: <Target size={20} />, label: 'Scoring IA' },
         { path: '/recruiter/messages', icon: <MessageSquare size={20} />, label: 'Messagerie' },
         { path: '/recruiter/subscription', icon: <Crown size={20} />, label: 'Abonnement' },
+        { path: '/recruiter/reports', icon: <FileText size={20} />, label: 'Rapports' },
         { path: '/recruiter/settings', icon: <Settings size={20} />, label: 'Paramètres' },
     ];
 
@@ -129,7 +134,7 @@ const RecruiterLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        <div className="relative cursor-pointer group">
+                        <div className="relative cursor-pointer group" onClick={() => toast("Aucune nouvelle notification pour le moment.", { icon: "🔔" })}>
                             <Bell size={20} className="text-slate-400 group-hover:text-white transition-colors" />
                             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-950 shadow-[0_0_8px_#f43f5e]"></span>
                         </div>

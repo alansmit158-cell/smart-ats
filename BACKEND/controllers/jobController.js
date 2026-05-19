@@ -1,4 +1,5 @@
 const Job = require('../models/Job');
+const Abonnement = require('../models/Abonnement');
 
 // @desc    Get all jobs
 // @route   GET /api/jobs
@@ -34,6 +35,15 @@ const createJob = async (req, res) => {
     }
 
     try {
+        const abonnement = await Abonnement.findOne({ recruteur: req.user.id });
+        if (!abonnement || abonnement.status !== 'active') {
+            return res.status(403).json({ message: "Vous n'avez pas d'abonnement actif." });
+        }
+        
+        if (abonnement.jobsCreated >= abonnement.jobLimit && abonnement.jobLimit !== 9999) {
+            return res.status(403).json({ message: "Quota d'offres atteint. Veuillez mettre à niveau votre abonnement." });
+        }
+
         const job = await Job.create({
             titre,
             description,
@@ -42,6 +52,10 @@ const createJob = async (req, res) => {
             salaire,
             recruiter: req.user.id
         });
+        
+        abonnement.jobsCreated += 1;
+        await abonnement.save();
+
         res.status(201).json(job);
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur', error: error.message });
@@ -86,6 +100,14 @@ const deleteJob = async (req, res) => {
         }
 
         await job.deleteOne();
+        
+        // Décrémenter le quota
+        const abonnement = await Abonnement.findOne({ recruteur: req.user.id });
+        if (abonnement && abonnement.jobsCreated > 0) {
+            abonnement.jobsCreated -= 1;
+            await abonnement.save();
+        }
+        
         res.status(200).json({ message: 'Offre supprimée avec succès' });
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur', error: error.message });

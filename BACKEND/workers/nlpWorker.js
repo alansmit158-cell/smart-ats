@@ -15,8 +15,11 @@ const processNLP = async () => {
     // 1. Connexion MongoDB dans le worker
     await mongoose.connect(workerData.mongoUri);
     
-    // 2. Initialiser OpenAI dans le worker
-    const openai = new OpenAI({ apiKey: workerData.openaiKey });
+    // 2. Initialiser OpenAI (Groq API) dans le worker
+    const openai = new OpenAI({ 
+        apiKey: workerData.groqKey,
+        baseURL: "https://api.groq.com/openai/v1"
+    });
     
     // 3. Prompt NLP
     const prompt = `
@@ -50,9 +53,9 @@ const processNLP = async () => {
     ${workerData.pdfText}
     `;
     
-    // 4. Appel OpenAI (bloque UNIQUEMENT ce thread worker)
+    // 4. Appel OpenAI (Groq) (bloque UNIQUEMENT ce thread worker)
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: workerData.groqModel || 'llama3-8b-8192',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 2000,
       temperature: 0.1

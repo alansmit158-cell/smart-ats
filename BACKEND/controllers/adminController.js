@@ -72,7 +72,7 @@ const getOpenAIStats = async (req, res) => {
             tokensUsed: 482500,
             tokenLimit: 1000000,
             estimatedCost: 14.28,
-            model: "gpt-4o-mini",
+            model: process.env.GROQ_MODEL || "llama3-8b-8192",
             status: "Online"
         }
     });

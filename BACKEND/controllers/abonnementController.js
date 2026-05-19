@@ -7,18 +7,18 @@ const User = require('../models/User');
 const getPlans = (req, res) => {
     const plans = [
         {
-            id: 'starter',
-            type: 'Starter',
+            id: 'basic',
+            type: 'Basic',
             prix: 49,
-            limiteOffres: 5,
+            jobLimit: 5,
             limiteAnalyses: 50,
             features: ['5 Offres actives', 'Analyses IA Standard', 'Support Email', 'Dashboard Recruteur']
         },
         {
-            id: 'pro',
-            type: 'Pro',
+            id: 'premium',
+            type: 'Premium',
             prix: 149,
-            limiteOffres: 20,
+            jobLimit: 20,
             limiteAnalyses: 500,
             features: ['20 Offres actives', 'Analyses IA Prioritaires', 'Support 24/7', 'Matching Avancé', 'Export de données']
         },
@@ -26,7 +26,7 @@ const getPlans = (req, res) => {
             id: 'enterprise',
             type: 'Enterprise',
             prix: 499,
-            limiteOffres: 9999,
+            jobLimit: 9999,
             limiteAnalyses: 99999,
             features: ['Offres Illimitées', 'Analyses IA Custom', 'Accès API Full', 'Account Manager dédié', 'Formation équipe']
         }
@@ -41,21 +41,21 @@ const subscribe = async (req, res) => {
     try {
         const { planType } = req.body;
         
-        let limiteOffres, limiteAnalyses, prix;
+        let jobLimit, limiteAnalyses, prix;
         
         switch (planType) {
-            case 'Starter':
-                limiteOffres = 5;
+            case 'Basic':
+                jobLimit = 5;
                 limiteAnalyses = 50;
                 prix = 49;
                 break;
-            case 'Pro':
-                limiteOffres = 20;
+            case 'Premium':
+                jobLimit = 20;
                 limiteAnalyses = 500;
                 prix = 149;
                 break;
             case 'Enterprise':
-                limiteOffres = 9999;
+                jobLimit = 9999;
                 limiteAnalyses = 99999;
                 prix = 499;
                 break;
@@ -71,23 +71,23 @@ const subscribe = async (req, res) => {
         let abonnement = await Abonnement.findOne({ recruteur: req.user.id });
 
         if (abonnement) {
-            abonnement.type = planType;
+            abonnement.plan = planType;
             abonnement.prix = prix;
-            abonnement.statut = 'active';
+            abonnement.status = 'active';
             abonnement.dateDebut = dateDebut;
             abonnement.dateFin = dateFin;
-            abonnement.limiteOffres = limiteOffres;
+            abonnement.jobLimit = jobLimit;
             abonnement.limiteAnalyses = limiteAnalyses;
             await abonnement.save();
         } else {
             abonnement = await Abonnement.create({
-                type: planType,
+                plan: planType,
                 prix,
-                statut: 'active',
+                status: 'active',
                 dateDebut,
                 dateFin,
                 recruteur: req.user.id,
-                limiteOffres,
+                jobLimit,
                 limiteAnalyses
             });
         }
@@ -127,7 +127,7 @@ const cancelSubscription = async (req, res) => {
             return res.status(404).json({ success: false, message: "Abonnement non trouvé." });
         }
 
-        abonnement.statut = 'suspended';
+        abonnement.status = 'suspended';
         await abonnement.save();
 
         res.status(200).json({ success: true, message: "Abonnement suspendu." });

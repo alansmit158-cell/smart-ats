@@ -4,10 +4,11 @@ import AuthContext from '../context/AuthContext';
 import { User, Mail, Lock, UserPlus, AlertCircle, Briefcase, GraduationCap } from 'lucide-react';
 
 const Register = () => {
-    const [name, setName] = useState('');
+    const [nom, setNom] = useState('');
+    const [prenom, setPrenom] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('recruiter');
+    const [role, setRole] = useState('candidate'); // Candidate selected by default according to instruction: "Sélectionnez impérativement le bouton radio « Candidat » avant de valider"
     const [error, setError] = useState('');
     const { register } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await register(name, email, password, role);
+            await register(nom, prenom, email, password, role);
             navigate('/');
         } catch (err) {
             setError(err);
@@ -30,8 +31,8 @@ const Register = () => {
 
             <div className="max-w-md w-full bg-white/5 backdrop-blur-2xl rounded-[3rem] shadow-2xl shadow-black overflow-hidden border border-white/10 relative z-10">
                 <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-10 text-center">
-                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Create Account</h2>
-                    <p className="text-blue-100/70 text-sm italic font-medium">Join the next generation of Smart Recruitment.</p>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Création de Compte</h2>
+                    <p className="text-blue-100/70 text-sm italic font-medium">Rejoignez la nouvelle génération d'Intelligence Recrutement.</p>
                 </div>
                 
                 <div className="p-10">
@@ -43,25 +44,43 @@ const Register = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-1.5">
-                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Full Name</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
-                                    <User className="h-5 w-5 text-slate-500" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Nom</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
+                                        <User className="h-5 w-5 text-slate-500" />
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        className="block w-full pl-12 pr-4 py-3.5 border border-white/5 rounded-2xl focus:ring-0 focus:border-blue-500/50 bg-white/5 text-white transition-all font-medium outline-none placeholder-slate-600 shadow-inner" 
+                                        placeholder="Nom"
+                                        value={nom}
+                                        onChange={(e) => setNom(e.target.value)}
+                                    />
                                 </div>
-                                <input 
-                                    type="text" 
-                                    required
-                                    className="block w-full pl-12 pr-4 py-3.5 border border-white/5 rounded-2xl focus:ring-0 focus:border-blue-500/50 bg-white/5 text-white transition-all font-medium outline-none placeholder-slate-600 shadow-inner" 
-                                    placeholder="John Doe"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Prénom</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
+                                        <User className="h-5 w-5 text-slate-500" />
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        className="block w-full pl-12 pr-4 py-3.5 border border-white/5 rounded-2xl focus:ring-0 focus:border-blue-500/50 bg-white/5 text-white transition-all font-medium outline-none placeholder-slate-600 shadow-inner" 
+                                        placeholder="Prénom"
+                                        value={prenom}
+                                        onChange={(e) => setPrenom(e.target.value)}
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Email Address</label>
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Adresse Email</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
                                     <Mail className="h-5 w-5 text-slate-500" />
@@ -70,7 +89,7 @@ const Register = () => {
                                     type="email" 
                                     required
                                     className="block w-full pl-12 pr-4 py-3.5 border border-white/5 rounded-2xl focus:ring-0 focus:border-blue-500/50 bg-white/5 text-white transition-all font-medium outline-none placeholder-slate-600 shadow-inner" 
-                                    placeholder="you@company.com"
+                                    placeholder="nom@entreprise.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -78,7 +97,7 @@ const Register = () => {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Secure Password</label>
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Mot de passe sécurisé</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
                                     <Lock className="h-5 w-5 text-slate-500" />
@@ -94,26 +113,34 @@ const Register = () => {
                             </div>
                         </div>
 
-                        {/* Role Selection */}
+                        {/* Role Selection using explicit styled radio buttons */}
                         <div className="space-y-3">
-                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Account Perspective</label>
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Type de Compte</label>
                             <div className="grid grid-cols-2 gap-4">
-                                <button 
-                                    type="button"
-                                    onClick={() => setRole('recruiter')}
-                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border transition-all ${role === 'recruiter' ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
-                                >
+                                <label className={`flex items-center justify-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer ${role === 'recruiter' ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}>
+                                    <input 
+                                        type="radio" 
+                                        name="role" 
+                                        value="recruiter" 
+                                        checked={role === 'recruiter'}
+                                        onChange={() => setRole('recruiter')}
+                                        className="sr-only"
+                                    />
                                     <Briefcase size={16} />
-                                    <span className="text-xs font-bold uppercase tracking-widest">Recruiter</span>
-                                </button>
-                                <button 
-                                    type="button"
-                                    onClick={() => setRole('candidate')}
-                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border transition-all ${role === 'candidate' ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
-                                >
+                                    <span className="text-xs font-bold uppercase tracking-widest">Recruteur</span>
+                                </label>
+                                <label className={`flex items-center justify-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer ${role === 'candidate' ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}>
+                                    <input 
+                                        type="radio" 
+                                        name="role" 
+                                        value="candidate" 
+                                        checked={role === 'candidate'}
+                                        onChange={() => setRole('candidate')}
+                                        className="sr-only"
+                                    />
                                     <GraduationCap size={16} />
-                                    <span className="text-xs font-bold uppercase tracking-widest">Candidate</span>
-                                </button>
+                                    <span className="text-xs font-bold uppercase tracking-widest">Candidat</span>
+                                </label>
                             </div>
                         </div>
 
@@ -122,15 +149,15 @@ const Register = () => {
                             className="w-full flex justify-center items-center py-4 px-4 rounded-2xl shadow-xl shadow-blue-600/20 font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all mt-4"
                         >
                             <UserPlus className="mr-2 h-5 w-5" />
-                            Initialize Profile
+                            Créer mon Compte
                         </button>
                     </form>
 
                     <div className="mt-8 text-center border-t border-white/5 pt-6">
                         <p className="text-sm text-slate-400 font-medium">
-                            Already have an account?{' '}
+                            Déjà inscrit ?{' '}
                             <Link to="/login" className="font-bold text-blue-400 hover:text-blue-300 transition-colors">
-                                Access Node
+                                Se connecter
                             </Link>
                         </p>
                     </div>

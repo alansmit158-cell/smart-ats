@@ -44,12 +44,21 @@ const AdminStats = () => {
                 const logsRes = await API.get('/admin/audit-logs');
                 if (logsRes.data.success) setAuditLogs(logsRes.data.data);
 
-                // Set mock abonnements for now if endpoint isn't fully returning yet
-                setAbonnements([
-                    { id: 1, name: 'Alice HR', plan: 'Enterprise', date: '12/12/2024', usage: '42 / ∞', status: 'active' },
-                    { id: 2, name: 'Jean Recrute', plan: 'Pro', date: '01/11/2023', usage: '18 / 20', status: 'active' },
-                    { id: 3, name: 'Startup Flow', plan: 'Starter', date: '15/10/2023', usage: '5 / 5', status: 'limit_reached' },
-                ]);
+                try {
+                    const abosRes = await API.get('/abonnements/all');
+                    if (abosRes.data.success) {
+                        setAbonnements(abosRes.data.data.map(abo => ({
+                            id: abo._id,
+                            name: abo.recruteur?.nom || 'Inconnu',
+                            plan: abo.type,
+                            date: abo.dateFin ? new Date(abo.dateFin).toLocaleDateString('fr-FR') : 'N/A',
+                            usage: `${abo.offresUtilisees || 0} / ${abo.limiteOffres === 9999 ? '∞' : abo.limiteOffres}`,
+                            status: (abo.offresUtilisees >= abo.limiteOffres && abo.limiteOffres !== 9999) ? 'limit_reached' : abo.status
+                        })));
+                    }
+                } catch(e) {
+                    console.error("Error fetching abonnements", e);
+                }
 
             } catch (error) {
                 toast.error("Erreur de chargement des données Admin");
@@ -259,7 +268,7 @@ const AdminStats = () => {
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Identité</th>
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Contact</th>
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Rôle</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Status</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Statut</th>
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Actions Deep Control</th>
                             </tr>
                         </thead>

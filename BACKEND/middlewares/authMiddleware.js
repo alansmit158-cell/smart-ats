@@ -19,6 +19,10 @@ const protect = async (req, res, next) => {
                  return res.status(401).json({ message: 'Utilisateur non trouvé' });
             }
 
+            if (req.user.status === 'suspended') {
+                 return res.status(401).json({ message: 'Accès révoqué. Votre compte a été suspendu par un administrateur.' });
+            }
+
             next();
         } catch (error) {
             console.error(error);

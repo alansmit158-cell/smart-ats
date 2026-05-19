@@ -3,8 +3,7 @@ const Interview = require('../models/Interview');
 const Candidate = require('../models/Candidate');
 const Job = require('../models/Job');
 const KitEntretien = require('../models/KitEntretien');
-
-const openai = new OpenAI();
+const openai = require('../config/openaiConfig');
 
 const KIT_SYSTEM_PROMPT = `Tu es une Intelligence Artificielle intégrée dans la plateforme Smart-ATS, un outil destiné aux recruteurs. Ton rôle actuel (Service IA) est de générer automatiquement un "Kit d'Entretien" (Interview Kit) structuré à partir du CV d'un candidat et de l'offre d'emploi correspondante.
 
@@ -57,7 +56,7 @@ const generateKit = async (req, res) => {
             candidate = interview.candidate;
             job = interview.job;
         } else if (candidateId) {
-            candidate = await Candidate.findById(candidateId);
+            candidate = await Candidate.findById(candidateId).populate('user');
             if (jobId) {
                 job = await Job.findById(jobId);
             }
@@ -76,17 +75,17 @@ OFFRE D'EMPLOI :
 
         const candidateContext = `
 PROFIL DU CANDIDAT :
-- Nom : ${candidate.name}
+- Nom : ${candidate.user?.nom || candidate.name || 'Candidat'}
 - Compétences : ${candidate.skills?.join(', ') || 'Aucune'}
 - Expériences : ${candidate.experiences?.map(e => `${e.poste} chez ${e.entreprise}`).join(' | ') || 'Aucune'}
 - Anomalies détectées par l'IA : ${candidate.anomalies?.map(a => `[${a.severite.toUpperCase()}] ${a.description}`).join(' | ') || 'Aucune'}
 - Texte brut du CV pertinent: ${candidate.rawText ? candidate.rawText.substring(0, 500) : ''}`;
 
-        console.log(`🤖 AI is generating interview kit for ${candidate.name}...`);
+        console.log(`🤖 AI is generating interview kit for ${candidate.user?.nom || candidate.name || 'Candidat'}...`);
 
         // OpenAI API call
         const aiResponse = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
+            model: process.env.GROQ_MODEL || 'llama3-8b-8192',
             messages: [
                 { role: 'system', content: KIT_SYSTEM_PROMPT },
                 { role: 'user', content: `Génère le kit d'entretien pour cette situation. IMPORTANT : Prends en compte les anomalies IA détectées pour proposer des questions de vérification.\n\n${jobContext}\n\n${candidateContext}` }

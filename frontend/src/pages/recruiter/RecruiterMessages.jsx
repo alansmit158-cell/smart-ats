@@ -16,9 +16,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import AuthContext from '../../context/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 const RecruiterMessages = () => {
     const { user: currentUser } = useContext(AuthContext);
+    const location = useLocation();
     const [conversations, setConversations] = useState([]);
     const [selectedConv, setSelectedConv] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -49,7 +51,26 @@ const RecruiterMessages = () => {
     const fetchConversations = async () => {
         try {
             const res = await API.get('/messages/conversations');
-            setConversations(res.data);
+            let fetchedConvs = res.data;
+            
+            // Check if we navigated here to start a new chat
+            if (location.state?.userId) {
+                const existingConv = fetchedConvs.find(c => c.user._id === location.state.userId);
+                if (existingConv) {
+                    setSelectedConv(existingConv);
+                } else {
+                    // Create a temporary conversation object for the new chat
+                    const newConv = {
+                        user: { _id: location.state.userId, nom: location.state.userName, role: 'candidate' },
+                        lastMessage: '',
+                        lastMessageDate: new Date()
+                    };
+                    fetchedConvs = [newConv, ...fetchedConvs];
+                    setSelectedConv(newConv);
+                }
+            }
+            
+            setConversations(fetchedConvs);
             setIsLoadingConv(false);
         } catch (error) {
             toast.error('Erreur lors du chargement des conversations');

@@ -16,15 +16,19 @@ import {
   Info,
   ChevronLeft,
   Zap,
-  Cpu
+  Cpu,
+  MessageSquare
 } from 'lucide-react';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const RecruiterScoring = () => {
+    const navigate = useNavigate();
     const [applications, setApplications] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
+    const [activeJobId, setActiveJobId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showAnomalies, setShowAnomalies] = useState(false);
     const [analyzingAnomalies, setAnalyzingAnomalies] = useState(false);
@@ -35,6 +39,7 @@ const RecruiterScoring = () => {
                 const jobsRes = await API.get(`/jobs`);
                 if (jobsRes.data.length > 0) {
                     const jobId = jobsRes.data[0]._id;
+                    setActiveJobId(jobId);
                     const appsRes = await API.get(`/applications/job/${jobId}`);
                     setApplications(appsRes.data.data);
                 }
@@ -69,6 +74,24 @@ const RecruiterScoring = () => {
             toast.error("Erreur lors de l'analyse IA");
         } finally {
             setAnalyzingAnomalies(false);
+        }
+    };
+
+    const handleGlobalScoring = async () => {
+        if (!activeJobId) return;
+        setLoading(true);
+        try {
+            const res = await API.post(`/matching/job/${activeJobId}`);
+            if (res.data.success) {
+                toast.success('Scoring global terminé !');
+                // Refresh applications
+                const appsRes = await API.get(`/applications/job/${activeJobId}`);
+                setApplications(appsRes.data.data);
+            }
+        } catch (error) {
+            toast.error('Erreur lors du scoring global');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -128,6 +151,13 @@ const RecruiterScoring = () => {
                     </div>
                 </div>
                 <div className="flex gap-4 relative z-10">
+                    <button 
+                        onClick={handleGlobalScoring}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
+                    >
+                        <Zap size={20} />
+                        Traitement Global (Scoring IA)
+                    </button>
                     <div className="bg-white/5 p-4 px-8 rounded-2xl border border-white/10 text-center backdrop-blur-md shadow-xl">
                         <p className="text-3xl font-bold text-white tracking-tighter">{applications.length}</p>
                         <p className="text-[9px] font-black uppercase tracking-widest text-blue-400 mt-1">Matched Nodes</p>
@@ -242,16 +272,27 @@ const RecruiterScoring = () => {
                                 </div>
 
                                 {/* Actions Recruteur */}
-                                <div className="pt-8 border-t border-white/5 flex gap-4 relative z-10">
+                                <div className="pt-8 border-t border-white/5 flex gap-4 relative z-10 flex-wrap">
+                                    <button 
+                                        onClick={() => navigate('/recruiter/messages', { 
+                                            state: { 
+                                                userId: selectedApp.candidate.user._id,
+                                                userName: selectedApp.candidate.user.nom 
+                                            } 
+                                        })}
+                                        className="flex-1 bg-white/5 border border-white/10 text-slate-300 py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2 shadow-xl"
+                                    >
+                                        <MessageSquare size={18} /> Direct Message
+                                    </button>
                                     <button 
                                         onClick={() => handleUpdateStatus('Rejected')}
-                                        className="flex-1 bg-white/5 border border-white/10 text-slate-400 py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center justify-center gap-2 shadow-xl"
+                                        className="flex-[0.5] bg-white/5 border border-white/10 text-slate-400 py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center justify-center gap-2 shadow-xl"
                                     >
                                         <XCircle size={18} /> Terminate
                                     </button>
                                     <button 
                                         onClick={() => handleUpdateStatus('Interviewed')}
-                                        className="flex-[1.5] bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:from-blue-500 hover:to-indigo-500 transition-all shadow-2xl shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-95"
+                                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-5 rounded-[1.5rem] font-bold text-[10px] uppercase tracking-widest hover:from-blue-500 hover:to-indigo-500 transition-all shadow-2xl shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-95"
                                     >
                                         <CheckCircle size={18} /> Initiate Exchange
                                     </button>

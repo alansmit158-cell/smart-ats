@@ -12,7 +12,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-    const { nom, email, password, role } = req.body;
+    const { nom, prenom, email, password, role } = req.body;
 
     if (!nom || !email || !password) {
         return res.status(400).json({ message: 'Veuillez remplir tous les champs requis' });
@@ -28,6 +28,7 @@ const registerUser = async (req, res) => {
 
         const user = await User.create({
             nom,
+            prenom,
             email,
             password,
             role: role || 'recruiter'
