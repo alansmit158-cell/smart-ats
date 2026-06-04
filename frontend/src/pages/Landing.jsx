@@ -14,9 +14,12 @@ import {
   Lock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/LanguageSelector';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -89,22 +92,24 @@ export default function Landing() {
             className="flex items-center gap-8"
         >
           <div className="hidden md:flex items-center gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
-             <a href="#" className="hover:text-blue-400 transition-colors">Neural Core</a>
-             <a href="#" className="hover:text-blue-400 transition-colors">Sync Engine</a>
-             <a href="#" className="hover:text-blue-400 transition-colors">Security</a>
+             <a href="#" className="hover:text-blue-400 transition-colors">{t('landing.nav_neural')}</a>
+             <a href="#" className="hover:text-blue-400 transition-colors">{t('landing.nav_sync')}</a>
+             <a href="#" className="hover:text-blue-400 transition-colors">{t('landing.nav_security')}</a>
           </div>
           <div className="flex items-center gap-4">
+              {/* Language selector directly in navbar */}
+              <LanguageSelector variant="dark" />
               <button 
                 onClick={() => navigate('/login')}
                 className="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
               >
-                Access
+                {t('landing.nav_access')}
               </button>
               <button 
                 onClick={() => navigate('/register')}
                 className="text-[11px] font-black bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl transition-all shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:shadow-[0_0_50px_rgba(37,99,235,0.5)] flex items-center gap-3 uppercase tracking-[0.2em] active:scale-95"
               >
-                Initialize <ChevronRight size={16} />
+                {t('landing.nav_initialize')} <ChevronRight size={16} />
               </button>
           </div>
         </motion.div>
@@ -118,7 +123,7 @@ export default function Landing() {
             className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.4em] mb-10 shadow-2xl backdrop-blur-md"
         >
           <Zap size={14} className="animate-pulse" />
-          <span>Next-Gen Talent Acquisition v5.0</span>
+          <span>{t('landing.badge')}</span>
         </motion.div>
         
         <motion.h1 
@@ -127,8 +132,8 @@ export default function Landing() {
             transition={{ delay: 0.1 }}
             className="text-6xl md:text-8xl font-bold text-white mb-10 tracking-tight leading-[0.9]"
         >
-          Intelligence for the <br />
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-600 italic">Talent Economy.</span>
+          {t('landing.hero_line1')} <br />
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-600 italic">{t('landing.hero_line2')}</span>
         </motion.h1>
         
         <motion.p 
@@ -137,7 +142,7 @@ export default function Landing() {
             transition={{ delay: 0.2 }}
             className="text-lg md:text-xl text-slate-500 max-w-3xl mb-14 leading-relaxed font-medium italic"
         >
-          Smart-ATS automates candidate evaluation with advanced semantic parsing, predictive matching, and dynamic interview kit generation. Scale your recruitment with high-performance neural infrastructure.
+          {t('landing.hero_desc')}
         </motion.p>
         
         <motion.div 
@@ -150,13 +155,13 @@ export default function Landing() {
             onClick={() => navigate('/login')}
             className="w-full sm:w-auto px-12 py-6 bg-white text-slate-950 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_70px_rgba(255,255,255,0.4)] transform hover:-translate-y-2 active:scale-90"
           >
-            Launch Terminal
+            {t('landing.terminal')}
           </button>
           <button 
             onClick={() => navigate('/register')}
             className="w-full sm:w-auto px-12 py-6 bg-white/5 hover:bg-white/10 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] backdrop-blur-3xl border border-white/10 transition-all flex items-center justify-center gap-4 active:scale-90"
           >
-            Create Node Profile
+            {t('landing.create_profile')}
           </button>
         </motion.div>
 
@@ -168,10 +173,10 @@ export default function Landing() {
             className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-12 border-t border-white/5 pt-12 w-full max-w-4xl"
         >
             {[
-                { label: 'Neural Syncs', val: '1.2M+' },
-                { label: 'Active Specs', val: '450k' },
-                { label: 'Match Precision', val: '98.4%' },
-                { label: 'Uptime', val: '99.9%' },
+                { label: t('landing.stat_syncs'), val: '+1.2M' },
+                { label: t('landing.stat_specs'), val: '450k' },
+                { label: t('landing.stat_precision'), val: '98.4%' },
+                { label: t('landing.stat_uptime'), val: '99.9%' },
             ].map((s, i) => (
                 <div key={i} className="text-center">
                     <p className="text-2xl font-bold text-white tracking-tighter mb-1">{s.val}</p>
@@ -185,20 +190,20 @@ export default function Landing() {
       <section className="relative z-10 max-w-7xl mx-auto px-10 py-24 grid grid-cols-1 md:grid-cols-3 gap-10 w-full mb-24">
         {[
             {
-                title: 'Semantic Parsing',
-                desc: 'Extract entities, skills, and professional experience autonomously using our background worker pool.',
+                title: t('landing.feature1_title'),
+                desc: t('landing.feature1_desc'),
                 icon: <FileText className="text-blue-400" />,
                 color: 'blue'
             },
             {
-                title: 'Predictive Matching',
-                desc: 'Instantly score and rank candidates against job requirements with precision accuracy and gap analysis.',
+                title: t('landing.feature2_title'),
+                desc: t('landing.feature2_desc'),
                 icon: <Target className="text-indigo-400" />,
                 color: 'indigo'
             },
             {
-                title: 'AI Protocol Generation',
-                desc: 'Synthesize customized technical interviews and vigilance points on-the-fly based on candidate data.',
+                title: t('landing.feature3_title'),
+                desc: t('landing.feature3_desc'),
                 icon: <BrainCircuit className="text-blue-500" />,
                 color: 'blue'
             }
@@ -233,7 +238,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/5 py-12 text-center bg-slate-950">
         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-700">
-            &copy; 2026 SMART-ATS NEURAL ECOSYSTEM • ENTERPRISE TALENT SOLUTIONS
+            {t('landing.footer')}
         </p>
       </footer>
     </div>

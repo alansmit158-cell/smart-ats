@@ -14,8 +14,10 @@ import {
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const RecruiterJobs = () => {
+    const { t } = useTranslation();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -42,7 +44,7 @@ const RecruiterJobs = () => {
             setJobs(res.data);
             setLoading(false);
         } catch (error) {
-            toast.error('Erreur lors du chargement des offres');
+            toast.error(t('recruiter_jobs.toast_load_error'));
             setLoading(false);
         }
     };
@@ -52,12 +54,12 @@ const RecruiterJobs = () => {
         try {
             const token = localStorage.getItem('token');
             await API.post(`/jobs`, formData);
-            toast.success('Offre créée avec succès');
+            toast.success(t('recruiter_jobs.toast_create_success'));
             setShowCreateModal(false);
             resetForm();
             fetchJobs();
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Erreur lors de la création');
+            toast.error(error.response?.data?.message || t('recruiter_jobs.toast_create_error'));
         }
     };
 
@@ -66,11 +68,11 @@ const RecruiterJobs = () => {
         try {
             const token = localStorage.getItem('token');
             await API.put(`/jobs/${selectedJob._id}`, formData);
-            toast.success('Offre mise à jour');
+            toast.success(t('recruiter_jobs.toast_update_success'));
             setShowEditModal(false);
             fetchJobs();
         } catch (error) {
-            toast.error('Erreur lors de la mise à jour');
+            toast.error(t('recruiter_jobs.toast_update_error'));
         }
     };
 
@@ -78,11 +80,11 @@ const RecruiterJobs = () => {
         try {
             const token = localStorage.getItem('token');
             await API.delete(`/jobs/${selectedJob._id}`);
-            toast.success('Offre supprimée');
+            toast.success(t('recruiter_jobs.toast_delete_success'));
             setShowDeleteModal(false);
             fetchJobs();
         } catch (error) {
-            toast.error('Erreur lors de la suppression');
+            toast.error(t('recruiter_jobs.toast_delete_error'));
         }
     };
 
@@ -118,23 +120,23 @@ const RecruiterJobs = () => {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#B76E79] mb-2 pl-1">Talent Management</h2>
-                    <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">Gestion des Offres d'Emploi</h1>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#B76E79] mb-2 pl-1">{t('recruiter_jobs.subtitle')}</h2>
+                    <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">{t('recruiter_jobs.title')}</h1>
                 </div>
                 <button 
                     onClick={() => { resetForm(); setShowCreateModal(true); }}
                     className="bg-slate-900 text-white px-8 py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:scale-105 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-95"
                 >
-                    <Plus size={18} /> Nouvelle Offre
+                    <Plus size={18} /> {t('recruiter_jobs.new_job')}
                 </button>
             </div>
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: 'Offres Actives', value: jobs.length, icon: <Briefcase className="text-[#B76E79]" /> },
-                    { label: 'Candidatures Total', value: '1,284', icon: <Users className="text-blue-500" /> },
-                    { label: 'Matching Moyen', value: '82%', icon: <Sparkles className="text-amber-500" /> },
+                    { label: t('recruiter_jobs.active_jobs'), value: jobs.length, icon: <Briefcase className="text-[#B76E79]" /> },
+                    { label: t('recruiter_jobs.total_applications'), value: '1,284', icon: <Users className="text-blue-500" /> },
+                    { label: t('recruiter_jobs.average_matching'), value: '82%', icon: <Sparkles className="text-amber-500" /> },
                 ].map((stat, i) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -157,9 +159,9 @@ const RecruiterJobs = () => {
             {/* Jobs Management Table */}
             <div className="bg-white rounded-[3rem] border border-slate-50 shadow-sm overflow-hidden">
                 <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                    <h3 className="font-serif font-bold text-lg text-slate-800">Catalogue des Postes</h3>
+                    <h3 className="font-serif font-bold text-lg text-slate-800">{t('recruiter_jobs.jobs_catalog')}</h3>
                     <div className="flex gap-2">
-                        <span className="px-4 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">Temps réel</span>
+                        <span className="px-4 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('recruiter_jobs.real_time')}</span>
                     </div>
                 </div>
                 
@@ -167,20 +169,20 @@ const RecruiterJobs = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-slate-50">
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Détails du Poste</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Localisation</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Salaire</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right pr-12">Actions</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('recruiter_jobs.job_details')}</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('recruiter_jobs.location')}</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('recruiter_jobs.salary')}</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right pr-12">{t('recruiter_jobs.actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="px-8 py-12 text-center text-slate-400 italic">Chargement des offres...</td>
+                                    <td colSpan="4" className="px-8 py-12 text-center text-slate-400 italic">{t('recruiter_jobs.loading_jobs')}</td>
                                 </tr>
                             ) : jobs.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-8 py-12 text-center text-slate-400 italic">Aucune offre disponible.</td>
+                                    <td colSpan="4" className="px-8 py-12 text-center text-slate-400 italic">{t('recruiter_jobs.no_jobs')}</td>
                                 </tr>
                             ) : jobs.map((job, idx) => (
                                 <motion.tr 
@@ -195,7 +197,7 @@ const RecruiterJobs = () => {
                                             <div className="flex items-center gap-2">
                                                 <p className="font-bold text-slate-800 group-hover:text-[#B76E79] transition-colors">{job.titre}</p>
                                             </div>
-                                            <p className="text-[10px] text-slate-400 font-medium italic mt-0.5">Créée le {new Date(job.createdAt).toLocaleDateString()}</p>
+                                            <p className="text-[10px] text-slate-400 font-medium italic mt-0.5">{t('recruiter_jobs.created_at')} {new Date(job.createdAt).toLocaleDateString()}</p>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
@@ -245,9 +247,9 @@ const RecruiterJobs = () => {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="text-2xl font-serif font-bold text-slate-900">
-                                            {showEditModal ? 'Modifier l\'Opportunité' : 'Nouvelle Opportunité'}
+                                            {showEditModal ? t('recruiter_jobs.edit_opportunity') : t('recruiter_jobs.new_opportunity')}
                                         </h3>
-                                        <p className="text-slate-400 text-xs mt-1 font-medium italic">Un design ultra-élégant pour vos offres de luxe.</p>
+                                        <p className="text-slate-400 text-xs mt-1 font-medium italic">{t('recruiter_jobs.elegant_design')}</p>
                                     </div>
                                     <button 
                                         onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} 
@@ -259,73 +261,73 @@ const RecruiterJobs = () => {
 
                                 <form onSubmit={showEditModal ? handleUpdate : handleCreate} className="space-y-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Titre du Poste</label>
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.job_title')}</label>
                                         <input 
                                             required
                                             value={formData.titre}
                                             onChange={(e) => setFormData({...formData, titre: e.target.value})}
                                             type="text" 
                                             className="w-full bg-[#FAFAFA] border-none rounded-2xl p-4 text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#B76E79]/20 outline-none" 
-                                            placeholder="ex. Creative UI Specialist" 
+                                            placeholder={t('recruiter_jobs.job_title_placeholder')} 
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Localisation</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.location')}</label>
                                             <input 
                                                 required
                                                 value={formData.lieu}
                                                 onChange={(e) => setFormData({...formData, lieu: e.target.value})}
                                                 type="text" 
                                                 className="w-full bg-[#FAFAFA] border-none rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-[#B76E79]/20 outline-none" 
-                                                placeholder="Remote, Paris, Tunis..." 
+                                                placeholder={t('recruiter_jobs.location_placeholder')} 
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Salaire (Annuel)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.annual_salary')}</label>
                                             <input 
                                                 required
                                                 value={formData.salaire}
                                                 onChange={(e) => setFormData({...formData, salaire: e.target.value})}
                                                 type="text" 
                                                 className="w-full bg-[#FAFAFA] border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#B76E79]/20 outline-none" 
-                                                placeholder="ex. 45k - 60k €"
+                                                placeholder={t('recruiter_jobs.salary_placeholder')}
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Description Stratégique</label>
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.strategic_description')}</label>
                                         <textarea 
                                             required
                                             value={formData.description}
                                             onChange={(e) => setFormData({...formData, description: e.target.value})}
                                             rows={3} 
                                             className="w-full bg-[#FAFAFA] border-none rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-[#B76E79]/20 outline-none resize-none" 
-                                            placeholder="Décrivez les enjeux et les missions du poste..."
+                                            placeholder={t('recruiter_jobs.description_placeholder')}
                                         ></textarea>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Compétences (Clés)</label>
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.key_skills')}</label>
                                         <input 
                                             required
                                             value={formData.competences}
                                             onChange={(e) => setFormData({...formData, competences: e.target.value})}
                                             type="text" 
                                             className="w-full bg-[#FAFAFA] border-none rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-[#B76E79]/20 outline-none" 
-                                            placeholder="ex. React, Figma, Tailwind, Node.js" 
+                                            placeholder={t('recruiter_jobs.skills_placeholder')} 
                                         />
                                     </div>
 
                                     <div className="flex gap-4 pt-4">
                                         <button type="submit" className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-xl transition-all">
-                                            {showEditModal ? 'Mettre à jour' : 'Publier l\'offre'}
+                                            {showEditModal ? t('recruiter_jobs.update') : t('recruiter_jobs.publish')}
                                         </button>
                                         <button 
                                             type="button"
                                             className="px-8 border border-slate-100 rounded-2xl text-slate-400 font-bold text-xs hover:bg-slate-50 transition-colors" 
                                             onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}
                                         >
-                                            Annuler
+                                            {t('recruiter_jobs.cancel')}
                                         </button>
                                     </div>
                                 </form>
@@ -345,22 +347,22 @@ const RecruiterJobs = () => {
                             <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <AlertCircle size={40} className="text-rose-500" />
                             </div>
-                            <h3 className="text-2xl font-serif font-bold text-slate-900">Confirmer la suppression ?</h3>
+                            <h3 className="text-2xl font-serif font-bold text-slate-900">{t('recruiter_jobs.confirm_delete')}</h3>
                             <p className="text-slate-500 text-sm italic font-medium">
-                                Cette action est irréversible. L'offre <span className="font-bold text-slate-800">"{selectedJob?.titre}"</span> sera définitivement retirée de la plateforme.
+                                {t('recruiter_jobs.delete_warning', { title: selectedJob?.titre })}
                             </p>
                             <div className="flex gap-4 pt-4">
                                 <button 
                                     onClick={handleDelete}
                                     className="flex-1 bg-rose-500 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-100"
                                 >
-                                    Supprimer
+                                    {t('recruiter_jobs.delete')}
                                 </button>
                                 <button 
                                     onClick={() => setShowDeleteModal(false)}
                                     className="flex-1 border-2 border-[#B76E79]/30 text-[#B76E79] py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
                                 >
-                                    Garder
+                                    {t('recruiter_jobs.keep')}
                                 </button>
                             </div>
                         </motion.div>

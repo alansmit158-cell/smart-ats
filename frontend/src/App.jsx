@@ -39,8 +39,25 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminLogs from './pages/admin/AdminLogs';
 import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 function App() {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = dir;
+    document.documentElement.lang = i18n.language;
+    
+    // Customize fonts for Arabic layout comfort if needed
+    if (i18n.language === 'ar') {
+      document.documentElement.classList.add('font-arabic');
+    } else {
+      document.documentElement.classList.remove('font-arabic');
+    }
+  }, [i18n.language]);
+
   return (
     <AuthProvider>
       <Toaster position="top-right" />

@@ -12,8 +12,10 @@ import {
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const RecruiterSubscription = () => {
+    const { t } = useTranslation();
     const [plans, setPlans] = useState([]);
     const [myPlan, setMyPlan] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ const RecruiterSubscription = () => {
         return (
             <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
                 <Loader2 size={40} className="text-[#B76E79] animate-spin" />
-                <p className="text-slate-400 font-medium italic">Accès au coffre-fort des offres...</p>
+                <p className="text-slate-400 font-medium italic">{t('candidate_profile.loading')}</p>
             </div>
         );
     }
@@ -73,8 +75,8 @@ const RecruiterSubscription = () => {
         <div className="space-y-12 pb-20">
             {/* Header Section */}
             <div className="text-center max-w-2xl mx-auto space-y-4">
-                <h1 className="text-4xl font-serif font-black text-slate-900 tracking-tight">Boostez votre <span className="text-[#B76E79]">Recrutement.</span></h1>
-                <p className="text-slate-500 font-medium leading-relaxed">Choisissez le plan adapté à la croissance de votre entreprise et débloquez la puissance de l'IA Smart-ATS.</p>
+                <h1 className="text-4xl font-serif font-black text-slate-900 tracking-tight">{t('subscription.title')}</h1>
+                <p className="text-slate-500 font-medium leading-relaxed">{t('subscription.subtitle')}</p>
             </div>
 
             {/* My Current Plan Info */}
@@ -90,7 +92,7 @@ const RecruiterSubscription = () => {
                             <ShieldCheck size={32} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-[#B76E79] uppercase tracking-widest mb-1">Votre Plan Actuel</p>
+                            <p className="text-[10px] font-black text-[#B76E79] uppercase tracking-widest mb-1">{t('subscription.current_plan')}</p>
                             <h2 className="text-2xl font-serif font-bold text-slate-900">{myPlan.plan} Professional</h2>
                         </div>
                     </div>
@@ -101,17 +103,17 @@ const RecruiterSubscription = () => {
                             <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border border-emerald-100">Actif</span>
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expiration</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('admin_stats.subscription_end')}</p>
                             <p className="text-xs font-bold text-slate-800 flex items-center gap-2"><Calendar size={12} /> {new Date(myPlan.dateFin).toLocaleDateString()}</p>
                         </div>
                     </div>
 
                     <div className="flex flex-col items-center md:items-end gap-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consommation</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('admin_stats.job_usage')}</p>
                         <div className="w-40 h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                             <div className="h-full bg-[#B76E79] rounded-full" style={{ width: `${Math.min(((myPlan.jobsCreated || 0) / (myPlan.jobLimit || 1)) * 100, 100)}%` }}></div>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500">{myPlan.jobsCreated || 0} / {myPlan.jobLimit === 9999 ? '∞' : myPlan.jobLimit} offres utilisées</p>
+                        <p className="text-[10px] font-bold text-slate-500">{myPlan.jobsCreated || 0} / {myPlan.jobLimit === 9999 ? '∞' : myPlan.jobLimit} {t('subscription.jobs_used')}</p>
                     </div>
                 </motion.div>
             )}
@@ -133,7 +135,7 @@ const RecruiterSubscription = () => {
                             } ${isCurrent ? 'ring-4 ring-emerald-500/10' : ''}`}
                         >
                             {isPremium && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#B76E79] text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">Plus Populaire</div>
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#B76E79] text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">{t('subscription.popular')}</div>
                             )}
 
                             {isCurrent && (
@@ -152,7 +154,7 @@ const RecruiterSubscription = () => {
                                 <h3 className="text-2xl font-serif font-black text-slate-900 mb-2">{plan.type}</h3>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-4xl font-serif font-black text-slate-900">{plan.prix}€</span>
-                                    <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">/ mois</span>
+                                    <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">/ {t('subscription.month')}</span>
                                 </div>
                             </div>
 
@@ -177,7 +179,7 @@ const RecruiterSubscription = () => {
                                 } disabled:opacity-50`}
                             >
                                 {submitting ? <Loader2 size={16} className="animate-spin mx-auto" /> : 
-                                 isCurrent ? 'Plan Actuel' : `Choisir ${plan.type}`}
+                                 isCurrent ? t('subscription.current_plan') : `${t('subscription.choose')} ${plan.type}`}
                             </button>
                         </motion.div>
                     );
@@ -190,7 +192,7 @@ const RecruiterSubscription = () => {
                     <AlertCircle size={24} />
                 </div>
                 <p className="text-xs text-slate-500 font-medium italic">
-                    "Tous nos plans incluent une période d'essai de 14 jours. Les limites sont réinitialisées mensuellement à la date anniversaire de votre abonnement."
+                    {t('subscription.trial_notice')}
                 </p>
             </div>
         </div>

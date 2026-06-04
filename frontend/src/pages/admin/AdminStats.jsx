@@ -19,8 +19,10 @@ import {
 } from 'lucide-react';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const AdminStats = () => {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ users: 0, candidates: 0, recruiters: 0, applications: 0, jobs: 0, avgScore: 0 });
     const [users, setUsers] = useState([]);
@@ -99,9 +101,9 @@ const AdminStats = () => {
     };
 
     const dashboardStats = [
-        { label: 'Utilisateurs Totaux', value: stats.users, sub: `Recruteurs: ${stats.recruiters} | Candidats: ${stats.candidates}`, icon: <Users />, color: 'text-blue-500' },
-        { label: 'Applications', value: stats.applications, sub: 'Candidatures actives', icon: <FileText />, color: 'text-[#B76E79]' },
-        { label: 'Score Moyen Matching', value: `${stats.avgScore}%`, sub: 'Sur les candidatures', icon: <TrendingUp />, color: 'text-emerald-500' },
+        { label: t('admin_stats.total_users'), value: stats.users, sub: `Recruteurs: ${stats.recruiters} | Candidats: ${stats.candidates}`, icon: <Users />, color: 'text-blue-500' },
+        { label: t('admin_stats.total_applications'), value: stats.applications, sub: 'Candidatures actives', icon: <FileText />, color: 'text-[#B76E79]' },
+        { label: t('admin_stats.openai_calls'), value: `${stats.avgScore}%`, sub: 'Sur les candidatures', icon: <TrendingUp />, color: 'text-emerald-500' },
     ];
 
     if (loading) {
@@ -111,7 +113,7 @@ const AdminStats = () => {
                     <Loader2 size={48} className="text-blue-500 animate-spin" />
                     <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
                 </div>
-                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Synchronizing Mainframe Core...</p>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">{t('candidate_profile.loading')}</p>
             </div>
         );
     }
@@ -141,22 +143,22 @@ const AdminStats = () => {
                 <div className="lg:col-span-2 bg-[#1e293b]/20 backdrop-blur-3xl p-10 rounded-[3rem] border border-[#1e293b] space-y-6">
                     <div className="flex justify-between items-center">
                         <h3 className="text-xl font-serif font-bold text-white flex items-center gap-3">
-                            <Activity size={20} className="text-[#B76E79]" /> Activité Système (30j)
+                            <Activity size={20} className="text-[#B76E79]" /> {t('admin_stats.system_activity')}
                         </h3>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Telemetry</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('admin_stats.telemetry')}</span>
                     </div>
                     <div className="h-48 w-full flex items-end gap-1 px-2 pt-8">
                          {[40, 70, 45, 90, 65, 80, 50, 95, 85, 60, 75, 100, 80, 90].map((h, i) => (
                              <div key={i} className="flex-1 group relative">
-                                 <div 
-                                    className="w-full bg-[#B76E79]/20 rounded-t-lg group-hover:bg-[#B76E79]/50 transition-all duration-700 border-t border-[#B76E79]/30" 
-                                    style={{ height: `${h}%` }}
-                                 ></div>
-                                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-[#B76E79] text-[8px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-[#B76E79]/20">
-                                    Value: {h}%
-                                 </div>
+                                  <div 
+                                     className="w-full bg-[#B76E79]/20 rounded-t-lg group-hover:bg-[#B76E79]/50 transition-all duration-700 border-t border-[#B76E79]/30" 
+                                     style={{ height: `${h}%` }}
+                                  ></div>
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-[#B76E79] text-[8px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-[#B76E79]/20">
+                                     Value: {h}%
+                                  </div>
                              </div>
-                         ))}
+                          ))}
                     </div>
                     <div className="flex justify-between text-[8px] font-black text-slate-600 uppercase tracking-widest px-1">
                         <span>01 MARS</span>
@@ -175,7 +177,7 @@ const AdminStats = () => {
                             <Cpu size={20} />
                          </div>
                          <div>
-                            <h3 className="text-lg font-serif font-bold text-white leading-none">Console OpenAI</h3>
+                            <h3 className="text-lg font-serif font-bold text-white leading-none">{t('admin_sidebar.openai_stats')}</h3>
                             <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1 italic">Status: {openAiStats.status}</p>
                          </div>
                     </div>
@@ -217,7 +219,7 @@ const AdminStats = () => {
                         <Cpu size={20} />
                      </div>
                      <div>
-                        <h3 className="text-lg font-serif font-bold text-white leading-none">Worker Thread Pool</h3>
+                        <h3 className="text-lg font-serif font-bold text-white leading-none">{t('admin_sidebar.worker_pool')}</h3>
                         <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1 italic">NLP Background Processing</p>
                      </div>
                 </div>
@@ -225,7 +227,7 @@ const AdminStats = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                     <div className="bg-[#1e293b]/40 p-6 rounded-[2rem] border border-[#334155] flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-400">Workers Actifs</p>
+                            <p className="text-sm font-medium text-slate-400">{t('admin_stats.active_workers')}</p>
                             <p className="text-3xl font-black text-white">{workerStats.activeWorkers} <span className="text-sm text-slate-500">/ {workerStats.maxWorkers}</span></p>
                         </div>
                         <div className="flex gap-1">
@@ -237,7 +239,7 @@ const AdminStats = () => {
 
                     <div className="bg-[#1e293b]/40 p-6 rounded-[2rem] border border-[#334155] flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-400">File d'attente</p>
+                            <p className="text-sm font-medium text-slate-400">{t('admin_stats.queue')}</p>
                             <p className="text-3xl font-black text-white">{workerStats.queueLength}</p>
                         </div>
                         <FileText size={32} className={workerStats.queueLength > 0 ? 'text-amber-500 animate-bounce' : 'text-slate-600'} />
@@ -245,7 +247,7 @@ const AdminStats = () => {
 
                     <div className="bg-[#1e293b]/40 p-6 rounded-[2rem] border border-[#334155] flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-400">Capacité Libre</p>
+                            <p className="text-sm font-medium text-slate-400">{t('admin_stats.idle')}</p>
                             <p className="text-3xl font-black text-white">{workerStats.available}</p>
                         </div>
                         <Zap size={32} className={workerStats.available > 0 ? 'text-indigo-400' : 'text-slate-600'} />
@@ -256,7 +258,7 @@ const AdminStats = () => {
             {/* User Management Data Table */}
             <div className="bg-[#1e293b]/10 backdrop-blur-md rounded-[3rem] border border-[#1e293b] overflow-hidden shadow-2xl">
                 <div className="p-8 border-b border-[#1e293b] flex justify-between items-center bg-[#1e293b]/20">
-                     <h3 className="text-xl font-serif font-bold text-white">Gestion des Comptes</h3>
+                     <h3 className="text-xl font-serif font-bold text-white">{t('admin_stats.manage_accounts')}</h3>
                      <div className="flex gap-4">
                         <button className="bg-white/5 p-3 rounded-xl border border-white/5 text-slate-400 hover:text-[#B76E79] transition-colors"><MoreVertical size={18}/></button>
                      </div>
@@ -265,11 +267,11 @@ const AdminStats = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-[#1e293b]">
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Identité</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">{t('admin_stats.identity')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Contact</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Rôle</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">{t('register.role')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Statut</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Actions Deep Control</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#1e293b]">
@@ -280,7 +282,7 @@ const AdminStats = () => {
                                             <div className="w-10 h-10 bg-[#1e293b] rounded-xl flex items-center justify-center text-xs font-black text-[#B76E79] border border-[#334155]">{u.nom?.[0] || 'U'}</div>
                                             <div>
                                                 <p className="text-sm font-bold text-white">{u.nom}</p>
-                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter italic">Inscrit le {new Date(u.createdAt).toLocaleDateString('fr-FR')}</p>
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter italic">{t('admin_stats.registered_on')} {new Date(u.createdAt).toLocaleDateString('fr-FR')}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -290,7 +292,7 @@ const AdminStats = () => {
                                             u.role === 'admin' ? 'bg-amber-900/20 text-amber-500 border-amber-500/20' : 
                                             u.role === 'recruiter' ? 'bg-blue-900/20 text-blue-500 border-blue-500/20' : 'bg-slate-900/20 text-slate-400 border-slate-700/50'
                                         }`}>
-                                            {u.role}
+                                            {u.role === 'admin' ? t('admin_sidebar.dashboard') : u.role === 'recruiter' ? t('register.role_recruiter').split(' ')[0] : t('register.role_candidate').split(' ')[0]}
                                         </span>
                                     </td>
                                     <td className="px-8 py-6">
@@ -308,7 +310,7 @@ const AdminStats = () => {
                             ))}
                             {users.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="px-8 py-6 text-center text-slate-500 text-sm">Aucun utilisateur trouvé.</td>
+                                    <td colSpan="5" className="px-8 py-6 text-center text-slate-500 text-sm">{t('admin_stats.no_users')}</td>
                                 </tr>
                             )}
                         </tbody>
@@ -320,7 +322,7 @@ const AdminStats = () => {
             <div className="bg-[#1e293b]/10 backdrop-blur-md rounded-[3rem] border border-[#1e293b] overflow-hidden shadow-2xl">
                 <div className="p-8 border-b border-[#1e293b] flex justify-between items-center bg-black/20">
                      <h3 className="text-xl font-serif font-bold text-white flex items-center gap-3">
-                        <Crown size={20} className="text-amber-500" /> Gestion des Abonnements
+                        <Crown size={20} className="text-amber-500" /> {t('admin_stats.manage_subscriptions')}
                      </h3>
                      <span className="bg-amber-500/10 text-amber-500 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/20">Revenue Live: 1,420€</span>
                 </div>
@@ -328,10 +330,10 @@ const AdminStats = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-[#1e293b]">
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Recruteur</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">{t('register.role_recruiter').split(' ')[0]}</th>
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Plan</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Fin d'engagement</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Usage Offres</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">{t('admin_stats.subscription_end')}</th>
+                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">{t('admin_stats.job_usage')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Action</th>
                             </tr>
                         </thead>
@@ -374,11 +376,11 @@ const AdminStats = () => {
             <div className="bg-[#1e293b]/5 backdrop-blur-md rounded-[3rem] border border-[#1e293b] p-10 space-y-8">
                 <div className="flex items-center gap-3">
                     <Activity size={20} className="text-[#B76E79]" />
-                    <h3 className="text-xl font-serif font-bold text-white">Audit Logs : Signal Flux</h3>
+                    <h3 className="text-xl font-serif font-bold text-white">{t('admin_stats.audit_logs')}</h3>
                 </div>
                 <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                     {auditLogs.length === 0 ? (
-                        <p className="text-slate-500 text-sm">Aucun log récent...</p>
+                        <p className="text-slate-500 text-sm">{t('admin_stats.no_logs')}</p>
                     ) : auditLogs.slice().reverse().map((log, i) => (
                         <div key={i} className="flex items-center gap-6 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-[#1e293b] transition-all group">
                             <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest w-16 italic text-center">

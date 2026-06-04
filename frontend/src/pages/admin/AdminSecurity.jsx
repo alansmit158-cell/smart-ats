@@ -19,8 +19,10 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const AdminSecurity = () => {
+    const { t } = useTranslation();
     const [scanning, setScanning] = useState(false);
     
     const securityEvents = [
@@ -32,13 +34,13 @@ const AdminSecurity = () => {
 
     const runScan = () => {
         setScanning(true);
-        toast.loading("Analyzing neural heuristic patterns...", {
+        toast.loading(t('admin.security.heuristic_scanning'), {
             style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
         });
         setTimeout(() => {
             setScanning(false);
             toast.dismiss();
-            toast.success("System integrity confirmed: 0 threats identified.", {
+            toast.success(t('admin.security.scan_success'), {
                 icon: '🛡️',
                 style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
             });
@@ -60,11 +62,11 @@ const AdminSecurity = () => {
                     <div className="space-y-5 text-center md:text-left">
                         <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                             <ShieldCheck size={16} className="text-emerald-500" />
-                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">IA Shield v5.0 Deep Active</span>
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">{t('admin.security.shield_active')}</span>
                         </div>
-                        <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">Semantic <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic">Firewall</span></h1>
+                        <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">{t('admin.security.title')} <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic"></span></h1>
                         <p className="text-slate-500 max-w-2xl text-lg font-medium italic">
-                            Proactive defense against prompt injections, PII data leakage, and anomalous LLM interaction patterns. Secure neural infrastructure.
+                            {t('admin.security.subtitle')}
                         </p>
                     </div>
                     <button 
@@ -73,7 +75,7 @@ const AdminSecurity = () => {
                         className={`px-12 py-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-blue-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-4 ${scanning ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {scanning ? <RefreshCcw size={20} className="animate-spin" /> : <Eye size={20} />}
-                        Execute Heuristic Scan
+                        {t('admin.security.execute_scan')}
                     </button>
                 </div>
             </motion.div>
@@ -88,9 +90,9 @@ const AdminSecurity = () => {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 blur-[80px] rounded-full"></div>
                     <div className="flex justify-between items-center relative z-10">
                         <h3 className="text-2xl font-bold text-white tracking-tight flex items-center gap-4">
-                            <Radar size={24} className="text-blue-500 animate-pulse" /> Global Threat Matrix
+                            <Radar size={24} className="text-blue-500 animate-pulse" /> {t('admin.security.threat_matrix')}
                         </h3>
-                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] italic font-bold">Signal Live Telemetry</span>
+                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] italic font-bold">{t('admin.security.live_telemetry')}</span>
                     </div>
                     
                     <div className="relative h-72 bg-slate-950/50 rounded-[3rem] border border-white/5 overflow-hidden shadow-inner group">
@@ -104,8 +106,8 @@ const AdminSecurity = () => {
                             <div className="absolute top-1/2 right-1/3 w-2 h-2 bg-blue-400 rounded-full shadow-[0_0_15px_#60a5fa] animate-ping"></div>
                         </div>
                         <div className="absolute bottom-8 left-10 flex gap-8 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic">
-                            <span className="flex items-center gap-3"><div className="w-2.5 h-2.5 bg-rose-500 rounded-full shadow-[0_0_10px_#f43f5e]"></div> Attack Intercepted</span>
-                            <span className="flex items-center gap-3"><div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_10px_#10b981]"></div> Secure Channel</span>
+                            <span className="flex items-center gap-3"><div className="w-2.5 h-2.5 bg-rose-500 rounded-full shadow-[0_0_10px_#f43f5e]"></div> {t('admin.security.attack_intercepted')}</span>
+                            <span className="flex items-center gap-3"><div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_10px_#10b981]"></div> {t('admin.security.secure_channel')}</span>
                         </div>
                     </div>
                 </motion.div>
@@ -135,12 +137,12 @@ const AdminSecurity = () => {
                          </svg>
                          <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <p className="text-6xl font-bold text-white tracking-tighter">98<span className="text-2xl text-emerald-500">%</span></p>
-                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mt-1 font-bold">Trust Index</p>
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mt-1 font-bold">{t('admin.security.trust_index')}</p>
                          </div>
                     </div>
                     <div className="space-y-4 relative z-10">
-                        <h4 className="text-2xl font-bold text-white tracking-tight">System Integrity Optimal</h4>
-                        <p className="text-sm text-slate-500 italic leading-relaxed px-4 font-medium">Your instance is secured by OWASP LLM Top 10 hardening protocols.</p>
+                        <h4 className="text-2xl font-bold text-white tracking-tight">{t('admin.security.system_optimal')}</h4>
+                        <p className="text-sm text-slate-500 italic leading-relaxed px-4 font-medium">{t('admin.security.owasp_hardened')}</p>
                     </div>
                 </motion.div>
             </div>
@@ -150,7 +152,7 @@ const AdminSecurity = () => {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 blur-[80px] rounded-full -z-10"></div>
                 <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
                      <h3 className="text-2xl font-bold text-white tracking-tight flex items-center gap-4">
-                        <ShieldAlert size={24} className="text-blue-500" /> Deep Security Audit
+                        <ShieldAlert size={24} className="text-blue-500" /> {t('admin.security.deep_audit')}
                      </h3>
                      <div className="flex gap-4">
                         <button className="bg-white/5 p-3 rounded-xl border border-white/10 text-slate-600 hover:text-white transition-all shadow-xl"><Activity size={18}/></button>
@@ -160,11 +162,11 @@ const AdminSecurity = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-white/5 bg-white/[0.01]">
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Timestamp</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Threat Event</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-center">Vigilance Level</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Origin Node</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-right">Protocol</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.security.timestamp')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.security.threat_event')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-center">{t('admin.security.vigilance_level')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.security.origin_node')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-right">{t('admin.security.protocol')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -196,7 +198,7 @@ const AdminSecurity = () => {
                                     <td className="px-10 py-8 text-xs font-black text-slate-500 uppercase tracking-widest italic">{ev.location}</td>
                                     <td className="px-10 py-8 text-right">
                                         <button className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] hover:text-white transition-all flex items-center gap-2 ml-auto group/btn">
-                                            Deep Inspect <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                                            {t('admin.security.deep_inspect')} <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                                         </button>
                                     </td>
                                 </motion.tr>
@@ -205,7 +207,7 @@ const AdminSecurity = () => {
                     </table>
                 </div>
                 <div className="p-10 border-t border-white/5 bg-slate-900/50 flex justify-center">
-                    <button className="text-[10px] font-black text-slate-700 uppercase tracking-[0.5em] hover:text-white transition-all italic">Synchronize Security Database • v5.0.4</button>
+                    <button className="text-[10px] font-black text-slate-700 uppercase tracking-[0.5em] hover:text-white transition-all italic">{t('admin.security.sync_db')}</button>
                 </div>
             </div>
         </div>

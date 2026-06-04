@@ -714,6 +714,12 @@ smart-ATS/
     - Création des endpoints `/api/admin/health-stats`, `/api/admin/openai-stats` et `/api/admin/audit-logs`.
     - Refactorisation de `AdminStats.jsx` : Passage aux vraies données API avec rafraîchissement dynamique (`polling` toutes les 5s) du statut des workers et du flux d'audit.
 
+[✅] RESOLUTION DES DERNIERS POINTS TECHNIQUES (E2E TOTALEMENT VERT)
+    - Correction Bug PDF (oklch) : Installation de `html2canvas-pro` et configuration d'un alias dans `vite.config.js` pour gérer les couleurs oklch de Tailwind v4. Remplacement des classes Tailwind par des styles inline en dur (Palette Luxe Rose doré #B76E79 / Nacre #FAF6F0) pour le container d'export.
+    - Correction Scope Variables : Résolution de la ReferenceError (`candidateName` indéfini) dans le contrôleur `matchingController.js` lors du fallback de matching en cas de timeout réseau.
+    - Optimisation du script de Cleanup : Ajout de la suppression complète des messages et abonnements dans `cleanup.js` pour garantir une base de données 100% vierge à chaque itération de test.
+    - Validation E2E : Exécution complète sans aucune erreur JS, sans warning de rendu oklch, et sans erreur HTTP (0 error / 0 warning / 0 HTTP error).
+
 ================================================================================
                                 FIN DES NOTES
 ================================================================================

@@ -23,8 +23,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const AdminUsers = () => {
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -35,7 +37,7 @@ const AdminUsers = () => {
                 const res = await API.get('/admin/users');
                 setUsers(res.data.data || []);
             } catch (error) {
-                toast.error("Network synchronization error", {
+                toast.error(t('admin.users.network_error'), {
                     icon: '🚨',
                     style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
                 });
@@ -50,13 +52,13 @@ const AdminUsers = () => {
         try {
             const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
             await API.patch(`/admin/users/${userId}/status`, { status: newStatus });
-            toast.success(`Node ${newStatus === 'suspended' ? 'isolated' : 'synchronized'}`, {
+            toast.success(newStatus === 'suspended' ? t('admin.users.isolate_success') : t('admin.users.sync_success'), {
                 icon: newStatus === 'suspended' ? '🔒' : '✅',
                 style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
             });
             setUsers(users.map(u => u._id === userId ? { ...u, status: newStatus } : u));
         } catch (error) {
-            toast.error("Operation failed");
+            toast.error(t('admin.users.operation_failed'));
         }
     };
 
@@ -72,7 +74,7 @@ const AdminUsers = () => {
                     <Loader2 size={48} className="text-blue-500 animate-spin" />
                     <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
                 </div>
-                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Scanning Node Directory...</p>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">{t('admin.users.scanning')}</p>
             </div>
         );
     }
@@ -89,11 +91,11 @@ const AdminUsers = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="inline-flex items-center gap-2 text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-400/20 mb-3"
                     >
-                        <ShieldCheck size={12} /> Deep Control Access
+                        <ShieldCheck size={12} /> {t('admin.users.deep_control')}
                     </motion.div>
                     <h1 className="text-4xl font-bold text-white tracking-tight flex items-center gap-5">
-                        User <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic">Directory</span>
-                        <span className="text-sm font-black text-slate-600 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">{users.length} Nodes</span>
+                        {t('admin.users.directory')}
+                        <span className="text-sm font-black text-slate-600 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">{t('admin.users.nodes_count', { count: users.length })}</span>
                     </h1>
                 </div>
 
@@ -102,7 +104,7 @@ const AdminUsers = () => {
                         <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-400 transition-colors" size={20} />
                         <input 
                             type="text" 
-                            placeholder="Filter by name, email or node ID..." 
+                            placeholder={t('admin.users.placeholder_search')} 
                             className="w-full bg-white/5 border border-white/5 p-4 pl-14 rounded-2xl text-sm font-medium text-white placeholder-slate-700 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-inner group-focus-within:bg-white/[0.08]"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -112,7 +114,7 @@ const AdminUsers = () => {
                         <Filter size={20} />
                     </button>
                     <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-blue-500/20">
-                        <UserPlus size={18} /> Initialize Node
+                        <UserPlus size={18} /> {t('admin.users.initialize_node')}
                     </button>
                 </div>
             </div>
@@ -120,10 +122,10 @@ const AdminUsers = () => {
             {/* Quick Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 {[
-                    { label: 'Active Sessions', val: '42', icon: <Activity size={20} />, color: 'text-emerald-400' },
-                    { label: 'Isolation Zone', val: users.filter(u => u.status === 'suspended').length, icon: <Lock size={20} />, color: 'text-rose-400' },
-                    { label: 'Neural Syncs', val: '1.2k', icon: <Cpu size={20} />, color: 'text-blue-400' },
-                    { label: 'Threat Level', val: 'Low', icon: <Zap size={20} />, color: 'text-amber-400' },
+                    { label: t('admin.users.active_sessions'), val: '42', icon: <Activity size={20} />, color: 'text-emerald-400' },
+                    { label: t('admin.users.isolation_zone'), val: users.filter(u => u.status === 'suspended').length, icon: <Lock size={20} />, color: 'text-rose-400' },
+                    { label: t('admin.users.neural_syncs'), val: '1.2k', icon: <Cpu size={20} />, color: 'text-blue-400' },
+                    { label: t('admin.users.threat_level'), val: 'Low', icon: <Zap size={20} />, color: 'text-amber-400' },
                 ].map((m, i) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 10 }}
@@ -149,10 +151,10 @@ const AdminUsers = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-white/5 bg-white/[0.02]">
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Identity Matrix</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Sync Channels</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Protocol Status</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-right">Deep Actions</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.users.identity_matrix')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.users.sync_channels')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.users.protocol_status')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-right">{t('admin.users.deep_actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -202,7 +204,7 @@ const AdminUsers = () => {
                                             <button className="p-3 bg-white/5 text-slate-600 rounded-xl hover:text-white hover:bg-white/10 transition-all shadow-xl"><ExternalLink size={18}/></button>
                                             <button 
                                                 onClick={() => handleSuspend(u._id, u.status)}
-                                                title={u.status === 'suspended' ? 'Sync Node' : 'Isolate Node'}
+                                                title={u.status === 'suspended' ? t('admin.users.sync_title') : t('admin.users.isolate_title')}
                                                 className={`p-3 rounded-xl transition-all shadow-xl ${u.status === 'suspended' ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white' : 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white'}`}
                                             >
                                                 {u.status === 'suspended' ? <CheckCircle size={18}/> : <XCircle size={18}/>}
@@ -218,10 +220,10 @@ const AdminUsers = () => {
                 </div>
 
                 <div className="p-10 border-t border-white/5 bg-white/[0.01] flex justify-between items-center">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-700 italic">Encrypted Connection • Deep Scan Layer 7</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-700 italic">{t('admin.users.encrypted_connection')}</p>
                     <div className="flex gap-4">
-                        <button className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-all">Prev</button>
-                        <button className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-all">Next</button>
+                        <button className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-all">{t('admin.users.prev')}</button>
+                        <button className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-all">{t('admin.users.next')}</button>
                     </div>
                 </div>
             </div>

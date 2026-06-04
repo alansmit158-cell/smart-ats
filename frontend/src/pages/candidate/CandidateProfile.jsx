@@ -20,8 +20,10 @@ import {
 } from 'lucide-react';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const CandidateProfile = () => {
+    const { t } = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState({
@@ -42,11 +44,11 @@ const CandidateProfile = () => {
             if (res.data.success && res.data.data) {
                 setProfile(res.data.data);
             } else {
-                toast.error("Aucun profil candidat trouvé. Veuillez d'abord téléverser votre CV.");
+                toast.error(t('candidate_profile.error_updating'));
             }
         } catch (error) {
             console.error("Error fetching profile", error);
-            toast.error("Erreur de chargement du profil.");
+            toast.error(t('candidate_profile.error_updating'));
         } finally {
             setLoading(false);
         }
@@ -140,7 +142,7 @@ const CandidateProfile = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <Loader2 className="animate-spin text-[#B76E79]" size={40} />
-                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Chargement du profil neural...</p>
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t('candidate_profile.loading')}</p>
             </div>
         );
     }
@@ -163,15 +165,15 @@ const CandidateProfile = () => {
                 <div className="flex-1 text-center md:text-left space-y-4">
                     <div>
                         <h1 className="text-3xl font-serif font-bold text-slate-900">{profile.prenom} {profile.nom}</h1>
-                        <p className="text-[#B76E79] font-black uppercase tracking-widest text-xs italic mt-1">Candidat Smart-ATS</p>
+                        <p className="text-[#B76E79] font-black uppercase tracking-widest text-xs italic mt-1">{t('register.role_candidate')}</p>
                     </div>
                     
                     <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
                         <span className="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
-                            <Briefcase size={14}/> {profile.experiences?.length || 0} Expériences
+                            <Briefcase size={14}/> {profile.experiences?.length || 0} {t('candidate_profile.experience')}
                         </span>
                         <span className="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
-                            <BookOpen size={14}/> {profile.formations?.length || 0} Formations
+                            <BookOpen size={14}/> {profile.formations?.length || 0} {t('candidate_profile.education')}
                         </span>
                     </div>
                 </div>
@@ -183,13 +185,13 @@ const CandidateProfile = () => {
                                 onClick={handleSave}
                                 className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-sm flex items-center gap-2 hover:translate-y-[-2px] transition-all shadow-xl shadow-slate-200"
                             >
-                                <Save size={18} /> Enregistrer
+                                <Save size={18} /> {t('candidate_profile.save_changes')}
                             </button>
                             <button 
                                 onClick={() => { fetchProfile(); setIsEditing(false); }}
                                 className="bg-slate-100 text-slate-500 px-8 py-4 rounded-2xl font-bold text-sm flex items-center gap-2 hover:bg-slate-200 transition-all"
                             >
-                                <X size={18} /> Annuler
+                                <X size={18} /> {t('candidate_profile.cancel')}
                             </button>
                         </>
                     ) : (
@@ -197,7 +199,7 @@ const CandidateProfile = () => {
                             onClick={() => setIsEditing(true)}
                             className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-sm flex items-center gap-2 hover:translate-y-[-2px] transition-all shadow-xl shadow-slate-200"
                         >
-                            <Edit size={18} /> Éditer le profil
+                            <Edit size={18} /> {t('candidate_profile.edit_profile')}
                         </button>
                     )}
                 </div>
@@ -209,14 +211,14 @@ const CandidateProfile = () => {
                     {/* Skills Block */}
                     <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-sm space-y-8">
                         <h2 className="text-xl font-serif font-bold text-slate-800 flex items-center gap-3">
-                            <Award size={20} className="text-[#B76E79]" /> Compétences
+                            <Award size={20} className="text-[#B76E79]" /> {t('candidate_profile.skills')}
                         </h2>
                         
                         {isEditing && (
                             <div className="flex gap-2">
                                 <input 
                                     type="text" 
-                                    placeholder="Ajouter compétence..." 
+                                    placeholder={t('candidate_profile.add_skill')} 
                                     value={newSkill}
                                     onChange={(e) => setNewSkill(e.target.value)}
                                     className="flex-1 bg-slate-50 border border-slate-100 text-sm p-3 rounded-xl outline-none focus:ring-1 focus:ring-[#B76E79]"
@@ -245,7 +247,7 @@ const CandidateProfile = () => {
                                 </span>
                             ))}
                             {(!profile.skills || profile.skills.length === 0) && (
-                                <p className="text-xs text-slate-400 italic">Aucune compétence listée.</p>
+                                <p className="text-xs text-slate-400 italic">{t('candidate_profile.no_skills')}</p>
                             )}
                         </div>
                     </div>
@@ -253,7 +255,7 @@ const CandidateProfile = () => {
                     {/* Trust score */}
                     <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-sm space-y-8 relative overflow-hidden">
                         <h2 className="text-xl font-serif font-bold text-slate-800 flex items-center gap-3">
-                            <TrendingUp size={20} className="text-emerald-500" /> Score de Performance IA
+                            <TrendingUp size={20} className="text-emerald-500" /> {t('candidate_profile.title')}
                         </h2>
                         <div className="flex items-center gap-10">
                             <div className="relative w-24 h-24 flex-shrink-0">
@@ -264,8 +266,7 @@ const CandidateProfile = () => {
                                <div className="absolute inset-0 flex items-center justify-center font-serif font-black text-2xl text-slate-800">{profile.scoreFiabilite || 100}%</div>
                             </div>
                             <div>
-                                <span className="text-xs font-bold text-slate-600 block">Indice de Fiabilité</span>
-                                <span className="text-[10px] text-slate-400 block mt-1">Calculé sémantiquement par l'IA sur l'ensemble de votre profil.</span>
+                                <span className="text-xs font-bold text-slate-600 block">{t('candidate_profile.subtitle')}</span>
                             </div>
                         </div>
                     </div>
@@ -277,14 +278,14 @@ const CandidateProfile = () => {
                     <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-sm space-y-8">
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-serif font-bold text-slate-800 flex items-center gap-3">
-                                <Briefcase size={20} className="text-[#B76E79]" /> Expériences Professionnelles
+                                <Briefcase size={20} className="text-[#B76E79]" /> {t('candidate_profile.experience')}
                             </h2>
                             {isEditing && (
                                 <button 
                                     onClick={handleAddExperience}
                                     className="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-slate-800 transition-all"
                                 >
-                                    <Plus size={14} /> Ajouter
+                                    <Plus size={14} /> {t('candidate_profile.add_skill')}
                                 </button>
                             )}
                         </div>
@@ -334,7 +335,7 @@ const CandidateProfile = () => {
                                 </div>
                             ))}
                             {(!profile.experiences || profile.experiences.length === 0) && (
-                                <p className="text-xs text-slate-400 italic">Aucune expérience répertoriée.</p>
+                                <p className="text-xs text-slate-400 italic">{t('candidate_profile.no_experience')}</p>
                             )}
                         </div>
                     </div>
@@ -343,14 +344,14 @@ const CandidateProfile = () => {
                     <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-sm space-y-8">
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-serif font-bold text-slate-800 flex items-center gap-3">
-                                <BookOpen size={20} className="text-[#B76E79]" /> Parcours Académique
+                                <BookOpen size={20} className="text-[#B76E79]" /> {t('candidate_profile.education')}
                             </h2>
                             {isEditing && (
                                 <button 
                                     onClick={handleAddFormation}
                                     className="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-slate-800 transition-all"
                                 >
-                                    <Plus size={14} /> Ajouter
+                                    <Plus size={14} /> {t('candidate_profile.add_skill')}
                                 </button>
                             )}
                         </div>
@@ -392,7 +393,7 @@ const CandidateProfile = () => {
                                 </div>
                             ))}
                             {(!profile.formations || profile.formations.length === 0) && (
-                                <p className="text-xs text-slate-400 italic">Aucune formation répertoriée.</p>
+                                <p className="text-xs text-slate-400 italic">{t('candidate_profile.no_education')}</p>
                             )}
                         </div>
                     </div>

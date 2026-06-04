@@ -1,9 +1,11 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { Mail, Lock, LogIn, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/LanguageSelector';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -11,15 +13,15 @@ const Login = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
             const data = await login(email, password);
-            toast.success('Connexion réussie !', { icon: '✨' });
+            toast.success(t('login.success'), { icon: '✨' });
             
-            // Logique de redirection selon le rôle
             if (data.role === 'recruiter') {
                 navigate('/recruiter/dashboard');
             } else if (data.role === 'admin') {
@@ -28,7 +30,7 @@ const Login = () => {
                 navigate('/candidate/portal');
             }
         } catch (err) {
-            toast.error(err || 'Identifiants incorrects');
+            toast.error(err || t('login.error_default'));
         } finally {
             setIsLoading(false);
         }
@@ -42,6 +44,11 @@ const Login = () => {
             <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-blue-600/10 blur-[120px]" />
             <div className="absolute bottom-[-10%] left-[-5%] w-[30vw] h-[30vw] rounded-full bg-rose-500/5 blur-[100px]" />
 
+            {/* Language Selector — top right corner */}
+            <div className="absolute top-6 right-6 z-50">
+                <LanguageSelector variant="dark" />
+            </div>
+
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -53,13 +60,15 @@ const Login = () => {
                         <Sparkles className="text-white w-8 h-8" />
                     </div>
                     <h2 className="text-3xl font-bold text-white tracking-tight">Smart<span className="text-rose-400">-ATS</span></h2>
-                    <p className="text-slate-400 font-medium text-sm italic">Next-Gen Recruitment Intelligence.</p>
+                    <p className="text-slate-400 font-medium text-sm italic">{t('login.subtitle')}</p>
                 </div>
                 
                 <div className="px-10 pb-10">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Email Address</label>
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">
+                                {t('login.email_label')}
+                            </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
                                     <Mail className="h-5 w-5 text-slate-500" />
@@ -77,7 +86,9 @@ const Login = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Secure Password</label>
+                            <label className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">
+                                {t('login.password_label')}
+                            </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-400 transition-colors">
                                     <Lock className="h-5 w-5 text-slate-500" />
@@ -106,15 +117,15 @@ const Login = () => {
                             ) : (
                                 <LogIn className="mr-2 h-5 w-5" />
                             )}
-                            {isLoading ? 'Authenticating...' : 'Sign In'}
+                            {isLoading ? t('login.btn_loading') : t('login.btn_submit')}
                         </motion.button>
                     </form>
 
                     <div className="mt-8 text-center border-t border-white/5 pt-6">
                         <p className="text-sm text-slate-400 font-medium">
-                            New to the platform?{' '}
+                            {t('login.new_to_platform')}{' '}
                             <Link to="/register" className="font-bold text-blue-400 hover:text-blue-300 transition-colors">
-                                Create a candidate account
+                                {t('login.create_account')}
                             </Link>
                         </p>
                     </div>
@@ -125,4 +136,3 @@ const Login = () => {
 };
 
 export default Login;
-

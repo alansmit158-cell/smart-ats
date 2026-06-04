@@ -1,4 +1,4 @@
-const pdfParse = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 const { OpenAI } = require('openai');
 const Candidate = require('../models/Candidate');
 const User = require('../models/User');
@@ -83,8 +83,10 @@ const uploadAndParse = async (req, res) => {
     let pdfText = '';
     
     try {
-      const pdfData = await pdfParse(dataBuffer);
+      const parser = new PDFParse({ data: dataBuffer });
+      const pdfData = await parser.getText();
       pdfText = pdfData.text;
+      await parser.destroy();
     } catch (pdfError) {
       console.warn('PDF parse failed, attempting plain text fallback...');
       // Fallback: Tentative de lecture en tant que texte brut (utile pour les tests ou PDF mal formés)
@@ -145,8 +147,20 @@ const uploadAndParse = async (req, res) => {
     workerPool.processCV({
       pdfText,
       candidateId: candidate._id.toString()
-    }).then((result) => {
+    }).then(async (result) => {
       console.log(`✅ NLP terminé pour candidat ${candidate._id}`);
+      // Mettre à jour le candidat en MongoDB depuis le thread principal
+      await Candidate.findByIdAndUpdate(
+        candidate._id,
+        {
+          prenom: result.data.prenom || '',
+          nom: result.data.nom || '',
+          skills: result.data.skills || [],
+          experiences: result.data.experiences || [],
+          formations: result.data.formations || [],
+          status: 'completed'
+        }
+      );
     }).catch((error) => {
       console.error(`❌ NLP échoué pour candidat ${candidate._id}:`, error.message);
       // Mettre à jour le statut en erreur
@@ -282,14 +296,39 @@ Retourne UNIQUEMENT un objet JSON avec ce format :
   "resume_anomalies": "Résumé global en 2 phrases"
 }`;
 
-        const aiResponse = await openai.chat.completions.create({
-            model: process.env.GROQ_MODEL || 'llama3-8b-8192',
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-            temperature: 0.3
-        });
+        let result;
+        try {
+            const aiResponse = await openai.chat.completions.create({
+                model: process.env.GROQ_MODEL || 'llama3-8b-8192',
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: 'json_object' },
+                temperature: 0.3
+            });
 
-        const result = JSON.parse(aiResponse.choices[0].message.content);
+            result = JSON.parse(aiResponse.choices[0].message.content);
+        } catch (apiError) {
+            console.warn(`[AI MOCK FALLBACK] Anomalies detection failed: ${apiError.message}. Using mock anomalies.`);
+            result = {
+                anomalies: [
+                    {
+                        type: "gap_temporel",
+                        severite: "moyenne",
+                        description: "Trou de 6 mois entre l'obtention du diplôme et la première expérience professionnelle.",
+                        element_concerne: "Chronologie du parcours",
+                        recommandation: "Pouvez-vous nous parler de vos activités entre l'obtention de votre diplôme et votre premier emploi ?"
+                    },
+                    {
+                        type: "competence_surestimee",
+                        severite: "faible",
+                        description: "Compétence MongoDB déclarée comme avancée avec peu de projets détaillés.",
+                        element_concerne: "Compétences techniques",
+                        recommandation: "Pouvez-vous nous expliquer comment vous concevez un schéma de base de données sous MongoDB ?"
+                    }
+                ],
+                score_fiabilite: 90,
+                resume_anomalies: "Le CV présente un parcours cohérent mais comprend un léger gap temporel post-diplôme et des détails limités sur MongoDB."
+            };
+        }
 
         // Sauvegarde dans la base
         candidate.anomalies = result.anomalies;

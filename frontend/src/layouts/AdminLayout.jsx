@@ -15,19 +15,22 @@ import {
   CreditCard
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/LanguageSelector';
 
 const AdminLayout = () => {
     const { user, logout } = useContext(AuthContext);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
+    const { t } = useTranslation();
 
     const menuItems = [
-        { path: '/admin/stats', icon: <BarChart3 size={20} />, label: 'Supervision' },
-        { path: '/admin/users', icon: <Users size={20} />, label: 'Utilisateurs' },
-        { path: '/admin/security', icon: <ShieldCheck size={20} />, label: 'Sécurité' },
-        { path: '/admin/logs', icon: <Activity size={20} />, label: 'Audit Logs' },
-        { path: '/admin/subscriptions', icon: <CreditCard size={20} />, label: 'Abonnements' },
-        { path: '/admin/settings', icon: <Settings size={20} />, label: 'Système' },
+        { path: '/admin/stats', icon: <BarChart3 size={20} />, label: t('menu.dashboard') },
+        { path: '/admin/users', icon: <Users size={20} />, label: t('menu.candidates') },
+        { path: '/admin/security', icon: <ShieldCheck size={20} />, label: t('menu.interviews') },
+        { path: '/admin/logs', icon: <Activity size={20} />, label: t('menu.reports') },
+        { path: '/admin/subscriptions', icon: <CreditCard size={20} />, label: t('menu.subscription') },
+        { path: '/admin/settings', icon: <Settings size={20} />, label: t('menu.settings') },
     ];
 
     return (
@@ -62,7 +65,7 @@ const AdminLayout = () => {
 
                     {/* Navigation */}
                     <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
-                        <p className="px-5 mb-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Main Modules</p>
+                        <p className="px-5 mb-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">{t('admin.main_modules')}</p>
                         {menuItems.map((item) => (
                             <NavLink
                                 key={item.path}
@@ -91,11 +94,11 @@ const AdminLayout = () => {
                            <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-1000"></div>
                            <div className="flex items-center gap-3 mb-3">
                               <Zap size={14} className="text-rose-400" />
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Threat Level : 0</span>
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t('admin.threat_level')}</span>
                            </div>
                            <div className="flex items-center gap-2">
                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-                               <p className="text-[10px] text-slate-500 font-medium italic">Firewall IA : Operationnel</p>
+                               <p className="text-[10px] text-slate-500 font-medium italic">{t('admin.firewall_active')}</p>
                            </div>
                         </div>
                         
@@ -104,7 +107,7 @@ const AdminLayout = () => {
                             className="w-full flex items-center gap-4 px-6 py-5 mt-6 rounded-2xl text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-300"
                         >
                             <LogOut size={20} />
-                            <span className="text-sm font-bold">Logout Console</span>
+                            <span className="text-sm font-bold">{t('menu.signout')}</span>
                         </button>
                     </div>
                 </div>
@@ -120,13 +123,15 @@ const AdminLayout = () => {
                 <header className="h-20 bg-slate-950/80 backdrop-blur-3xl border-b border-white/5 flex items-center justify-between px-6 lg:px-12 shrink-0 z-30">
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-slate-400"><Menu size={24} /></button>
-                        <h2 className="text-lg font-bold text-white tracking-widest uppercase italic">Console Administrative</h2>
+                        <h2 className="text-lg font-bold text-white tracking-widest uppercase italic">{t('admin.console_title')}</h2>
                     </div>
 
                     <div className="flex items-center gap-6">
+                        <LanguageSelector />
+
                         <div className="hidden sm:flex items-center gap-2 bg-white/5 p-2 px-4 rounded-xl border border-white/5 text-xs">
                              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                             <span className="text-slate-400 font-bold uppercase tracking-widest">Mainframe Link : Good</span>
+                             <span className="text-slate-400 font-bold uppercase tracking-widest">{t('admin.mainframe_link')}</span>
                         </div>
                         
                         <div className="relative group">
@@ -134,10 +139,10 @@ const AdminLayout = () => {
                             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-950 shadow-[0_0_8px_#f43f5e]"></span>
                         </div>
 
-                        <div className="flex items-center gap-4 pl-6 border-l border-white/5">
+                        <div className="flex items-center gap-4 pl-6 border-l border-white/5 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-bold text-white tracking-tight">{user?.nom}</p>
-                                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">Root Access</p>
+                                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">{t('admin.root_access')}</p>
                             </div>
                             <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white border border-white/10 shadow-xl relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>

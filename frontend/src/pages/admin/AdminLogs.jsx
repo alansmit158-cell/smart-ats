@@ -21,8 +21,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../api/axiosConfig';
+import { useTranslation } from 'react-i18next';
 
 const AdminLogs = () => {
+    const { t } = useTranslation();
+    const signalFlux = t('admin.logs.signal_flux');
+    const words = signalFlux.split(' ');
+    const firstPart = words.slice(0, -1).join(' ');
+    const lastWord = words[words.length - 1];
     const [filter, setFilter] = useState('all');
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -79,7 +85,7 @@ const AdminLogs = () => {
                     <Loader2 size={48} className="text-blue-500 animate-spin" />
                     <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
                 </div>
-                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Accessing System Signal Stream...</p>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">{t('admin.logs.scanning')}</p>
             </div>
         );
     }
@@ -96,16 +102,16 @@ const AdminLogs = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="inline-flex items-center gap-2 text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-400/20 mb-3"
                     >
-                        <ShieldCheck size={12} /> Neural Audit Interface
+                        <ShieldCheck size={12} /> {t('admin.logs.audit_interface')}
                     </motion.div>
                     <h1 className="text-4xl font-bold text-white tracking-tight flex items-center gap-4">
-                        Signal <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic">Flux</span>
+                        {firstPart} <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic">{lastWord}</span>
                     </h1>
-                    <p className="text-slate-500 text-lg font-medium italic mt-2">Trace every critical transaction within the Smart-ATS mainframe.</p>
+                    <p className="text-slate-500 text-lg font-medium italic mt-2">{t('admin.logs.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <button className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-slate-400 font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:text-white transition-all shadow-xl backdrop-blur-md">
-                        <Download size={18} /> Export Telemetry
+                        <Download size={18} /> {t('admin.logs.export_telemetry')}
                     </button>
                     <button className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-2xl">
                         <Trash2 size={20} />
@@ -121,13 +127,13 @@ const AdminLogs = () => {
                 
                 <div className="p-10 border-b border-white/5 flex flex-wrap items-center justify-between gap-8 bg-white/[0.02] relative z-10 backdrop-blur-3xl">
                     <div className="flex bg-slate-900 rounded-2xl p-1.5 border border-white/5 shadow-inner">
-                        {['all', 'auth', 'system', 'security'].map(t => (
+                        {['all', 'auth', 'system', 'security'].map(filterKey => (
                             <button 
-                                key={t} 
-                                onClick={() => setFilter(t)}
-                                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${filter === t ? 'bg-blue-600 text-white shadow-[0_0_20px_#2563eb]' : 'text-slate-600 hover:text-slate-300'}`}
+                                key={filterKey} 
+                                onClick={() => setFilter(filterKey)}
+                                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${filter === filterKey ? 'bg-blue-600 text-white shadow-[0_0_20px_#2563eb]' : 'text-slate-600 hover:text-slate-300'}`}
                             >
-                                {t}
+                                {t(`admin.logs.filter_${filterKey}`)}
                             </button>
                         ))}
                     </div>
@@ -135,7 +141,7 @@ const AdminLogs = () => {
                         <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-blue-500 transition-colors" />
                         <input 
                             type="text" 
-                            placeholder="Identify specific signal pattern..." 
+                            placeholder={t('admin.logs.identify_pattern')} 
                             className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-sm font-medium text-white placeholder-slate-800 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-inner group-focus-within:bg-white/10"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -157,7 +163,7 @@ const AdminLogs = () => {
                             <div className="flex items-center gap-8 w-56 shrink-0 relative z-10">
                                 <span className="text-[11px] font-mono text-slate-700 font-black uppercase tracking-[0.2em]">{new Date(log.time).toLocaleTimeString()}</span>
                                 <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getSeverityStyles(log.action)}`}>
-                                    {log.action.includes('ERROR') || log.action.includes('FAIL') ? 'Critical' : 'Operational'}
+                                    {log.action.includes('ERROR') || log.action.includes('FAIL') ? t('admin.logs.critical') : t('admin.logs.operational')}
                                 </span>
                             </div>
                             
@@ -173,20 +179,20 @@ const AdminLogs = () => {
 
                             <div className="flex items-center gap-3 text-slate-700 font-black text-[10px] uppercase tracking-widest relative z-10">
                                 <Zap size={14} className="text-blue-500/30" />
-                                <span className="group-hover:text-blue-400 transition-colors">Internal_Node</span>
+                                <span className="group-hover:text-blue-400 transition-colors">{t('admin.logs.internal_node')}</span>
                             </div>
                         </motion.div>
                     )) : (
                         <div className="p-32 text-center space-y-6">
                             <RefreshCcw size={48} className="mx-auto text-slate-900 animate-spin-slow" />
-                            <p className="text-slate-600 font-bold text-[11px] uppercase tracking-[0.4em] italic">No active signals matching your pattern.</p>
+                            <p className="text-slate-600 font-bold text-[11px] uppercase tracking-[0.4em] italic">{t('admin.logs.no_signals')}</p>
                         </div>
                     )}
                 </div>
 
                 <div className="p-10 bg-slate-900/50 border-t border-white/5 flex justify-center items-center backdrop-blur-3xl">
                     <button className="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em] hover:text-blue-400 transition-all flex items-center gap-4 group">
-                        Synchronize Previous Cycles <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
+                        {t('admin.logs.sync_previous')} <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
                     </button>
                 </div>
             </div>
@@ -196,10 +202,10 @@ const AdminLogs = () => {
                 <div className="bg-slate-900/80 backdrop-blur-2xl p-5 px-8 rounded-full border border-white/10 shadow-2xl flex items-center gap-5">
                     <div className="flex items-center gap-3">
                         <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_15px_#10b981]"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mainframe Link Active</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('admin.logs.mainframe_active')}</span>
                     </div>
                     <div className="w-[1px] h-4 bg-white/10"></div>
-                    <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest italic">Lat: 12ms</div>
+                    <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest italic">{t('admin.logs.latency')}</div>
                 </div>
             </div>
         </div>

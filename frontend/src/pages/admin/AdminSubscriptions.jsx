@@ -18,8 +18,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const AdminSubscriptions = () => {
+    const { t } = useTranslation();
     const [subscriptions, setSubscriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -35,7 +37,7 @@ const AdminSubscriptions = () => {
                 setSubscriptions(res.data.data);
             }
         } catch (error) {
-            toast.error("Failed to synchronize subscription matrix");
+            toast.error(t('admin.subscriptions.sync_error'));
         } finally {
             setLoading(false);
         }
@@ -43,14 +45,14 @@ const AdminSubscriptions = () => {
 
     const handleAction = async (subId, action) => {
         try {
-            toast.loading("Modifying neural contract...", { id: 'sub-action' });
+            toast.loading(t('admin.subscriptions.modifying_contract'), { id: 'sub-action' });
             if (action === 'cancel') {
                 await API.patch(`/abonnements/${subId}/cancel`);
-                toast.success("Protocol suspended successfully", { id: 'sub-action' });
+                toast.success(t('admin.subscriptions.suspend_success'), { id: 'sub-action' });
             }
             fetchSubscriptions();
         } catch (error) {
-            toast.error("Operation block detected", { id: 'sub-action' });
+            toast.error(t('admin.subscriptions.operation_error'), { id: 'sub-action' });
         }
     };
 
@@ -66,7 +68,7 @@ const AdminSubscriptions = () => {
                     <Loader2 size={48} className="text-blue-500 animate-spin" />
                     <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
                 </div>
-                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Accessing Ledger Database...</p>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">{t('admin.subscriptions.loading')}</p>
             </div>
         );
     }
@@ -83,11 +85,11 @@ const AdminSubscriptions = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="inline-flex items-center gap-2 text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-400/20 mb-3"
                     >
-                        <CreditCard size={12} /> Financial Ledger
+                        <CreditCard size={12} /> {t('admin.subscriptions.ledger')}
                     </motion.div>
                     <h1 className="text-4xl font-bold text-white tracking-tight flex items-center gap-5">
-                        Subscription <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic">Nodes</span>
-                        <span className="text-sm font-black text-slate-600 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">{subscriptions.length} Active Contracts</span>
+                        {t('admin.subscriptions.nodes')}
+                        <span className="text-sm font-black text-slate-600 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">{subscriptions.length} {t('admin.subscriptions.active_contracts')}</span>
                     </h1>
                 </div>
 
@@ -96,7 +98,7 @@ const AdminSubscriptions = () => {
                         <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-400 transition-colors" size={20} />
                         <input 
                             type="text" 
-                            placeholder="Identify contract by recruiter or plan..." 
+                            placeholder={t('admin.subscriptions.search_placeholder')} 
                             className="w-full bg-white/5 border border-white/5 p-4 pl-14 rounded-2xl text-sm font-medium text-white placeholder-slate-700 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-inner group-focus-within:bg-white/[0.08]"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -108,10 +110,10 @@ const AdminSubscriptions = () => {
             {/* Metrics Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 {[
-                    { label: 'Total Revenue', val: `$${subscriptions.reduce((acc, s) => acc + s.prix, 0)}`, icon: <TrendingUp size={20} />, color: 'text-emerald-400' },
-                    { label: 'Enterprise Nodes', val: subscriptions.filter(s => s.type === 'Enterprise').length, icon: <Crown size={20} />, color: 'text-amber-400' },
-                    { label: 'Neural Sync Ops', val: '4.8k', icon: <Activity size={20} />, color: 'text-blue-400' },
-                    { label: 'Active Contracts', val: subscriptions.filter(s => s.statut === 'active').length, icon: <ShieldCheck size={20} />, color: 'text-indigo-400' },
+                    { label: t('admin.subscriptions.total_revenue'), val: `$${subscriptions.reduce((acc, s) => acc + s.prix, 0)}`, icon: <TrendingUp size={20} />, color: 'text-emerald-400' },
+                    { label: t('admin.subscriptions.enterprise_nodes'), val: subscriptions.filter(s => s.type === 'Enterprise').length, icon: <Crown size={20} />, color: 'text-amber-400' },
+                    { label: t('admin.subscriptions.neural_ops'), val: '4.8k', icon: <Activity size={20} />, color: 'text-blue-400' },
+                    { label: t('admin.subscriptions.active_contracts'), val: subscriptions.filter(s => s.statut === 'active').length, icon: <ShieldCheck size={20} />, color: 'text-indigo-400' },
                 ].map((m, i) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 10 }}
@@ -138,16 +140,16 @@ const AdminSubscriptions = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-white/5 bg-white/[0.02]">
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Client Node</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Plan Protocol</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Temporal State</th>
-                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-right">Ledger Control</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.subscriptions.client_node')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.subscriptions.plan_protocol')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">{t('admin.subscriptions.temporal_state')}</th>
+                                <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 text-right">{t('admin.subscriptions.ledger_control')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {filteredSubs.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-10 py-20 text-center text-slate-600 font-medium italic">No active neural contracts detected in this sector.</td>
+                                    <td colSpan="4" className="px-10 py-20 text-center text-slate-600 font-medium italic">{t('admin.subscriptions.no_contracts')}</td>
                                 </tr>
                             ) : filteredSubs.map((s, idx) => (
                                 <motion.tr 
@@ -176,13 +178,13 @@ const AdminSubscriptions = () => {
                                             }`}>
                                                 {s.type}
                                             </span>
-                                            <p className="text-[10px] font-bold text-slate-600">Price Node: ${s.prix}</p>
+                                            <p className="text-[10px] font-bold text-slate-600">{t('admin.subscriptions.price_node')}: ${s.prix}</p>
                                         </div>
                                     </td>
                                     <td className="px-10 py-8">
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-3 text-slate-400 text-xs font-medium italic">
-                                                <Clock size={14} className="text-blue-500/30" /> Ends {new Date(s.dateFin).toLocaleDateString()}
+                                                <Clock size={14} className="text-blue-500/30" /> {t('admin.subscriptions.ends')} {new Date(s.dateFin).toLocaleDateString()}
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-2 h-2 rounded-full ${s.statut === 'active' ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'}`}></div>
@@ -197,11 +199,11 @@ const AdminSubscriptions = () => {
                                                     onClick={() => handleAction(s._id, 'cancel')}
                                                     className="px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all shadow-xl"
                                                 >
-                                                    Suspend Protocol
+                                                    {t('admin.subscriptions.suspend_protocol')}
                                                 </button>
                                             ) : (
                                                 <button className="px-5 py-2.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-xl">
-                                                    Re-Sync Contract
+                                                    {t('admin.subscriptions.resync_contract')}
                                                 </button>
                                             )}
                                             <button className="p-3 bg-white/5 text-slate-600 rounded-xl hover:text-white hover:bg-white/10 transition-all shadow-xl"><ArrowUpRight size={18}/></button>

@@ -19,22 +19,25 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AuthContext from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/LanguageSelector';
 
 const RecruiterLayout = () => {
     const { user, logout } = useContext(AuthContext);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
+    const { t } = useTranslation();
 
     const menuItems = [
-        { path: '/recruiter/dashboard', icon: <LayoutDashboard size={20} />, label: 'Tableau de bord' },
-        { path: '/recruiter/jobs', icon: <Briefcase size={20} />, label: 'Offres d\'emploi' },
-        { path: '/recruiter/candidates', icon: <Users size={20} />, label: 'Vivier Talents' },
-        { path: '/recruiter/interviews', icon: <Calendar size={20} />, label: 'Entretiens IA' },
-        { path: '/recruiter/scoring', icon: <Target size={20} />, label: 'Scoring IA' },
-        { path: '/recruiter/messages', icon: <MessageSquare size={20} />, label: 'Messagerie' },
-        { path: '/recruiter/subscription', icon: <Crown size={20} />, label: 'Abonnement' },
-        { path: '/recruiter/reports', icon: <FileText size={20} />, label: 'Rapports' },
-        { path: '/recruiter/settings', icon: <Settings size={20} />, label: 'Paramètres' },
+        { path: '/recruiter/dashboard', icon: <LayoutDashboard size={20} />, label: t('menu.dashboard') },
+        { path: '/recruiter/jobs', icon: <Briefcase size={20} />, label: t('menu.jobs') },
+        { path: '/recruiter/candidates', icon: <Users size={20} />, label: t('menu.candidates') },
+        { path: '/recruiter/interviews', icon: <Calendar size={20} />, label: t('menu.interviews') },
+        { path: '/recruiter/scoring', icon: <Target size={20} />, label: t('menu.scoring') },
+        { path: '/recruiter/messages', icon: <MessageSquare size={20} />, label: t('menu.messages') },
+        { path: '/recruiter/subscription', icon: <Crown size={20} />, label: t('menu.subscription') },
+        { path: '/recruiter/reports', icon: <FileText size={20} />, label: t('menu.reports') },
+        { path: '/recruiter/settings', icon: <Settings size={20} />, label: t('menu.settings') },
     ];
 
     return (
@@ -72,7 +75,7 @@ const RecruiterLayout = () => {
 
                     {/* Navigation Section */}
                     <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                        <div className="px-5 mb-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Main Console</div>
+                        <div className="px-5 mb-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('menu.main_console')}</div>
                         {menuItems.map((item) => (
                             <NavLink
                                 key={item.path}
@@ -115,7 +118,7 @@ const RecruiterLayout = () => {
                             className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-300"
                         >
                             <LogOut size={20} />
-                            <span className="text-sm font-bold">Sign Out</span>
+                            <span className="text-sm font-bold">{t('menu.signout')}</span>
                         </button>
                     </div>
                 </div>
@@ -134,12 +137,15 @@ const RecruiterLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
+                        {/* Language Selector */}
+                        <LanguageSelector />
+
                         <div className="relative cursor-pointer group" onClick={() => toast("Aucune nouvelle notification pour le moment.", { icon: "🔔" })}>
                             <Bell size={20} className="text-slate-400 group-hover:text-white transition-colors" />
                             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-950 shadow-[0_0_8px_#f43f5e]"></span>
                         </div>
 
-                        <div className="flex items-center gap-4 pl-6 border-l border-white/10">
+                        <div className="flex items-center gap-4 pl-6 border-l border-white/10 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-bold text-white tracking-tight">{user?.nom}</p>
                                 <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">Recruiter Strategist</p>

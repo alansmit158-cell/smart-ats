@@ -14,19 +14,22 @@ import {
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/LanguageSelector';
 
 const CandidateLayout = () => {
   const { user, logout } = useContext(AuthContext);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { t } = useTranslation();
 
   const menuItems = [
-    { path: '/candidate/portal', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-    { path: '/candidate/explorer', icon: <Briefcase size={20} />, label: 'Explorer Offres' },
-    { path: '/candidate/upload', icon: <Sparkles size={20} />, label: 'Dépôt de CV (IA)' },
-    { path: '/candidate/applications', icon: <Send size={20} />, label: 'Mes Candidatures' },
-    { path: '/candidate/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
-    { path: '/candidate/profile', icon: <UserIcon size={20} />, label: 'Mon Profil' },
+    { path: '/candidate/portal', icon: <LayoutDashboard size={20} />, label: t('menu.dashboard') },
+    { path: '/candidate/explorer', icon: <Briefcase size={20} />, label: t('menu.jobs') },
+    { path: '/candidate/upload', icon: <Sparkles size={20} />, label: t('menu.interviews') },
+    { path: '/candidate/applications', icon: <Send size={20} />, label: t('menu.scoring') },
+    { path: '/candidate/messages', icon: <MessageSquare size={20} />, label: t('menu.messages') },
+    { path: '/candidate/profile', icon: <UserIcon size={20} />, label: t('menu.settings') },
   ];
 
   return (
@@ -102,7 +105,7 @@ const CandidateLayout = () => {
               className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/5 transition-all duration-300"
             >
               <LogOut size={20} />
-              <span className="text-sm font-bold">Sign Out</span>
+              <span className="text-sm font-bold">{t('menu.signout')}</span>
             </button>
           </div>
         </div>
@@ -125,6 +128,8 @@ const CandidateLayout = () => {
           </div>
 
           <div className="flex items-center gap-4 lg:gap-8">
+            <LanguageSelector />
+
             <div 
               className="relative cursor-pointer group"
               onClick={() => toast("Aucune nouvelle notification pour le moment.", { icon: '🔔' })}
@@ -133,7 +138,7 @@ const CandidateLayout = () => {
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-950 shadow-[0_0_8px_#f43f5e]"></span>
             </div>
 
-            <div className="flex items-center gap-4 pl-6 border-l border-white/5">
+            <div className="flex items-center gap-4 pl-6 border-l border-white/5 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-white tracking-tight">{user?.nom}</p>
                 <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">Candidate Premium</p>

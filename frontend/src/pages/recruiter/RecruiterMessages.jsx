@@ -17,8 +17,10 @@ import API from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
 import AuthContext from '../../context/AuthContext';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const RecruiterMessages = () => {
+    const { t, i18n } = useTranslation();
     const { user: currentUser } = useContext(AuthContext);
     const location = useLocation();
     const [conversations, setConversations] = useState([]);
@@ -73,7 +75,7 @@ const RecruiterMessages = () => {
             setConversations(fetchedConvs);
             setIsLoadingConv(false);
         } catch (error) {
-            toast.error('Erreur lors du chargement des conversations');
+            toast.error(t('recruiter_messages.toast_load_conv_error'));
             setIsLoadingConv(false);
         }
     };
@@ -85,7 +87,7 @@ const RecruiterMessages = () => {
             setMessages(res.data);
             setIsLoadingMsgs(false);
         } catch (error) {
-            toast.error('Erreur lors du chargement des messages');
+            toast.error(t('recruiter_messages.toast_load_msg_error'));
             setIsLoadingMsgs(false);
         }
     };
@@ -104,22 +106,36 @@ const RecruiterMessages = () => {
             });
             setMessages([...messages, res.data]);
         } catch (error) {
-            toast.error('Erreur lors de l\'envoi');
+            toast.error(t('recruiter_messages.toast_send_error'));
         }
     };
 
     const handleAISuggest = () => {
         setIsTypingAI(true);
         setTimeout(() => {
-            const suggestions = [
-                `Bonjour ${selectedConv?.user.nom.split(' ')[0]}, votre profil a retenu toute notre attention. Seriez-vous disponible pour un court échange ?`,
-                "Félicitations ! Nous souhaitons faire progresser votre candidature vers l'étape suivante.",
-                "Merci pour les précisions apportées. Nous revenons vers vous très prochainement."
-            ];
-            const randomSuggest = suggestions[Math.floor(Math.random() * suggestions.length)];
+            const suggestions = {
+                en: [
+                    `Hello ${selectedConv?.user.nom.split(' ')[0]}, your profile has caught our attention. Would you be available for a short chat?`,
+                    "Congratulations! We would like to advance your candidacy to the next stage.",
+                    "Thank you for the details. We will get back to you very shortly."
+                ],
+                fr: [
+                    `Bonjour ${selectedConv?.user.nom.split(' ')[0]}, votre profil a retenu toute notre attention. Seriez-vous disponible pour un court échange ?`,
+                    "Félicitations ! Nous souhaitons faire progresser votre candidature vers l'étape suivante.",
+                    "Merci pour les précisions apportées. Nous revenons vers vous très prochainement."
+                ],
+                ar: [
+                    `مرحباً ${selectedConv?.user.nom.split(' ')[0]}، لقد لفت ملفك الشخصي انتباهنا. هل ستكون متاحاً لإجراء محادثة قصيرة؟`,
+                    "تهانينا! نود نقل طلبك إلى المرحلة التالية.",
+                    "شكرًا لك على التفاصيل المقدمة. سنعود إليك قريبًا جدًا."
+                ]
+            };
+            const currentLang = i18n.language || 'en';
+            const langSuggestions = suggestions[currentLang] || suggestions['en'];
+            const randomSuggest = langSuggestions[Math.floor(Math.random() * langSuggestions.length)];
             setNewMessage(randomSuggest);
             setIsTypingAI(false);
-            toast.success('Suggestion IA générée', { icon: '✨' });
+            toast.success(t('recruiter_messages.toast_ai_suggest'), { icon: '✨' });
         }, 1200);
     };
 
@@ -131,13 +147,13 @@ const RecruiterMessages = () => {
                 <div className="p-8 border-b border-white/5 bg-slate-950/20">
                     <h2 className="text-2xl font-bold text-white mb-6 tracking-tight flex items-center gap-3">
                         <MessageSquare className="text-blue-400" />
-                        Messages
+                        {t('menu.messages')}
                     </h2>
                     <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={18} />
                         <input 
                             type="text" 
-                            placeholder="Search talent..." 
+                            placeholder={t('recruiter_messages.search_placeholder')} 
                             className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm font-medium text-white placeholder-slate-600 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-inner"
                         />
                     </div>
@@ -147,11 +163,11 @@ const RecruiterMessages = () => {
                     {isLoadingConv ? (
                         <div className="flex flex-col items-center justify-center p-12 space-y-4">
                             <Loader2 className="animate-spin text-blue-400" size={32} />
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Syncing Conversations...</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t('recruiter_messages.syncing_conversations')}</p>
                         </div>
                     ) : conversations.length === 0 ? (
                         <div className="p-12 text-center">
-                            <p className="text-sm text-slate-500 italic">No active conversations found.</p>
+                            <p className="text-sm text-slate-500 italic">{t('recruiter_messages.no_conversations')}</p>
                         </div>
                     ) : conversations.map((conv) => (
                         <div 
@@ -177,7 +193,7 @@ const RecruiterMessages = () => {
                                         {conv.lastMessageDate ? new Date(conv.lastMessageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                     </span>
                                 </div>
-                                <p className="text-[11px] text-slate-400 truncate font-medium">{conv.lastMessage || 'Start a conversation...'}</p>
+                                <p className="text-[11px] text-slate-400 truncate font-medium">{conv.lastMessage || t('recruiter_messages.start_conversation')}</p>
                             </div>
                         </div>
                     ))}
@@ -201,7 +217,7 @@ const RecruiterMessages = () => {
                                     <h3 className="font-bold text-white text-sm">{selectedConv.user.nom}</h3>
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Active Now</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t('recruiter_messages.active_now')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -209,7 +225,7 @@ const RecruiterMessages = () => {
                                 <div className="hidden lg:flex flex-col items-end mr-4">
                                     <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
                                         <ShieldCheck size={12} className="text-blue-400" />
-                                        <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">Encrypted</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">{t('recruiter_messages.encrypted')}</span>
                                     </div>
                                 </div>
                                 <button className="p-3 hover:bg-white/5 rounded-2xl transition-colors text-slate-500 hover:text-white"><MoreVertical size={20} /></button>
@@ -218,16 +234,16 @@ const RecruiterMessages = () => {
 
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                            {isLoadingMsgs ? (
-                                <div className="flex flex-col items-center justify-center h-full space-y-4">
-                                    <Cpu className="animate-spin text-blue-500/50" size={40} />
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Loading Secure Thread...</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex justify-center mb-8">
-                                        <span className="bg-white/5 px-4 py-2 rounded-full border border-white/5 text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] shadow-inner">Encrypted Conversation Channel</span>
-                                    </div>
+                             {isLoadingMsgs ? (
+                                 <div className="flex flex-col items-center justify-center h-full space-y-4">
+                                     <Cpu className="animate-spin text-blue-500/50" size={40} />
+                                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">{t('recruiter_messages.loading_thread')}</p>
+                                 </div>
+                             ) : (
+                                 <>
+                                     <div className="flex justify-center mb-8">
+                                         <span className="bg-white/5 px-4 py-2 rounded-full border border-white/5 text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] shadow-inner">{t('recruiter_messages.encrypted_channel')}</span>
+                                     </div>
 
                                     {messages.map((msg) => (
                                         <motion.div 
@@ -252,14 +268,14 @@ const RecruiterMessages = () => {
                                         </motion.div>
                                     ))}
                                     
-                                    {isTypingAI && (
-                                        <div className="flex justify-end">
-                                            <div className="bg-white/5 backdrop-blur-md p-5 rounded-[2rem] rounded-tr-none border border-blue-500/20 flex items-center gap-3">
-                                                <Loader2 size={16} className="animate-spin text-blue-400" />
-                                                <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest animate-pulse">AI Drafting Response...</span>
-                                            </div>
-                                        </div>
-                                    )}
+                                     {isTypingAI && (
+                                         <div className="flex justify-end">
+                                             <div className="bg-white/5 backdrop-blur-md p-5 rounded-[2rem] rounded-tr-none border border-blue-500/20 flex items-center gap-3">
+                                                 <Loader2 size={16} className="animate-spin text-blue-400" />
+                                                 <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest animate-pulse">{t('recruiter_messages.ai_drafting')}</span>
+                                             </div>
+                                         </div>
+                                     )}
                                 </>
                             )}
                             <div ref={messagesEndRef} />
@@ -282,7 +298,7 @@ const RecruiterMessages = () => {
                                         type="text" 
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
-                                        placeholder="Type your message..." 
+                                        placeholder={t('recruiter_messages.placeholder_type_message')} 
                                         className="w-full bg-white/5 border border-white/10 rounded-[2rem] py-4 px-8 text-sm font-medium text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 outline-none transition-all shadow-inner placeholder-slate-600"
                                     />
                                 </div>
@@ -295,7 +311,7 @@ const RecruiterMessages = () => {
                                     <Send size={20} />
                                 </button>
                             </form>
-                            <p className="text-center text-[9px] font-bold uppercase tracking-[0.3em] text-slate-600 mt-4">Smart-ATS Quantum Encryption • v5.0 SECURE</p>
+                            <p className="text-center text-[9px] font-bold uppercase tracking-[0.3em] text-slate-600 mt-4">{t('recruiter_messages.encryption_footer')}</p>
                         </div>
                     </>
                 ) : (
@@ -304,8 +320,8 @@ const RecruiterMessages = () => {
                             <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <MessageSquare className="w-12 h-12 animate-bounce" />
                         </div>
-                        <h2 className="text-3xl font-bold text-white mb-4">Strategic Messaging</h2>
-                        <p className="text-slate-500 max-w-md text-sm font-medium italic">Select a talent from the sidebar to initiate a high-level conversation. AI-powered drafting is available for precision communication.</p>
+                        <h2 className="text-3xl font-bold text-white mb-4">{t('recruiter_messages.strategic_messaging')}</h2>
+                        <p className="text-slate-500 max-w-md text-sm font-medium italic">{t('recruiter_messages.select_talent')}</p>
                     </div>
                 )}
             </div>

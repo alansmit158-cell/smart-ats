@@ -18,9 +18,22 @@ import {
 import { motion } from 'framer-motion';
 import API from '../../api/axiosConfig';
 import AuthContext from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const RecruiterDashboard = () => {
+    const { t } = useTranslation();
     const { user } = useContext(AuthContext);
+
+    const getStageLabel = (stage) => {
+        switch (stage) {
+            case 'Neural Screening': return t('recruiter_dashboard.stage_screening');
+            case 'Protocol Exchange': return t('recruiter_dashboard.stage_protocol');
+            case 'Final Deployment': return t('recruiter_dashboard.stage_deployment');
+            case 'Rejected Nodes': return t('recruiter_dashboard.stage_rejected');
+            default: return stage;
+        }
+    };
+
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -39,9 +52,9 @@ const RecruiterDashboard = () => {
     }, []);
 
     const dashboardCards = [
-        { label: 'Talent Pool', value: stats?.totalCandidates || 0, icon: <Users size={22} />, change: '+12%', color: 'from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/20' },
-        { label: 'Active Specs', value: stats?.totalJobs || 0, icon: <Briefcase size={22} />, change: '+2', color: 'from-rose-600 to-pink-600', shadow: 'shadow-rose-500/20' },
-        { label: 'Sync Interviews', value: stats?.interviewsScheduled || 0, icon: <Activity size={22} />, change: '+5%', color: 'from-emerald-600 to-teal-600', shadow: 'shadow-emerald-500/20' },
+        { label: t('recruiter_dashboard.talent_pool'), value: stats?.totalCandidates || 0, icon: <Users size={22} />, change: '+12%', color: 'from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/20' },
+        { label: t('recruiter_dashboard.active_specs'), value: stats?.totalJobs || 0, icon: <Briefcase size={22} />, change: '+2', color: 'from-rose-600 to-pink-600', shadow: 'shadow-rose-500/20' },
+        { label: t('recruiter_dashboard.sync_interviews'), value: stats?.interviewsScheduled || 0, icon: <Activity size={22} />, change: '+5%', color: 'from-emerald-600 to-teal-600', shadow: 'shadow-emerald-500/20' },
     ];
 
     if (loading) {
@@ -51,7 +64,7 @@ const RecruiterDashboard = () => {
                     <Loader2 size={48} className="text-blue-500 animate-spin" />
                     <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse"></div>
                 </div>
-                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">Accessing Quantum Metrics...</p>
+                <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.4em] italic">{t('recruiter_dashboard.loading')}</p>
             </div>
         );
     }
@@ -68,21 +81,28 @@ const RecruiterDashboard = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="inline-flex items-center gap-2 text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-400/20 mb-2"
                     >
-                        <Cpu size={12} /> Neural Core Online
+                        <Cpu size={12} /> {t('recruiter_dashboard.neural_core_online')}
                     </motion.div>
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-5xl font-bold text-white tracking-tight"
+                        className="text-5xl font-bold text-white tracking-tight flex items-center flex-wrap gap-2"
                     >
-                        Welcome, <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic font-medium">{user?.nom || 'Strategist'}</span>.
+                        {t('recruiter_dashboard.welcome', { name: '###' }).split('###')[0]}
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 italic font-medium">
+                            {user?.nom || 'Strategist'}
+                        </span>
+                        {t('recruiter_dashboard.welcome', { name: '###' }).split('###')[1]}
                     </motion.h1>
                     <motion.p 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="text-slate-500 text-lg font-medium italic"
                     >
-                        The engine has synthesized <span className="text-blue-400 font-bold">12 new high-potential matchings</span> since your last login.
+                        {t('recruiter_dashboard.synthesized_matchings_part1')}{' '}
+                        <span className="text-blue-400 font-bold">
+                            {stats?.totalCandidates || 12} {t('recruiter_dashboard.synthesized_matchings_part2')}
+                        </span>
                     </motion.p>
                 </div>
                 
@@ -95,8 +115,8 @@ const RecruiterDashboard = () => {
                         <Target size={24} />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase italic">Quarterly Quota</p>
-                        <p className="text-lg font-bold text-white tracking-tight">84% Synchronized</p>
+                        <p className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase italic">{t('recruiter_dashboard.quarterly_quota')}</p>
+                        <p className="text-lg font-bold text-white tracking-tight">{t('recruiter_dashboard.synchronized_status', { percent: 84 })}</p>
                     </div>
                 </motion.div>
             </div>
@@ -140,7 +160,7 @@ const RecruiterDashboard = () => {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 blur-[80px] rounded-full"></div>
                     <div className="flex justify-between items-center relative z-10">
                         <h3 className="text-2xl font-bold text-white tracking-tight flex items-center gap-4">
-                            <Activity className="text-blue-500" /> Pipeline Synchronization
+                            <Activity className="text-blue-500" /> {t('recruiter_dashboard.pipeline_sync')}
                         </h3>
                         <Sparkles size={20} className="text-blue-400 animate-pulse" />
                     </div>
@@ -154,8 +174,8 @@ const RecruiterDashboard = () => {
                         ].map((item, i) => (
                             <div key={i} className="space-y-3 group">
                                 <div className="flex justify-between items-end px-1">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 italic font-bold">{item.stage}</span>
-                                    <span className="text-sm font-bold text-white tracking-tight">{item.count} Nodes</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 italic font-bold">{getStageLabel(item.stage)}</span>
+                                    <span className="text-sm font-bold text-white tracking-tight">{t('recruiter_dashboard.nodes_count', { count: item.count })}</span>
                                 </div>
                                 <div className="h-5 w-full bg-white/5 rounded-2xl p-[3px] border border-white/5 shadow-inner">
                                     <motion.div 
@@ -169,7 +189,7 @@ const RecruiterDashboard = () => {
                         ))}
                     </div>
                     <div className="pt-6 relative z-10">
-                         <button className="w-full py-5 bg-white/5 border border-white/10 rounded-[2rem] text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] hover:bg-white/10 hover:text-white transition-all shadow-xl backdrop-blur-md">Deep Analytics Expansion</button>
+                         <button className="w-full py-5 bg-white/5 border border-white/10 rounded-[2rem] text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] hover:bg-white/10 hover:text-white transition-all shadow-xl backdrop-blur-md">{t('recruiter_dashboard.deep_analytics')}</button>
                     </div>
                 </motion.div>
 
@@ -184,7 +204,7 @@ const RecruiterDashboard = () => {
                     </div>
                     
                     <h3 className="text-2xl font-bold relative flex items-center gap-4 tracking-tight">
-                        <div className="w-2 h-8 bg-blue-600 rounded-full shadow-[0_0_15px_#2563eb]"></div> Strategic AI Logs
+                        <div className="w-2 h-8 bg-blue-600 rounded-full shadow-[0_0_15px_#2563eb]"></div> {t('recruiter_dashboard.strategic_logs')}
                     </h3>
                     
                     <div className="space-y-10 relative z-10">
@@ -194,9 +214,9 @@ const RecruiterDashboard = () => {
                                     <Clock size={20} />
                                 </div>
                                 <div className="flex-1 space-y-1.5">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 italic pb-1">Scheduled for {new Date(interview.date).toLocaleDateString()}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 italic pb-1">{t('recruiter_dashboard.scheduled_for', { date: new Date(interview.date).toLocaleDateString() })}</p>
                                     <p className="text-lg font-bold text-white leading-tight group-hover/log:text-blue-400 transition-colors">{interview.jobTitle}</p>
-                                    <p className="text-xs text-slate-500 leading-relaxed font-medium italic">Protocol exchange with node <span className="text-slate-300 font-bold">{interview.candidateName}</span> initialized.</p>
+                                    <p className="text-xs text-slate-500 leading-relaxed font-medium italic">{t('recruiter_dashboard.protocol_exchange_part1')} <span className="text-slate-300 font-bold">{interview.candidateName}</span> {t('recruiter_dashboard.protocol_exchange_part2')}</p>
                                 </div>
                                 <ChevronRight size={24} className="text-slate-800 opacity-0 group-hover/log:opacity-100 group-hover/log:translate-x-3 transition-all mt-8" />
                             </div>
@@ -206,9 +226,9 @@ const RecruiterDashboard = () => {
                                     <Zap size={20} />
                                 </div>
                                 <div className="flex-1 space-y-1.5">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 italic pb-1">System Status</p>
-                                    <p className="text-lg font-bold text-white leading-tight">No upcoming protocols</p>
-                                    <p className="text-xs text-slate-500 leading-relaxed font-medium italic">The neural network is idling. Initiate new job specifications to trigger matching.</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 italic pb-1">{t('recruiter_dashboard.system_status')}</p>
+                                    <p className="text-lg font-bold text-white leading-tight">{t('recruiter_dashboard.no_protocols')}</p>
+                                    <p className="text-xs text-slate-500 leading-relaxed font-medium italic">{t('recruiter_dashboard.idle_desc')}</p>
                                 </div>
                             </div>
                         )}
@@ -218,7 +238,7 @@ const RecruiterDashboard = () => {
                          <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5 flex items-center justify-between backdrop-blur-xl shadow-2xl">
                             <div className="flex items-center gap-4">
                                 <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_12px_#10b981]"></div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Quantum Infrastructure Online</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">{t('recruiter_dashboard.infrastructure_online')}</span>
                             </div>
                             <div className="flex -space-x-4">
                                 {[1,2,3].map(i => <div key={i} className="w-10 h-10 rounded-2xl border-4 border-slate-950 bg-slate-900 flex items-center justify-center text-[10px] font-black text-blue-400 shadow-2xl">0{i}</div>)}
