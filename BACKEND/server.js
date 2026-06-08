@@ -31,6 +31,7 @@ app.use('/api/applications', require('./routes/applicationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/abonnements', require('./routes/abonnementRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 app.get('/', (req, res) => {
     res.send('Smart-ATS API is Running!');

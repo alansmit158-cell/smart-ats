@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import NotificationBell from '../components/NotificationBell';
 import { 
   BarChart3, 
   Users, 
@@ -7,7 +8,6 @@ import {
   Settings, 
   Activity, 
   LogOut,
-  Bell,
   Cpu,
   Menu,
   X,
@@ -134,10 +134,7 @@ const AdminLayout = () => {
                              <span className="text-slate-400 font-bold uppercase tracking-widest">{t('admin.mainframe_link')}</span>
                         </div>
                         
-                        <div className="relative group">
-                            <Bell size={20} className="text-slate-500 group-hover:text-white transition-colors cursor-pointer" />
-                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-950 shadow-[0_0_8px_#f43f5e]"></span>
-                        </div>
+                        <NotificationBell />
 
                         <div className="flex items-center gap-4 pl-6 border-l border-white/5 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
                             <div className="text-right hidden sm:block">

@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import NotificationBell from '../components/NotificationBell';
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -7,13 +8,12 @@ import {
   MessageSquare, 
   User as UserIcon,
   LogOut,
-  Bell,
   Menu,
   X,
   Sparkles
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
-import toast from 'react-hot-toast';
+
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '../components/LanguageSelector';
 
@@ -130,13 +130,7 @@ const CandidateLayout = () => {
           <div className="flex items-center gap-4 lg:gap-8">
             <LanguageSelector />
 
-            <div 
-              className="relative cursor-pointer group"
-              onClick={() => toast("Aucune nouvelle notification pour le moment.", { icon: '🔔' })}
-            >
-              <Bell size={20} className="text-slate-400 group-hover:text-white transition-colors" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-950 shadow-[0_0_8px_#f43f5e]"></span>
-            </div>
+              <NotificationBell />
 
             <div className="flex items-center gap-4 pl-6 border-l border-white/5 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
               <div className="text-right hidden sm:block">
