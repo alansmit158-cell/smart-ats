@@ -5,7 +5,9 @@ const {
     subscribe, 
     getMyPlan, 
     cancelSubscription, 
-    getAllSubscriptions 
+    getAllSubscriptions,
+    cancelMySubscription,
+    getUsageStats
 } = require('../controllers/abonnementController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -17,6 +19,8 @@ router.use(protect);
 
 router.post('/subscribe', subscribe);
 router.get('/my-plan', getMyPlan);
+router.patch('/cancel', cancelMySubscription);
+router.get('/usage', getUsageStats);
 
 // Routes Admin seulement
 const authorize = (role) => {

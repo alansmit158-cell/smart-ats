@@ -98,6 +98,26 @@ const uploadAndParse = async (req, res) => {
       });
     }
 
+    // Vérifier l'abonnement du recruteur et les quotas d'analyses
+    const Abonnement = require('../models/Abonnement');
+    const abonnement = await Abonnement.findOne({ recruteur: job.recruiter });
+    if (abonnement) {
+      if (abonnement.status !== 'active') {
+        fs.unlinkSync(req.file.path);
+        return res.status(403).json({
+          success: false,
+          message: "L'abonnement du recruteur est inactif. Impossible d'analyser le CV."
+        });
+      }
+      if (abonnement.analysesUtilisees >= abonnement.limiteAnalyses && abonnement.limiteAnalyses !== 99999) {
+        fs.unlinkSync(req.file.path);
+        return res.status(403).json({
+          success: false,
+          message: "Le quota d'analyses de CV de l'entreprise est épuisé. Veuillez contacter le recruteur."
+        });
+      }
+    }
+
     // 2. Extraire le texte du PDF (rapide — pas d'IA ici)
     const dataBuffer = fs.readFileSync(req.file.path);
     let pdfText = '';
@@ -189,6 +209,23 @@ const uploadAndParse = async (req, res) => {
       console.log(`✅ NLP terminé pour candidat ${candidate._id}`);
       
       const Job = require('../models/Job');
+
+      // Incrémenter le compteur d'analyses utilisées pour le recruteur
+      try {
+        const jobDoc = await Job.findById(jobId);
+        if (jobDoc) {
+          const Abonnement = require('../models/Abonnement');
+          const recruiterAbo = await Abonnement.findOne({ recruteur: jobDoc.recruiter });
+          if (recruiterAbo) {
+            recruiterAbo.analysesUtilisees += 1;
+            await recruiterAbo.save();
+            console.log(`✅ Analyses utilisées incrémentées pour le recruteur ${jobDoc.recruiter}. Nouveau total : ${recruiterAbo.analysesUtilisees}/${recruiterAbo.limiteAnalyses}`);
+          }
+        }
+      } catch (abErr) {
+        console.error(`Erreur lors de l'incrémentation des analyses utilisées :`, abErr);
+      }
+
       const { calculateMatchingScoreInternal } = require('./matchingController');
 
       // Mettre à jour le candidat en MongoDB depuis le thread principal

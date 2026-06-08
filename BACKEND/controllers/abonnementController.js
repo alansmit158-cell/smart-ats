@@ -148,10 +148,96 @@ const getAllSubscriptions = async (req, res) => {
     }
 };
 
+// @desc    Cancel my subscription
+// @route   PATCH /api/abonnements/cancel
+// @access  Private (Recruiter)
+const cancelMySubscription = async (req, res) => {
+    try {
+        const abonnement = await Abonnement.findOne({ recruteur: req.user.id });
+        if (!abonnement) {
+            return res.status(404).json({ success: false, message: "Abonnement non trouvé." });
+        }
+
+        abonnement.status = 'inactive';
+        await abonnement.save();
+
+        res.status(200).json({ success: true, message: "Abonnement annulé avec succès.", data: abonnement });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    }
+};
+
+// @desc    Get subscription usage stats
+// @route   GET /api/abonnements/usage
+// @access  Private (Recruiter)
+const getUsageStats = async (req, res) => {
+    try {
+        const abonnement = await Abonnement.findOne({ recruteur: req.user.id });
+        if (!abonnement) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    plan: 'Free Trial',
+                    prix: 0,
+                    status: 'inactive',
+                    jobLimit: 1,
+                    limiteAnalyses: 5,
+                    jobsCreated: 0,
+                    analysesUtilisees: 0,
+                    percentJobs: 0,
+                    percentAnalyses: 0,
+                    daysRemaining: 0,
+                    dateDebut: null,
+                    dateFin: null
+                }
+            });
+        }
+
+        const now = new Date();
+        const dateFin = abonnement.dateFin ? new Date(abonnement.dateFin) : null;
+        let daysRemaining = 0;
+        if (dateFin && dateFin > now) {
+            const diffTime = Math.abs(dateFin - now);
+            daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        const percentJobs = abonnement.jobLimit > 0 
+            ? Math.min(100, Math.round((abonnement.jobsCreated / abonnement.jobLimit) * 100))
+            : 0;
+
+        const percentAnalyses = abonnement.limiteAnalyses > 0 
+            ? Math.min(100, Math.round((abonnement.analysesUtilisees / abonnement.limiteAnalyses) * 100))
+            : 0;
+
+        res.status(200).json({
+            success: true,
+            data: {
+                id: abonnement._id,
+                plan: abonnement.plan,
+                prix: abonnement.prix,
+                status: abonnement.status,
+                jobLimit: abonnement.jobLimit,
+                limiteAnalyses: abonnement.limiteAnalyses,
+                jobsCreated: abonnement.jobsCreated,
+                analysesUtilisees: abonnement.analysesUtilisees,
+                percentJobs,
+                percentAnalyses,
+                daysRemaining,
+                dateDebut: abonnement.dateDebut,
+                dateFin: abonnement.dateFin
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    }
+};
+
 module.exports = {
     getPlans,
     subscribe,
     getMyPlan,
     cancelSubscription,
-    getAllSubscriptions
+    getAllSubscriptions,
+    cancelMySubscription,
+    getUsageStats
 };
