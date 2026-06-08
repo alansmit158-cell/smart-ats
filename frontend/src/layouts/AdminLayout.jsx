@@ -22,7 +22,8 @@ const AdminLayout = () => {
     const { user, logout } = useContext(AuthContext);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.language === 'ar';
 
     const menuItems = [
         { path: '/admin/stats', icon: <BarChart3 size={20} />, label: t('menu.dashboard') },
@@ -43,10 +44,16 @@ const AdminLayout = () => {
                 />
             )}
 
-            {/* Sidebar Dark Luxe */}
+            {/* Sidebar Dark Luxe — RTL-aware */}
             <aside className={`
-                fixed lg:static inset-y-0 left-0 w-72 bg-slate-900/50 backdrop-blur-2xl border-r border-white/5 z-50 transition-transform duration-500 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                fixed lg:static inset-y-0 w-72 bg-slate-900/50 backdrop-blur-2xl border-white/5 z-50 transition-transform duration-500 ease-in-out
+                ${isRTL ? 'right-0 border-l' : 'left-0 border-r'}
+                ${isSidebarOpen
+                    ? 'translate-x-0'
+                    : isRTL
+                        ? 'translate-x-full lg:translate-x-0'
+                        : '-translate-x-full lg:translate-x-0'
+                }
             `}>
                 <div className="h-full flex flex-col pt-4 relative z-10">
                     {/* Brand Admin */}
@@ -57,7 +64,7 @@ const AdminLayout = () => {
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold tracking-tight text-white leading-none">Smart<span className="text-rose-400">-ATS</span></h1>
-                                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold mt-1">Admin Core v5.0</p>
+                                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold mt-1">{t('menu.suite_admin')}</p>
                             </div>
                         </div>
                         <button className="lg:hidden text-slate-500" onClick={() => setSidebarOpen(false)}><X size={24} /></button>
@@ -74,7 +81,8 @@ const AdminLayout = () => {
                                 className={({ isActive }) => 
                                     `flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
                                         isActive 
-                                        ? 'bg-white/5 text-white font-bold border-l-4 border-blue-500 shadow-inner' 
+                                        // RTL: flip the active border from left to right
+                                        ? `bg-white/5 text-white font-bold shadow-inner ${isRTL ? 'border-r-4' : 'border-l-4'} border-blue-500`
                                         : 'text-slate-500 hover:text-white hover:bg-white/5'
                                     }`
                                 }
@@ -137,7 +145,7 @@ const AdminLayout = () => {
                         <NotificationBell />
 
                         <div className="flex items-center gap-4 pl-6 border-l border-white/5 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
-                            <div className="text-right hidden sm:block">
+                            <div className="text-right hidden sm:block rtl:text-left">
                                 <p className="text-sm font-bold text-white tracking-tight">{user?.nom}</p>
                                 <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">{t('admin.root_access')}</p>
                             </div>

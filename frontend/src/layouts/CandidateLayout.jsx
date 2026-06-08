@@ -21,7 +21,8 @@ const CandidateLayout = () => {
   const { user, logout } = useContext(AuthContext);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   const menuItems = [
     { path: '/candidate/portal', icon: <LayoutDashboard size={20} />, label: t('menu.dashboard') },
@@ -48,10 +49,16 @@ const CandidateLayout = () => {
         />
       )}
 
-      {/* Sidebar (Dark Glass) */}
+      {/* Sidebar (Dark Glass) — RTL-aware */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 w-72 bg-slate-900/50 backdrop-blur-2xl border-r border-white/5 z-50 transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed lg:static inset-y-0 w-72 bg-slate-900/50 backdrop-blur-2xl border-white/5 z-50 transition-transform duration-300 ease-in-out
+        ${isRTL ? 'right-0 border-l' : 'left-0 border-r'}
+        ${isSidebarOpen
+          ? 'translate-x-0'
+          : isRTL
+            ? 'translate-x-full lg:translate-x-0'
+            : '-translate-x-full lg:translate-x-0'
+        }
       `}>
         <div className="h-full flex flex-col relative z-10">
           {/* Logo Section */}
@@ -61,13 +68,13 @@ const CandidateLayout = () => {
             </div>
             <div>
                <h1 className="text-xl font-bold tracking-tight text-white">Smart<span className="text-rose-400">-ATS</span></h1>
-               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Candidate Portal</p>
+               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{t('menu.suite_candidate')}</p>
             </div>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto pt-4">
-            <div className="px-5 mb-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Navigation</div>
+            <div className="px-5 mb-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">{t('menu.navigation')}</div>
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
@@ -92,12 +99,12 @@ const CandidateLayout = () => {
             <div className="bg-white/5 p-5 rounded-3xl mb-4 border border-white/5 backdrop-blur-sm group hover:border-white/10 transition-all">
                <div className="flex items-center gap-3 mb-2">
                   <div className="w-2 h-2 bg-rose-400 rounded-full animate-pulse shadow-[0_0_8px_#f43f5e]"></div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">AI Profile Score</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t('menu.ai_profile_score')}</span>
                </div>
                <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-2">
                   <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-[85%] rounded-full"></div>
                </div>
-               <p className="text-[10px] text-slate-500 font-medium">Visibility : <span className="text-blue-400 font-bold uppercase">Optimal</span></p>
+               <p className="text-[10px] text-slate-500 font-medium">{t('menu.visibility_label')} : <span className="text-blue-400 font-bold uppercase">{t('menu.visibility_optimal')}</span></p>
             </div>
 
             <button 
@@ -123,19 +130,19 @@ const CandidateLayout = () => {
               <Menu size={24} />
             </button>
             <h2 className="text-lg font-bold text-white tracking-wide uppercase italic">
-               {menuItems.find(i => location.pathname === i.path)?.label || 'Overview'}
+               {menuItems.find(i => location.pathname === i.path)?.label || t('menu.dashboard')}
             </h2>
           </div>
 
           <div className="flex items-center gap-4 lg:gap-8">
             <LanguageSelector />
 
-              <NotificationBell />
+            <NotificationBell />
 
             <div className="flex items-center gap-4 pl-6 border-l border-white/5 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
-              <div className="text-right hidden sm:block">
+              <div className="text-right hidden sm:block rtl:text-left">
                 <p className="text-sm font-bold text-white tracking-tight">{user?.nom}</p>
-                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">Candidate Premium</p>
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">{t('menu.role_candidate_label')}</p>
               </div>
               <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-lg group overflow-hidden relative">
                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent group-hover:opacity-100 transition-opacity opacity-0"></div>

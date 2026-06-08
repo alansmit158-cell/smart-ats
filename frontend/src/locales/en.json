@@ -15,7 +15,20 @@
     "reports": "Reports",
     "settings": "Settings",
     "signout": "Sign Out",
-    "main_console": "Main Console"
+    "main_console": "Main Console",
+    "suite_recruiter": "Recruiter Suite",
+    "suite_candidate": "Candidate Portal",
+    "suite_admin": "Admin Core v5.0",
+    "navigation": "Navigation",
+    "ai_engine_online": "AI Engine Online",
+    "processing_node": "Processing Node",
+    "scanning_profiles": "Scanning 842 profiles...",
+    "ai_profile_score": "AI Profile Score",
+    "visibility_label": "Visibility",
+    "visibility_optimal": "Optimal",
+    "search_placeholder": "Search talent...",
+    "role_recruiter_label": "Recruiter Strategist",
+    "role_candidate_label": "Candidate Premium"
   },
   "register": {
     "title": "Create a Smart-ATS Account",

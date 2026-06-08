@@ -10,7 +10,20 @@
     "reports": "التقارير",
     "settings": "الإعدادات",
     "signout": "تسجيل الخروج",
-    "main_console": "اللوحة الرئيسية"
+    "main_console": "اللوحة الرئيسية",
+    "suite_recruiter": "مجموعة التوظيف",
+    "suite_candidate": "بوابة المرشح",
+    "suite_admin": "النواة الإدارية v5.0",
+    "navigation": "التنقل",
+    "ai_engine_online": "محرك الذكاء الاصطناعي نشط",
+    "processing_node": "عقدة المعالجة",
+    "scanning_profiles": "فحص 842 ملف تعريفي...",
+    "ai_profile_score": "درجة الملف الشخصي بالذكاء الاصطناعي",
+    "visibility_label": "الرؤية",
+    "visibility_optimal": "مثالية",
+    "search_placeholder": "البحث عن المواهب...",
+    "role_recruiter_label": "مسؤول توظيف استراتيجي",
+    "role_candidate_label": "مرشح مميز"
   },
   "register": {
     "title": "إنشاء حساب Smart-ATS",

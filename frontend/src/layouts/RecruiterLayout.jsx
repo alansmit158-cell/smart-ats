@@ -26,7 +26,8 @@ const RecruiterLayout = () => {
     const { user, logout } = useContext(AuthContext);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.language === 'ar';
 
     const menuItems = [
         { path: '/recruiter/dashboard', icon: <LayoutDashboard size={20} />, label: t('menu.dashboard') },
@@ -56,10 +57,17 @@ const RecruiterLayout = () => {
                 />
             )}
 
-            {/* Premium Sidebar (Dark Luxe) */}
+            {/* Premium Sidebar (Dark Luxe) — RTL-aware */}
             <aside className={`
-                fixed lg:static inset-y-0 left-0 w-72 bg-slate-900/50 backdrop-blur-2xl border-r border-white/5 z-50 transition-transform duration-300 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                fixed lg:static inset-y-0 w-72 bg-slate-900/50 backdrop-blur-2xl z-50 transition-transform duration-300 ease-in-out
+                border-white/5
+                ${isRTL ? 'right-0 border-l' : 'left-0 border-r'}
+                ${isSidebarOpen
+                    ? 'translate-x-0'
+                    : isRTL
+                        ? 'translate-x-full lg:translate-x-0'
+                        : '-translate-x-full lg:translate-x-0'
+                }
             `}>
                 <div className="h-full flex flex-col relative z-10">
                     {/* Brand Section */}
@@ -69,7 +77,7 @@ const RecruiterLayout = () => {
                         </div>
                         <div>
                             <h1 className="text-xl font-bold tracking-tight text-white">Smart<span className="text-rose-400">-ATS</span></h1>
-                            <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-bold">Recruiter Suite</p>
+                            <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-bold">{t('menu.suite_recruiter')}</p>
                         </div>
                     </div>
 
@@ -104,10 +112,10 @@ const RecruiterLayout = () => {
                             <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="flex items-center gap-2 mb-3">
                                 <div className="w-2 h-2 bg-rose-400 rounded-full animate-pulse shadow-[0_0_8px_#f43f5e]"></div>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400">AI Engine Online</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400">{t('menu.ai_engine_online')}</span>
                             </div>
-                            <h3 className="text-sm font-bold mb-1">Processing Node</h3>
-                            <p className="text-[10px] text-slate-400 font-medium italic">Scanning 842 profiles...</p>
+                            <h3 className="text-sm font-bold mb-1">{t('menu.processing_node')}</h3>
+                            <p className="text-[10px] text-slate-400 font-medium italic">{t('menu.scanning_profiles')}</p>
                         </div>
                     </div>
 
@@ -132,7 +140,11 @@ const RecruiterLayout = () => {
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:text-white"><Menu size={24} /></button>
                         <div className="hidden md:flex items-center gap-3 bg-white/5 p-2.5 px-4 rounded-xl border border-white/5 shadow-inner group focus-within:border-white/20 transition-all">
                             <Search size={16} className="group-focus-within:text-blue-400" />
-                            <input type="text" placeholder="Search talent..." className="bg-transparent border-none outline-none text-xs font-medium w-64 text-white placeholder-slate-500 focus:ring-0" />
+                            <input
+                                type="text"
+                                placeholder={t('menu.search_placeholder')}
+                                className="bg-transparent border-none outline-none text-xs font-medium w-64 text-white placeholder-slate-500 focus:ring-0"
+                            />
                         </div>
                     </div>
 
@@ -143,9 +155,9 @@ const RecruiterLayout = () => {
                         <NotificationBell />
 
                         <div className="flex items-center gap-4 pl-6 border-l border-white/10 rtl:border-l-0 rtl:border-r rtl:pl-0 rtl:pr-6">
-                            <div className="text-right hidden sm:block">
+                            <div className="text-right hidden sm:block rtl:text-left">
                                 <p className="text-sm font-bold text-white tracking-tight">{user?.nom}</p>
-                                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">Recruiter Strategist</p>
+                                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">{t('menu.role_recruiter_label')}</p>
                             </div>
                             <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-lg group overflow-hidden relative">
                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
