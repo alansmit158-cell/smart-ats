@@ -41,6 +41,58 @@ const RecruiterInterviews = () => {
     const [isGeneratingKit, setIsGeneratingKit] = useState(false);
     const [generatedKit, setGeneratedKit] = useState(null);
 
+    // Protocol Modal States
+    const [showProtocolModal, setShowProtocolModal] = useState(false);
+    const [aiModel, setAiModel] = useState(localStorage.getItem('ats_ai_model') || 'llama3-8b-8192');
+    const [weightSkills, setWeightSkills] = useState(Number(localStorage.getItem('ats_weight_skills')) || 40);
+    const [weightExp, setWeightExp] = useState(Number(localStorage.getItem('ats_weight_experience')) || 40);
+    const [weightEdu, setWeightEdu] = useState(Number(localStorage.getItem('ats_weight_education')) || 20);
+    const [strictness, setStrictness] = useState(Number(localStorage.getItem('ats_strictness')) || 0.3);
+    const [customPrompt, setCustomPrompt] = useState(localStorage.getItem('ats_custom_prompt') || '');
+    const [isInitializingProtocol, setIsInitializingProtocol] = useState(false);
+
+    const handleWeightChange = (type, value) => {
+        const val = Number(value);
+        if (type === 'skills') {
+            setWeightSkills(val);
+            const rem = 100 - val;
+            const currentSum = weightExp + weightEdu || 1;
+            setWeightExp(Math.round((weightExp / currentSum) * rem));
+            setWeightEdu(100 - val - Math.round((weightExp / currentSum) * rem));
+        } else if (type === 'experience') {
+            setWeightExp(val);
+            const rem = 100 - val;
+            const currentSum = weightSkills + weightEdu || 1;
+            setWeightSkills(Math.round((weightSkills / currentSum) * rem));
+            setWeightEdu(100 - val - Math.round((weightSkills / currentSum) * rem));
+        } else if (type === 'education') {
+            setWeightEdu(val);
+            const rem = 100 - val;
+            const currentSum = weightSkills + weightExp || 1;
+            setWeightSkills(Math.round((weightSkills / currentSum) * rem));
+            setWeightExp(100 - val - Math.round((weightSkills / currentSum) * rem));
+        }
+    };
+
+    const handleLaunchProtocol = async () => {
+        setIsInitializingProtocol(true);
+        localStorage.setItem('ats_ai_model', aiModel);
+        localStorage.setItem('ats_weight_skills', weightSkills);
+        localStorage.setItem('ats_weight_experience', weightExp);
+        localStorage.setItem('ats_weight_education', weightEdu);
+        localStorage.setItem('ats_strictness', strictness);
+        localStorage.setItem('ats_custom_prompt', customPrompt);
+
+        setTimeout(() => {
+            setIsInitializingProtocol(false);
+            setShowProtocolModal(false);
+            toast.success("Protocole IA appliqué avec succès ! Toutes les prochaines analyses utiliseront ces critères.", {
+                icon: '⚙️',
+                style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+            });
+        }, 2000);
+    };
+
     // Filters State
     const [statusFilter, setStatusFilter] = useState('');
     const [scoreRange, setScoreRange] = useState({ min: 0, max: 100 });
@@ -161,8 +213,8 @@ const RecruiterInterviews = () => {
                         <RefreshCcw size={20} />
                     </button>
                     <button 
-                        onClick={() => toast(t('recruiter_interviews.new_protocol_toast'), { icon: "🚀", style: { borderRadius: '20px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } })}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-blue-600/20"
+                        onClick={() => setShowProtocolModal(true)}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-blue-600/20 cursor-pointer"
                     >
                         <Plus size={18} /> {t('recruiter_interviews.new_protocol')}
                     </button>
@@ -582,6 +634,147 @@ const RecruiterInterviews = () => {
                             </div>
                         </motion.div>
                     </>
+                )}
+            </AnimatePresence>
+
+            {/* AI Protocol Configuration Modal */}
+            <AnimatePresence>
+                {showProtocolModal && (
+                    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+                        {/* Backdrop */}
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowProtocolModal(false)}
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
+                        ></motion.div>
+
+                        {/* Modal Content */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-slate-900 border border-white/10 max-w-xl w-full p-8 rounded-[2.5rem] shadow-2xl relative z-10 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar text-white text-left"
+                        >
+                            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                                <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                                    <Cpu className="text-blue-400" size={24} />
+                                    {t('recruiter_interviews.new_protocol')}
+                                </h3>
+                                <button 
+                                    onClick={() => setShowProtocolModal(false)}
+                                    className="p-1 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            {/* Selection de Modèle */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Modèle d'Intelligence Artificielle</label>
+                                <select 
+                                    value={aiModel} 
+                                    onChange={(e) => setAiModel(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium text-white outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50"
+                                >
+                                    <option value="llama3-8b-8192" className="bg-slate-900 text-white">Llama 3 8B (Groq - Ultra rapide)</option>
+                                    <option value="llama3-70b-8192" className="bg-slate-900 text-white">Llama 3 70B (Groq - Haute précision)</option>
+                                    <option value="gpt-4o" className="bg-slate-900 text-white">GPT-4o (OpenAI - Premium)</option>
+                                </select>
+                            </div>
+
+                            {/* Poids du Matching */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Pondération du Matching Sémantique (Total: 100%)</label>
+                                
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-semibold text-slate-300">
+                                        <span>Compétences (Skills)</span>
+                                        <span>{weightSkills}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="0" max="100" value={weightSkills}
+                                        onChange={(e) => handleWeightChange('skills', e.target.value)}
+                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-semibold text-slate-300">
+                                        <span>Expériences Professionnelles</span>
+                                        <span>{weightExp}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="0" max="100" value={weightExp}
+                                        onChange={(e) => handleWeightChange('experience', e.target.value)}
+                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-semibold text-slate-300">
+                                        <span>Formations (Diplômes)</span>
+                                        <span>{weightEdu}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="0" max="100" value={weightEdu}
+                                        onChange={(e) => handleWeightChange('education', e.target.value)}
+                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Température */}
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-xs font-semibold text-slate-300">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Créativité de l'IA (Temperature)</span>
+                                    <span>{strictness}</span>
+                                </div>
+                                <input 
+                                    type="range" min="0" max="1" step="0.1" value={strictness}
+                                    onChange={(e) => setStrictness(Number(e.target.value))}
+                                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                />
+                                <div className="flex justify-between text-[9px] text-slate-500">
+                                    <span>Strict / Factuel (0.0)</span>
+                                    <span>Créatif / Souple (1.0)</span>
+                                </div>
+                            </div>
+
+                            {/* Consigne Additionnelle */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Instructions Spécifiques du Protocole</label>
+                                <textarea 
+                                    value={customPrompt} 
+                                    onChange={(e) => setCustomPrompt(e.target.value)}
+                                    placeholder="Ex: Valoriser la maîtrise des architectures micro-services ou pénaliser les CVs sans dates de fin d'emploi."
+                                    rows="3"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs font-medium text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none resize-none placeholder-slate-700 text-left"
+                                />
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-4 justify-end border-t border-white/5 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowProtocolModal(false)}
+                                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-white/5 transition-colors"
+                                >
+                                    Fermer
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleLaunchProtocol}
+                                    disabled={isInitializingProtocol}
+                                    className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg shadow-blue-600/10 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
+                                >
+                                    {isInitializingProtocol ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                                    Lancer le Protocole
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
