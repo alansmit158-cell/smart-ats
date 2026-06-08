@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -23,12 +23,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 const CandidateUpload = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    
+    const queryParams = new URLSearchParams(window.location.search);
+    const initialJobId = queryParams.get('jobId') || '';
+
     const [file, setFile] = useState(null);
+    const [jobs, setJobs] = useState([]);
+    const [selectedJobId, setSelectedJobId] = useState(initialJobId);
     const [status, setStatus] = useState('idle'); // idle, uploading, processing, completed, failed
     const [progress, setProgress] = useState(0);
     const [uploadSteps, setUploadSteps] = useState([]);
     const [parsedData, setParsedData] = useState(null);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                const res = await API.get('/jobs');
+                setJobs(res.data);
+                if (res.data.length > 0 && !initialJobId) {
+                    setSelectedJobId(res.data[0]._id);
+                }
+            } catch (err) {
+                console.error("Error fetching jobs in upload:", err);
+            }
+        };
+        fetchJobs();
+    }, [initialJobId]);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -53,6 +74,9 @@ const CandidateUpload = () => {
             
             const formData = new FormData();
             formData.append('cv', file);
+            if (selectedJobId) {
+                formData.append('jobId', selectedJobId);
+            }
             
             const response = await API.post('/candidates/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -197,11 +221,30 @@ const CandidateUpload = () => {
                 </div>
 
                 {/* Right side: Upload Zone */}
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 space-y-6 flex flex-col">
+                    {(status === 'idle' || status === 'failed') && (
+                        <div className="bg-white/5 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/10 shadow-xl space-y-3">
+                            <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 block ml-1">
+                                {t('candidate_explorer.job_offer') || "Target Job Offer"}
+                            </label>
+                            <select
+                                value={selectedJobId}
+                                onChange={(e) => setSelectedJobId(e.target.value)}
+                                className="w-full bg-slate-900 border border-white/10 rounded-xl py-3 px-4 text-sm font-bold text-slate-300 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer hover:bg-white/5 transition-all"
+                            >
+                                <option value="" disabled>{t('candidate_upload.select_job') || "Select a job offer..."}</option>
+                                {jobs.map(j => (
+                                    <option key={j._id} value={j._id} className="bg-slate-900">
+                                        {j.titre} - {j.lieu}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className={`bg-white/5 backdrop-blur-3xl border-2 border-dashed rounded-[4rem] p-12 lg:p-24 transition-all duration-700 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[500px] shadow-2xl
+                        className={`bg-white/5 backdrop-blur-3xl border-2 border-dashed rounded-[4rem] p-12 lg:p-24 transition-all duration-700 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[400px] shadow-2xl
                             ${status === 'idle' || status === 'failed' ? 'hover:border-blue-500/50 border-white/10 cursor-pointer' : 'border-white/5'}
                             ${status === 'completed' ? 'bg-emerald-500/[0.03] border-emerald-500/30' : ''}
                             ${status === 'failed' ? 'bg-rose-500/[0.03] border-rose-500/30' : ''}

@@ -78,6 +78,26 @@ const uploadAndParse = async (req, res) => {
       });
     }
 
+    // Récupérer et valider jobId
+    const jobId = req.body.jobId || req.query.jobId;
+    if (!jobId) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({
+        success: false,
+        message: "L'identifiant de l'offre (jobId) est obligatoire pour analyser le CV."
+      });
+    }
+
+    const Job = require('../models/Job');
+    const job = await Job.findById(jobId);
+    if (!job) {
+      fs.unlinkSync(req.file.path);
+      return res.status(404).json({
+        success: false,
+        message: "Offre d'emploi non trouvée."
+      });
+    }
+
     // 2. Extraire le texte du PDF (rapide — pas d'IA ici)
     const dataBuffer = fs.readFileSync(req.file.path);
     let pdfText = '';
@@ -133,6 +153,23 @@ const uploadAndParse = async (req, res) => {
         await candidate.save();
     }
 
+    // Créer ou mettre à jour la candidature (Application) immédiatement en Pending
+    const Application = require('../models/Application');
+    let application = await Application.findOne({ candidate: candidate._id, job: jobId });
+    if (!application) {
+      application = await Application.create({
+        candidate: candidate._id,
+        job: jobId,
+        cv: candidate._id,
+        status: 'Pending',
+        scoreMatching: 0
+      });
+    } else {
+      application.status = 'Pending';
+      application.scoreMatching = 0;
+      await application.save();
+    }
+
     // 4. Répondre IMMÉDIATEMENT au frontend
     // Le parsing IA continue en arrière-plan dans un Worker Thread
     res.status(202).json({
@@ -146,11 +183,16 @@ const uploadAndParse = async (req, res) => {
     // (s'exécute APRÈS la réponse HTTP, sans bloquer)
     workerPool.processCV({
       pdfText,
-      candidateId: candidate._id.toString()
+      candidateId: candidate._id.toString(),
+      jobId: jobId.toString()
     }).then(async (result) => {
       console.log(`✅ NLP terminé pour candidat ${candidate._id}`);
+      
+      const Job = require('../models/Job');
+      const { calculateMatchingScoreInternal } = require('./matchingController');
+
       // Mettre à jour le candidat en MongoDB depuis le thread principal
-      await Candidate.findByIdAndUpdate(
+      const updatedCandidate = await Candidate.findByIdAndUpdate(
         candidate._id,
         {
           prenom: result.data.prenom || '',
@@ -159,8 +201,74 @@ const uploadAndParse = async (req, res) => {
           experiences: result.data.experiences || [],
           formations: result.data.formations || [],
           status: 'completed'
+        },
+        { new: true }
+      ).populate('user');
+
+      // Enregistrer le kit d'entretien et le score dans la candidature (Application)
+      try {
+        const Application = require('../models/Application');
+        let app = await Application.findOne({ candidate: candidate._id, job: jobId });
+        if (!app) {
+          app = new Application({
+            candidate: candidate._id,
+            job: jobId,
+            cv: candidate._id,
+            status: 'Scored',
+            scoreMatching: result.data.score || 0,
+            interviewKit: result.data.interviewKit || {}
+          });
+        } else {
+          app.status = 'Scored';
+          app.scoreMatching = result.data.score || 0;
+          app.interviewKit = result.data.interviewKit || {};
         }
-      );
+        await app.save();
+        console.log(`✅ App updated with score ${app.scoreMatching} and custom kit for job ${jobId}`);
+      } catch (appErr) {
+        console.error(`Error saving app score & kit for candidate ${candidate._id}:`, appErr);
+      }
+
+      // Executer le matching sémantique asynchrone contre toutes les offres actives
+      try {
+        const jobs = await Job.find({});
+        const matchings = [];
+        for (const jobItem of jobs) {
+          try {
+            if (jobItem._id.toString() === jobId.toString()) {
+              // Réutiliser le score et le résumé de l'analyse en cours
+              matchings.push({
+                job: jobItem._id,
+                score: result.data.score || 0,
+                verdict: (result.data.score >= 80) ? "Excellent match" : (result.data.score >= 60) ? "Bon match" : "Match partiel",
+                summary: result.data.interviewKit?.resumeIA || "Analyse complétée par l'IA",
+                strengths: result.data.skills || [],
+                gaps: [],
+                recommendation: (result.data.score >= 80) ? "STRONGLY_RECOMMEND" : "RECOMMEND"
+              });
+            } else {
+              console.log(`🤖 Auto-Matching Candidate ${updatedCandidate._id} against Job ${jobItem._id}...`);
+              const matchResult = await calculateMatchingScoreInternal(updatedCandidate, jobItem);
+              matchings.push({
+                job: jobItem._id,
+                score: matchResult.score,
+                verdict: matchResult.verdict,
+                summary: matchResult.summary,
+                strengths: matchResult.strengths,
+                gaps: matchResult.gaps,
+                recommendation: matchResult.recommendation
+              });
+            }
+          } catch (matchingErr) {
+            console.error(`Error calculating match for candidate ${updatedCandidate._id} and job ${jobItem._id}:`, matchingErr);
+          }
+        }
+        updatedCandidate.jobMatchings = matchings;
+        await updatedCandidate.save();
+        console.log(`✅ Auto-Matching complete for Candidate ${updatedCandidate._id} (${matchings.length} jobs matched).`);
+      } catch (jobsErr) {
+        console.error(`Error fetching jobs for auto-matching candidate ${updatedCandidate._id}:`, jobsErr);
+      }
     }).catch((error) => {
       console.error(`❌ NLP échoué pour candidat ${candidate._id}:`, error.message);
       // Mettre à jour le statut en erreur

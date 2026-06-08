@@ -25,6 +25,55 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const MatchingGauge = ({ score, size = "small" }) => {
+    const { t } = useTranslation();
+    const radius = size === "large" ? 38 : 28;
+    const strokeWidth = size === "large" ? 6 : 4;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (score / 100) * circumference;
+
+    // Palette Émeraude et Nacre :
+    // Émeraude : Vert brillant (#10b981 / #059669)
+    // Nacre : Blanc iridescent (#f8f9fa / #ffffff)
+    const trackColor = "stroke-[#064e3b]/30 fill-transparent";
+    const indicatorColor = "stroke-[#10b981] fill-transparent";
+
+    return (
+        <div className={`relative flex items-center justify-center select-none ${size === "large" ? "w-28 h-28" : "w-20 h-20"}`}>
+            <svg className="w-full h-full transform -rotate-90">
+                <circle 
+                    cx="50%" 
+                    cy="50%" 
+                    r={radius} 
+                    className={trackColor} 
+                    strokeWidth={strokeWidth} 
+                />
+                <motion.circle 
+                    cx="50%" 
+                    cy="50%" 
+                    r={radius} 
+                    className={indicatorColor} 
+                    strokeWidth={strokeWidth} 
+                    strokeDasharray={circumference}
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    strokeLinecap="round"
+                    style={{
+                        filter: "drop-shadow(0 0 6px rgba(16, 185, 129, 0.5))"
+                    }}
+                />
+            </svg>
+            <div className="absolute flex flex-col items-center justify-center text-center">
+                <span className={`font-black text-[#f8f9fa] tracking-tighter leading-none ${size === "large" ? "text-3xl font-serif" : "text-base font-sans"}`}>{score}%</span>
+                <span className={`font-black uppercase tracking-widest text-[#a7f3d0] leading-none ${size === "large" ? "text-[8px] mt-1.5" : "text-[6px] mt-1"}`}>
+                    {t('candidate_applications.match_label')}
+                </span>
+            </div>
+        </div>
+    );
+};
+
 const RecruiterScoring = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -204,11 +253,10 @@ const RecruiterScoring = () => {
                                 </div>
 
                                 <div className="flex items-center gap-8 relative z-10">
-                                    <div className={`hidden md:flex flex-col items-center justify-center w-16 h-16 rounded-2xl border transition-all duration-700 ${getScoreColor(app.scoreMatching)}`}>
-                                        <span className="text-lg font-bold tracking-tighter">{app.scoreMatching}%</span>
-                                        <span className="text-[7px] font-black uppercase tracking-tighter">Match</span>
+                                    <div className="hidden md:block">
+                                        <MatchingGauge score={app.scoreMatching} size="small" />
                                     </div>
-                                    <ChevronRight size={24} className={`transition-all duration-700 ${selectedId === app._id ? 'translate-x-2 text-blue-400' : 'text-slate-700 group-hover:text-slate-400'}`} />
+                                    <ChevronRight size={24} className={`transition-all duration-700 rtl:rotate-180 ${selectedId === app._id ? 'rtl:-translate-x-2 translate-x-2 text-blue-400' : 'text-slate-700 group-hover:text-slate-400'}`} />
                                 </div>
                             </motion.div>
                         ))}
@@ -230,8 +278,8 @@ const RecruiterScoring = () => {
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[40px] rounded-full"></div>
                                 
                                 <div className="text-center space-y-4 relative z-10">
-                                    <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[2rem] mx-auto flex items-center justify-center text-white text-3xl font-bold shadow-2xl shadow-blue-500/20 border border-white/10">
-                                        {selectedApp.candidate.user?.nom?.[0]}
+                                    <div className="mx-auto flex justify-center">
+                                        <MatchingGauge score={selectedApp.scoreMatching} size="large" />
                                     </div>
                                     <div className="space-y-1">
                                         <h3 className="text-2xl font-bold text-white tracking-tight">{selectedApp.candidate.user?.nom}</h3>
@@ -272,6 +320,22 @@ const RecruiterScoring = () => {
                                             : t('recruiter_scoring.partial_overlap')}
                                     </p>
                                 </div>
+
+                                {selectedApp.interviewKit && selectedApp.interviewKit.questionsTechniques && selectedApp.interviewKit.questionsTechniques.length > 0 && (
+                                    <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group backdrop-blur-md space-y-4">
+                                        <h4 className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-400 relative z-10">
+                                            <BrainCircuit size={16} /> {t('recruiter_interviews.sync_ai_kit') || "Custom AI Interview Kit"}
+                                        </h4>
+                                        <div className="space-y-3 relative z-10">
+                                            {selectedApp.interviewKit.questionsTechniques.map((q, idx) => (
+                                                <div key={idx} className="flex gap-3 items-start">
+                                                    <span className="text-xs text-emerald-400 font-bold">Q{idx + 1}:</span>
+                                                    <p className="text-xs text-slate-300 font-medium">{q}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Actions Recruteur */}
                                 <div className="pt-8 border-t border-white/5 flex gap-4 relative z-10 flex-wrap">

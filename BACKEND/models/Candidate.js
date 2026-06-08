@@ -47,7 +47,18 @@ const candidateSchema = new mongoose.Schema({
         }
     ],
     scoreFiabilite: { type: Number, default: 100 },
-    resumeAnomalies: { type: String, default: '' }
+    resumeAnomalies: { type: String, default: '' },
+    jobMatchings: [
+        {
+            job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' },
+            score: { type: Number, default: 0 },
+            verdict: { type: String, default: '' },
+            summary: { type: String, default: '' },
+            strengths: [{ type: String }],
+            gaps: [{ type: String }],
+            recommendation: { type: String, default: '' }
+        }
+    ]
 }, { 
     timestamps: true 
 });

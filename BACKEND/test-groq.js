@@ -3,7 +3,7 @@ const { PDFParse } = require('pdf-parse');
 const path = require('path');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: './BACKEND/.env' });
+dotenv.config();
 
 const { OpenAI } = require('openai');
 const openai = new OpenAI({ 
@@ -14,7 +14,7 @@ const openai = new OpenAI({
 async function testGroq() {
     console.log('Testing Groq CV Parsing...');
     try {
-        const dataBuffer = fs.readFileSync('cv_candidat.pdf');
+        const dataBuffer = fs.readFileSync('../cv_candidat.pdf');
         const parser = new PDFParse({ data: dataBuffer });
         const pdfData = await parser.getText();
         const pdfText = pdfData.text.substring(0, 5000);

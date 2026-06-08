@@ -10,9 +10,11 @@ const CandidateExplorer = () => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [applyingId, setApplyingId] = useState(null);
+    const [appliedJobIds, setAppliedJobIds] = useState(new Set());
 
     useEffect(() => {
         fetchJobs();
+        fetchMyApplications();
     }, []);
 
     const fetchJobs = async () => {
@@ -26,12 +28,25 @@ const CandidateExplorer = () => {
         }
     };
 
+    const fetchMyApplications = async () => {
+        try {
+            const res = await API.get('/applications/my-applications');
+            if (res.data.success) {
+                const ids = new Set(res.data.data.map(a => a.job?._id));
+                setAppliedJobIds(ids);
+            }
+        } catch (error) {
+            // Silently fail — user may not have a CV yet
+        }
+    };
+
     const navigate = useNavigate();
 
     const handleApply = async (jobId) => {
         setApplyingId(jobId);
         try {
             await API.post(`/applications/apply/${jobId}`);
+            setAppliedJobIds(prev => new Set([...prev, jobId]));
             toast.success('Candidature envoyée avec succès !', {
                 icon: '🚀',
                 style: {
@@ -51,7 +66,7 @@ const CandidateExplorer = () => {
                 });
                 setTimeout(() => {
                     if (window.confirm("Voulez-vous être redirigé vers l'upload de CV ?")) {
-                        window.location.href = '/candidate/upload';
+                        window.location.href = `/candidate/upload?jobId=${jobId}`;
                     }
                 }, 1000);
             } else {
@@ -199,14 +214,20 @@ const CandidateExplorer = () => {
                                 </div>
 
                                 <div className="space-y-4 pt-8 border-t border-white/5 mt-auto">
-                                    <button 
-                                        onClick={(e) => { e.stopPropagation(); handleApply(job._id); }}
-                                        disabled={applyingId === job._id}
-                                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-bold text-sm hover:from-blue-500 hover:to-indigo-500 transition-all shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 disabled:opacity-50"
-                                    >
-                                        {applyingId === job._id ? <Loader2 className="animate-spin" size={18} /> : <ArrowUpRight size={18} />}
-                                        {applyingId === job._id ? 'Processing...' : 'Apply Securely'}
-                                    </button>
+                                    {appliedJobIds.has(job._id) ? (
+                                        <div className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 cursor-default">
+                                            <span>✓</span> Application Submitted
+                                        </div>
+                                    ) : (
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); handleApply(job._id); }}
+                                            disabled={applyingId === job._id}
+                                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-bold text-sm hover:from-blue-500 hover:to-indigo-500 transition-all shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 disabled:opacity-50"
+                                        >
+                                            {applyingId === job._id ? <Loader2 className="animate-spin" size={18} /> : <ArrowUpRight size={18} />}
+                                            {applyingId === job._id ? 'Processing...' : 'Apply Securely'}
+                                        </button>
+                                    )}
                                     <button className="w-full py-4 bg-white/5 text-slate-400 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2 border border-white/5">
                                         <BookmarkPlus size={16} /> Save Opportunity
                                     </button>

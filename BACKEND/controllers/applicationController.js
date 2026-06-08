@@ -33,12 +33,35 @@ const applyToJob = async (req, res) => {
             return res.status(400).json({ success: false, message: "Vous avez déjà postulé à cette offre." });
         }
 
+        // Find if we already have a pre-calculated matching score
+        let score = 0;
+        if (candidateProfile.jobMatchings) {
+            const matchedJob = candidateProfile.jobMatchings.find(m => m.job.toString() === jobId.toString());
+            if (matchedJob) {
+                score = matchedJob.score;
+            }
+        }
+
+        // If no score exists (e.g. background matching is still running or failed),
+        // we can calculate it on-the-fly
+        if (score === 0) {
+            try {
+                const { calculateMatchingScoreInternal } = require('./matchingController');
+                const populatedCandidate = await Candidate.findById(candidateProfile._id).populate('user');
+                const matchResult = await calculateMatchingScoreInternal(populatedCandidate, job);
+                score = matchResult.score;
+            } catch (matchingErr) {
+                console.error("Matching calculation failed during application creation:", matchingErr);
+            }
+        }
+
         // 4. Créer la candidature
         const application = await Application.create({
             candidate: candidateProfile._id,
             job: jobId,
             cv: candidateProfile._id, // Le CV est le profil candidat lui-même dans cette architecture
-            status: 'Pending'
+            status: 'Pending',
+            scoreMatching: score
         });
 
         res.status(201).json({

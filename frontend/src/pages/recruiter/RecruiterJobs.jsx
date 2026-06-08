@@ -124,6 +124,7 @@ const RecruiterJobs = () => {
                     <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">{t('recruiter_jobs.title')}</h1>
                 </div>
                 <button 
+                    data-testid="btn-new-job"
                     onClick={() => { resetForm(); setShowCreateModal(true); }}
                     className="bg-slate-900 text-white px-8 py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:scale-105 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-95"
                 >
@@ -264,6 +265,7 @@ const RecruiterJobs = () => {
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.job_title')}</label>
                                         <input 
                                             required
+                                            data-testid="input-job-title"
                                             value={formData.titre}
                                             onChange={(e) => setFormData({...formData, titre: e.target.value})}
                                             type="text" 
@@ -276,6 +278,7 @@ const RecruiterJobs = () => {
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.location')}</label>
                                             <input 
                                                 required
+                                                data-testid="input-job-location"
                                                 value={formData.lieu}
                                                 onChange={(e) => setFormData({...formData, lieu: e.target.value})}
                                                 type="text" 
@@ -287,6 +290,7 @@ const RecruiterJobs = () => {
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.annual_salary')}</label>
                                             <input 
                                                 required
+                                                data-testid="input-job-salary"
                                                 value={formData.salaire}
                                                 onChange={(e) => setFormData({...formData, salaire: e.target.value})}
                                                 type="text" 
@@ -299,6 +303,7 @@ const RecruiterJobs = () => {
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.strategic_description')}</label>
                                         <textarea 
                                             required
+                                            data-testid="textarea-job-description"
                                             value={formData.description}
                                             onChange={(e) => setFormData({...formData, description: e.target.value})}
                                             rows={3} 
@@ -310,6 +315,7 @@ const RecruiterJobs = () => {
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{t('recruiter_jobs.key_skills')}</label>
                                         <input 
                                             required
+                                            data-testid="input-job-skills"
                                             value={formData.competences}
                                             onChange={(e) => setFormData({...formData, competences: e.target.value})}
                                             type="text" 
@@ -319,7 +325,7 @@ const RecruiterJobs = () => {
                                     </div>
 
                                     <div className="flex gap-4 pt-4">
-                                        <button type="submit" className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-xl transition-all">
+                                        <button type="submit" data-testid="btn-submit-job" className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-xl transition-all">
                                             {showEditModal ? t('recruiter_jobs.update') : t('recruiter_jobs.publish')}
                                         </button>
                                         <button 

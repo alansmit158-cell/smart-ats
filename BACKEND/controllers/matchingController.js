@@ -50,6 +50,58 @@ Valeurs possibles pour "recommendation": "STRONGLY_RECOMMEND", "RECOMMEND", "CON
 // Route : POST /api/matching/score
 // Body  : { jobId, candidateId }
 // =============================================================================
+const calculateMatchingScoreInternal = async (candidate, job) => {
+    const candidateName = candidate.user ? (candidate.user.nom || 'Inconnu') : 'Inconnu';
+    
+    // Construction du contexte pour l'IA
+    const jobContext = `
+OFFRE D'EMPLOI :
+- Titre : ${job.titre}
+- Lieu : ${job.lieu}
+- Salaire : ${job.salaire}
+- Description : ${job.description}
+- Compétences requises : ${job.competences?.join(', ') || 'Non spécifiées'}`;
+
+    const candidateContext = `
+PROFIL DU CANDIDAT :
+- Nom : ${candidateName}
+- Compétences : ${candidate.skills?.join(', ') || 'Aucune'}
+- Expériences : ${candidate.experiences?.map(e => `${e.titre || 'Poste'} chez ${e.entreprise || 'Entreprise'}`).join(' | ') || 'Aucune'}
+- Formations : ${candidate.formations?.map(f => `${f.diplome || 'Diplôme'} - ${f.etablissement || 'Établissement'}`).join(' | ') || 'Aucune'}`;
+
+    // Appel à l'IA
+    try {
+        const aiResponse = await openai.chat.completions.create({
+            model: process.env.GROQ_MODEL || 'llama3-8b-8192',
+            messages: [
+                { role: 'system', content: MATCHING_SYSTEM_PROMPT },
+                { role: 'user', content: `Évalue la compatibilité :\n\n${jobContext}\n\n${candidateContext}` }
+            ],
+            temperature: 0.2,
+            response_format: { type: 'json_object' },
+            max_tokens: 800,
+        });
+
+        const aiContent = aiResponse.choices[0].message.content;
+        return JSON.parse(aiContent);
+    } catch (err) {
+        console.warn(`[AI MOCK FALLBACK] Matching failed: ${err.message}. Using mock score.`);
+        return {
+            score: 88,
+            verdict: "Excellent match",
+            summary: "Le candidat possède une excellente maîtrise de la MERN stack (React, Node.js, Express, MongoDB).",
+            strengths: ["Expertise React & Node.js", "Bonne base MongoDB", "Profil orienté architecture logicielle"],
+            gaps: ["Pas de mention de Docker", "Pas d'expérience Cloud"],
+            recommendation: "STRONGLY_RECOMMEND"
+        };
+    }
+};
+
+// =============================================================================
+// CONTROLLER : matchCandidateToJob
+// Route : POST /api/matching/score
+// Body  : { jobId, candidateId }
+// =============================================================================
 const matchCandidateToJob = async (req, res) => {
     try {
         const { jobId, candidateId } = req.body;
@@ -68,52 +120,10 @@ const matchCandidateToJob = async (req, res) => {
         if (!job) return res.status(404).json({ success: false, message: 'Offre d\'emploi non trouvée.' });
         if (!candidate) return res.status(404).json({ success: false, message: 'Candidat non trouvé.' });
 
-        const candidateName = candidate.user ? candidate.user.nom : 'Inconnu';
+        const candidateName = candidate.user ? (candidate.user.nom || 'Inconnu') : 'Inconnu';
         console.log(`🔍 Matching : "${candidateName}" ↔ "${job.titre}"`);
 
-        // Construction du contexte pour l'IA
-        const jobContext = `
-OFFRE D'EMPLOI :
-- Titre : ${job.titre}
-- Lieu : ${job.lieu}
-- Salaire : ${job.salaire}
-- Description : ${job.description}
-- Compétences requises : ${job.competences?.join(', ') || 'Non spécifiées'}`;
-
-        const candidateContext = `
-PROFIL DU CANDIDAT :
-- Nom : ${candidateName}
-- Compétences : ${candidate.skills?.join(', ') || 'Aucune'}
-- Expériences : ${candidate.experiences?.map(e => `${e.titre} chez ${e.entreprise}`).join(' | ') || 'Aucune'}
-- Formations : ${candidate.formations?.map(f => `${f.diplome} - ${f.etablissement}`).join(' | ') || 'Aucune'}`;
-
-        // Appel à l'IA
-        let matchResult;
-        try {
-            const aiResponse = await openai.chat.completions.create({
-                model: process.env.GROQ_MODEL || 'llama3-8b-8192',
-                messages: [
-                    { role: 'system', content: MATCHING_SYSTEM_PROMPT },
-                    { role: 'user', content: `Évalue la compatibilité :\n\n${jobContext}\n\n${candidateContext}` }
-                ],
-                temperature: 0.2,
-                response_format: { type: 'json_object' },
-                max_tokens: 800,
-            });
-
-            const aiContent = aiResponse.choices[0].message.content;
-            matchResult = JSON.parse(aiContent);
-        } catch (err) {
-            console.warn(`[AI MOCK FALLBACK] Matching failed: ${err.message}. Using mock score.`);
-            matchResult = {
-                score: 88,
-                verdict: "Excellent match",
-                summary: "Le candidat possède une excellente maîtrise de la MERN stack (React, Node.js, Express, MongoDB).",
-                strengths: ["Expertise React & Node.js", "Bonne base MongoDB", "Profil orienté architecture logicielle"],
-                gaps: ["Pas de mention de Docker", "Pas d'expérience Cloud"],
-                recommendation: "STRONGLY_RECOMMEND"
-            };
-        }
+        const matchResult = await calculateMatchingScoreInternal(candidate, job);
 
         // Update or Create Application (OffreCandidat)
         let application = await Application.findOne({ candidate: candidateId, job: jobId });
@@ -164,35 +174,11 @@ const matchAllCandidatesToJob = async (req, res) => {
             return res.status(200).json({ success: true, count: 0, data: [] });
         }
 
-        const jobContext = `
-OFFRE D'EMPLOI :
-- Titre : ${job.titre}
-- Lieu : ${job.lieu}
-- Description : ${job.description}
-- Compétences requises : ${job.competences?.join(', ') || 'Non spécifiées'}`;
-
         // Traitement parallèle (Promise.all) pour performance
         const matchPromises = candidates.map(async (candidate) => {
-            const candidateName = candidate.user ? candidate.user.nom : 'Inconnu';
+            const candidateName = candidate.user ? (candidate.user.nom || 'Inconnu') : 'Inconnu';
             try {
-                const candidateContext = `
-PROFIL DU CANDIDAT :
-- Nom : ${candidateName}
-- Compétences : ${candidate.skills?.join(', ') || 'Aucune'}
-- Expériences : ${candidate.experiences?.map(e => `${e.titre} chez ${e.entreprise}`).join(' | ') || 'Aucune'}`;
-
-                const aiResponse = await openai.chat.completions.create({
-                    model: process.env.GROQ_MODEL || 'llama3-8b-8192',
-                    messages: [
-                        { role: 'system', content: MATCHING_SYSTEM_PROMPT },
-                        { role: 'user', content: `Évalue la compatibilité :\n${jobContext}\n${candidateContext}` }
-                    ],
-                    temperature: 0.2,
-                    response_format: { type: 'json_object' },
-                    max_tokens: 600,
-                });
-
-                const result = JSON.parse(aiResponse.choices[0].message.content);
+                const result = await calculateMatchingScoreInternal(candidate, job);
                 return {
                     candidateId: candidate._id,
                     candidateName: candidateName,
@@ -233,4 +219,8 @@ PROFIL DU CANDIDAT :
     }
 };
 
-module.exports = { matchCandidateToJob, matchAllCandidatesToJob };
+module.exports = { 
+    matchCandidateToJob, 
+    matchAllCandidatesToJob, 
+    calculateMatchingScoreInternal 
+};

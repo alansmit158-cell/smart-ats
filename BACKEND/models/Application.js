@@ -26,6 +26,11 @@ const applicationSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    interviewKit: {
+        resumeIA: { type: String, default: '' },
+        questionsTechniques: [{ type: String }],
+        pointsVigilance: [{ type: String }]
+    },
     dateDepot: {
         type: Date,
         default: Date.now

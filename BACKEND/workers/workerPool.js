@@ -22,9 +22,9 @@ class NLPWorkerPool extends EventEmitter {
       console.log(`[AUDIT] ${action} ${details}`);
   }
 
-  processCV({ pdfText, candidateId, retries = 0 }) {
+  processCV({ pdfText, candidateId, jobId, retries = 0 }) {
     return new Promise((resolve, reject) => {
-      const task = { pdfText, candidateId, retries, resolve, reject };
+      const task = { pdfText, candidateId, jobId, retries, resolve, reject };
       
       if (this.activeWorkers < this.maxWorkers) {
         this._runWorker(task);
@@ -35,7 +35,7 @@ class NLPWorkerPool extends EventEmitter {
     });
   }
 
-  _runWorker({ pdfText, candidateId, retries, resolve, reject }) {
+  _runWorker({ pdfText, candidateId, jobId, retries, resolve, reject }) {
     this.activeWorkers++;
     this.addAuditLog('WORKER_START', `Démarrage pour candidat ${candidateId} (Tentative ${retries + 1})`);
 
@@ -45,6 +45,7 @@ class NLPWorkerPool extends EventEmitter {
         workerData: {
           pdfText,
           candidateId,
+          jobId,
           mongoUri: process.env.MONGO_URI,
           groqKey: process.env.GROQ_API_KEY,
           groqModel: process.env.GROQ_MODEL

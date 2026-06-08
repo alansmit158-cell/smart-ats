@@ -66,6 +66,19 @@ const generateKit = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Candidate not found or not linked.' });
         }
 
+        if (job) {
+            const Application = require('../models/Application');
+            const app = await Application.findOne({ candidate: candidate._id, job: job._id });
+            if (app && app.interviewKit && app.interviewKit.questionsTechniques && app.interviewKit.questionsTechniques.length > 0) {
+                console.log(`💡 Returning pre-calculated interview kit from Application for candidate ${candidate._id}`);
+                return res.status(200).json({
+                    success: true,
+                    data: app.interviewKit,
+                    message: 'Interview kit retrieved from application'
+                });
+            }
+        }
+
         // Context construction
         const jobContext = job ? `
 OFFRE D'EMPLOI :
